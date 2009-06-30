@@ -1,0 +1,261 @@
+"Phrases"
+{
+	"rdy for knives?"
+	{
+		"en"	"Ready for Knives?"
+		"de"	"Bereit für's Messern?"
+		"ru"	"Готовы к ножичкам?"
+	}
+	
+	"rdy for live?"
+	{
+		"en"	"Ready for Live?"
+		"de"	"Bereit für Live?"
+		"ru"	"Готовы к игре?"
+	}
+	
+	"knife starting"
+	{
+		"en"	"Knife round starting..."
+		"de"	"Messerrunde startet..."
+		"ru"	"Начинается ножевой раунд..."
+	}
+	
+	"live starting"
+	{
+		"en"	"Live round starting..."
+		"de"	"Live-Runde startet..."
+		"ru"	"Начинается игровой раунд..."
+	}
+	
+	"knife after round"
+	{
+		"en"	"KNIVES AFTER THIS ROUND!"
+		"de"	"MESSERN NACH DIESER RUNDE!"
+		"ru"	"НОЖИ ПОСЛЕ ЭТОГО РАУНДА!"
+	}
+	
+	"live after round"
+	{
+		"en"	"LIVE AFTER THIS ROUND!"
+		"de"	"LIVE NACH DIESER RUNDE!"
+		"ru"	"БИТВА ПОСЛЕ ЭТОГО РАУНДА!"
+	}
+	
+	"start warmup"
+	{
+		"en"	"Start Warmup"
+		"de"	"Starte Warmup"
+		"ru"	"Начать прогревочные раунды"
+	}
+	
+	"start knife"
+	{
+		"en"	"Start Knife round"
+		"de"	"Starte Messerrunde"
+		"ru"	"Начать ножевой раунд"
+	}
+	
+	"start live"
+	{
+		"en"	"Start Live round"
+		"de"	"Starte Live-Runde"
+		"ru"	"Начать игровой раунд"
+	}
+	
+	"reset plugin"
+	{
+		"en"	"Reset plugin"
+		"de"	"Plugin zurücksetzen"
+		"ru"	"Обнулить плагин"
+	}
+	
+	"plugin reset"
+	{
+		"en"	"Plugin has been reset."
+		"de"	"Plugin wurde zurückgesetzt."
+		"ru"	"Плагин был обнулен"
+	}
+	
+	"usage: war_maxrounds"
+	{
+		"#format"	"{1:d}"
+		"en"	"Usage: war_maxrounds <count> -- Current value is {1}."
+		"de"	"Nutzung: war_maxrounds <Anzahl> -- Momentan eingestellt auf {1}."
+		"ru"	"Использование: war_maxrounds <count> -- Текущее значение {1}."
+	}
+	
+	"usage: war_nextmap"
+	{
+		"#format"	"{1:s}"
+		"en"	"Usage: war_nextmap <map> -- Current value is {1}."
+		"de"	"Nutzung: war_nextmap <Map> -- Momentan eingestellt auf {1}."
+		"ru"	"Использование: war_nextmap <Map> -- Текущее значение {1}."
+	}
+	
+	"map running"
+	{
+		"#format"	"{1:s}"
+		"en"	"Map {1} is currently running."
+		"de"	"Map {1} laeuft gerade."
+		"ru"	"Карта {1} играется сейчас."
+	}
+	
+	"what now?"
+	{
+		"en"	"What now?"
+		"de"	"Was jetzt?"
+		"ru"	"что сейчас?"
+	}
+	
+	"continue warmup"
+	{
+		"en"	"Continue Warmup"
+		"de"	"Warmup verlängern"
+		"ru"	"Продолжить прогревочные раунды"
+	}
+	
+	"teamchange please"
+	{
+		"en"	"Teamchange please!"
+		"de"	"Teamwechsel bitte!"
+		"ru"	"Смена команд!"
+	}
+	
+	"round x of y"
+	{
+		"#format" "{1:d},{2:d}"
+		"en"	"Round {1}/{2}"
+		"de"	"Runde {1}/{2}"
+		"ru"	"Раунд {1}/{2}"
+	}
+	
+	"last round"
+	{
+		"en"	"Last round!"
+		"de"	"Letzte Runde!"
+		"ru"	"Последний раунд!"
+	}
+	
+	"first half"
+	{
+		"en"	"First half"
+		"de"	"Erste Halbzeit"
+		"ru"	"Первая половина"
+	}
+	
+	"second half"
+	{
+		"en"	"Second half"
+		"de"	"Zweite Halbzeit"
+		"ru"	"Вторая половина"
+	}
+	
+	"team x score y"
+	{
+		"#format" "{1:s},{2:d}"
+		"en"	"{1}   {2}"
+		"de"	"{1}   {2}"
+		"ru"	"{1}   {2}"
+	}
+	
+	"youre in team x"
+	{
+		"#format" "{1:s}"
+		"en"	"You're in {1}."
+		"de"	"Du bist in {1}."
+		"ru"	"Ты в {1}."
+	}
+	
+	"maxrounds x"
+	{
+		"#format" "{1:d}"
+		"en"	"Maxrounds:   {1}"
+		"de"	"Rundenzahl:  {1}"
+		"ru"	"Макс. раундов:   {1}"
+	}
+	
+	"warmup rounds x"
+	{
+		"#format" "{1:d}"
+		"en"	"Warmup rounds:  {1}"
+		"de"	"Aufwärmrunden: {1}"
+		"ru"	"Прогревочных раундов: {1}"
+	}
+	
+	"nextmap x"
+	{
+		"#format" "{1:s}"
+		"en"	"Nextmap: {1}"
+		"de"	"Naechste Map: {1}"
+		"ru"	"Следующая карта: {1}"
+	}
+	
+	"ready"
+	{
+		"en"	"Ready"
+		"de"	"Bereit"
+		"ru"	"Готов"
+	}
+	
+	"ban team x"
+	{
+		"#format" "{1:s}"
+		"en"	"Ban {1} team"
+		"de"	"Banne alle {1}s"
+		"ru"	"Забанить команду {1}"
+	}
+	
+	"one team empty"
+	{
+		"en"	"One team has no players..."
+		"de"	"Ein Team hat keine Spieler..."
+		"ru"	"В одной из команд нет игроков..."
+	}
+	
+	"number not equal"
+	{
+		"en"	"The number of players in the teams is not equal."
+		"de"	"Die Anzahl der Spieler ist in den Teams nicht gleich."
+		"ru"	"Команды не равны по количеству игроков."
+	}
+	
+	"repeat command"
+	{
+		"en"	"Repeat command to start anyway."
+		"de"	"Wiederhole den Befehl, um trotzdem zu starten."
+		"ru"	"Повторите команду для принудительного начала."
+	}
+	
+	"select map"
+	{
+		"en"	"Please select a map:"
+		"de"	"Bitte waehle eine Map:"
+		"ru"	"Пожалуйста, выберите карту:"
+	}
+	
+	"mates cash"
+	{
+		"en"	"Your mates' cash"
+		"de"	"Geld deines Teams"
+		"ru"	"Деньги ваших друзей"
+	}
+	
+	"switched to team"
+	{
+		"en"	"You have been switched to team %s."
+		"de"	"Du wurdest ins Team %s geswitcht."
+	}
+	
+	"cant buy in knife round"
+	{
+		"en"	"You can only buy a Vest in Knife Round!"
+		"de"	"Du kannst in der Messerrunde nur eine Weste kaufen!"
+	}
+	
+	"cant buy in sudden death"
+	{
+		"en"	"Buying is not allowed in Sudden Death!"
+		"de"	"Du kannst in Sudden Death nichts kaufen!"
+	}
+}
