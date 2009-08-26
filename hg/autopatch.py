@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-"""  Autopatch  -- Copyright (C) 2009 Michael Ziegler
+"""  Autopatch
+Copyright (C) 2009 Michael Ziegler <diese-addy@funzt-halt.net>
 
 Mercurial hook that patches one file according to changes to another one.
 
@@ -120,7 +121,7 @@ def autopatch( ui, repo, hooktype, node, **kwargs ):
 			ui.warn( patcherr );
 	
 	else:
-		ui.status( "Successfully patched settings.py.\n" );
+		ui.status( "Successfully patched %s.\n" % tofile );
 	
 	return False;
 	
