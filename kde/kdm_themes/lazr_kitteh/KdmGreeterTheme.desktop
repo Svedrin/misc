@@ -1,0 +1,9 @@
+# This is not really a .desktop file like the rest, but it is useful to treat
+# it as such
+
+[KdmGreeterTheme]
+Greeter=lazrkitteh.xml
+Name=LazrKitteh (based on oxygen-air by Xavier Araque)
+Author=Michael Ziegler
+Copyright=GPL 2009 Michael Ziegler | diese-addy@funzt-halt.net
+Screenshot=screenshot.png
