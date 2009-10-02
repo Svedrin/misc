@@ -1,0 +1,9 @@
+[KSplash Theme: LazrKitteh]
+Name = KDE 4.3 Splash Screen
+Description = LazrKitteh Splash Screen
+Version = 1.0
+Author  = Michael Ziegler <diese-addy@funzt-halt.net>
+Homepage = http://bitbucket.org/Svedrin/misc/src/tip/kde/kdm_themes/
+
+# Theme behaviour settings.
+Engine = KSplashX
