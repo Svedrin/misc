@@ -127,7 +127,7 @@ if __name__ == '__main__':
 	op = OptionParser();
 	
 	op.add_option( '-d', '--debug',    dest="debug",    default=False,  action="store_true",
-		help='Draw a Debug line after rendering the Bezier that demonstrates the calculation.'
+		help='Draw a Debug line after rendering the Bezier that demonstrates the calculation'
 		);
 	
 	op.add_option( '-p', '--progress', dest="progress", default=False,  action="store_true",
