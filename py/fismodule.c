@@ -4,32 +4,32 @@
  *  Copyright © 2009, Michael "Svedrin" Ziegler <diese-addy@funzt-halt.net>
  */
 
+
+#include <pthread.h>
+#include <setjmp.h>
 #include <stdarg.h>
 #include <Python.h>
 
-// I tried to fix the uberly borked error handling in fis.c, but since I can't really
-// prevent exit from being called without causing segfaults, I don't use this because
-// it would hide the error message from the user, which isn't really helping. :)
-//#define TRY_FIX_ERROR_HANDLING
-
-#ifdef TRY_FIX_ERROR_HANDLING
+// Fix the uberly borked error handling in fis.c.
+// fisError first calls printf, then exit.
+// Replace printf with a function that raises an Exception in the Python layer,
+// and replace exit with a longjmp to allow the original function call to
+// return NULL.
 
 // Define an output function to be used by fis.c. Will raise a RuntimeError exception in Python.
 void print_py( const char* format, ... );
 
-# define printf print_py
-# define exit   perror( "fis.c is calling exit(). Last error" ); fflush( stderr ); exit
+jmp_buf jumper;
+pthread_mutex_t jumper_lock;
 
-# include "fis.c"
+#define printf print_py
+#define exit( num )   longjmp( jumper, 1 )
 
-# undef printf
-# undef exit
+#include "fis.c"
 
-#else
+#undef printf
+#undef exit
 
-# include "fis.c"
-
-#endif
 
 /**
  *  The FIS object type.
@@ -89,13 +89,19 @@ static PyObject* fis_new( PyTypeObject* type, PyObject* args ){
 	if( !PyArg_ParseTuple( args, "s", &self->fis_file ) )
 		return NULL;
 	
-	// First of all, try to open the FIS file to see if it exists. This is to prevent
-	// fis.c from calling exit() if it doesn't.
+	// First of all, try to open the FIS file to see if it exists.
 	if( ( fp = fopen( self->fis_file, "r" ) ) != NULL ){
 		fclose(fp);
 	}
 	else{
 		PyErr_SetFromErrnoWithFilename( PyExc_IOError, (char *)self->fis_file );
+		return NULL;
+	}
+	
+	// Catch exceptions
+	pthread_mutex_lock( &jumper_lock );
+	if( setjmp( jumper ) == 1 ){
+		pthread_mutex_unlock( &jumper_lock );
 		return NULL;
 	}
 	
@@ -105,6 +111,8 @@ static PyObject* fis_new( PyTypeObject* type, PyObject* args ){
 	// Create FIS node from the Matrix
 	self->fis = (FIS *)fisCalloc( 1, sizeof(FIS) );
 	fisBuildFisNode( self->fis, self->fisMatrix, self->fis_col_n, MF_POINT_N );
+	
+	pthread_mutex_unlock( &jumper_lock );
 	
 	return (PyObject *)self;
 }
@@ -125,6 +133,7 @@ static PyObject* fis_process( fisObject* self, PyObject* args ){
 	DOUBLE     *input,  *output;
 	PyObject   *result, *currItem;
 	Py_ssize_t argc, argIdx, resIdx;
+	
 	
 	// Sanity checks
 	if( !PyTuple_Check( args ) ){
@@ -165,8 +174,19 @@ static PyObject* fis_process( fisObject* self, PyObject* args ){
 		return NULL;
 	}
 	
+	// Catch exceptions
+	pthread_mutex_lock( &jumper_lock );
+	if( setjmp( jumper ) == 1 ){
+		pthread_mutex_unlock( &jumper_lock );
+		free(input);
+		free(output);
+		return NULL;
+	}
+	
 	// Run the calculation
 	getFisOutput( input, self->fis, output );
+	
+	pthread_mutex_unlock( &jumper_lock );
 	
 	free(input);
 	
@@ -182,6 +202,7 @@ static PyObject* fis_process( fisObject* self, PyObject* args ){
 	}
 	
 	free(output);
+	
 	return (PyObject *)result;
 }
 
@@ -318,6 +339,8 @@ PyMODINIT_FUNC initfis(void){
 		return;
 	}
 	
+	pthread_mutex_init( &jumper_lock, NULL );
+	
 	module = Py_InitModule3( "fis", NULL, MOD_DOCSTRING );
 	
 	Py_INCREF( &fisType );
@@ -325,7 +348,6 @@ PyMODINIT_FUNC initfis(void){
 }
 
 
-#ifdef TRY_FIX_ERROR_HANDLING
 /**
  *  Printf replacement function to be used by the functions in fis.c.
  *  Will raise a RuntimeError exception in the Python layer when called.
@@ -367,5 +389,3 @@ void print_py( const char* format, ... ){
 		}
 	}
 }
-#endif
-
