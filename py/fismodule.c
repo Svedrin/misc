@@ -4,11 +4,11 @@
  *  Copyright © 2009, Michael "Svedrin" Ziegler <diese-addy@funzt-halt.net>
  */
 
+#include <Python.h>
 
 #include <pthread.h>
 #include <setjmp.h>
 #include <stdarg.h>
-#include <Python.h>
 
 // Fix the uberly borked error handling in fis.c.
 // fisError first calls printf, then exit.
@@ -19,8 +19,7 @@
 // Define an output function to be used by fis.c. Will raise a RuntimeError exception in Python.
 void print_py( const char* format, ... );
 
-jmp_buf jumper;
-pthread_mutex_t jumper_lock;
+__thread jmp_buf jumper;
 
 #define printf print_py
 #define exit( num )   longjmp( jumper, 1 )
@@ -99,9 +98,7 @@ static PyObject* fis_new( PyTypeObject* type, PyObject* args ){
 	}
 	
 	// Catch exceptions
-	pthread_mutex_lock( &jumper_lock );
 	if( setjmp( jumper ) == 1 ){
-		pthread_mutex_unlock( &jumper_lock );
 		return NULL;
 	}
 	
@@ -111,8 +108,6 @@ static PyObject* fis_new( PyTypeObject* type, PyObject* args ){
 	// Create FIS node from the Matrix
 	self->fis = (FIS *)fisCalloc( 1, sizeof(FIS) );
 	fisBuildFisNode( self->fis, self->fisMatrix, self->fis_col_n, MF_POINT_N );
-	
-	pthread_mutex_unlock( &jumper_lock );
 	
 	return (PyObject *)self;
 }
@@ -175,9 +170,7 @@ static PyObject* fis_process( fisObject* self, PyObject* args ){
 	}
 	
 	// Catch exceptions
-	pthread_mutex_lock( &jumper_lock );
 	if( setjmp( jumper ) == 1 ){
-		pthread_mutex_unlock( &jumper_lock );
 		free(input);
 		free(output);
 		return NULL;
@@ -185,8 +178,6 @@ static PyObject* fis_process( fisObject* self, PyObject* args ){
 	
 	// Run the calculation
 	getFisOutput( input, self->fis, output );
-	
-	pthread_mutex_unlock( &jumper_lock );
 	
 	free(input);
 	
@@ -338,8 +329,6 @@ PyMODINIT_FUNC initfis(void){
 	if( PyType_Ready( &fisType ) < 0 ){
 		return;
 	}
-	
-	pthread_mutex_init( &jumper_lock, NULL );
 	
 	module = Py_InitModule3( "fis", NULL, MOD_DOCSTRING );
 	
