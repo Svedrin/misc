@@ -38,8 +38,10 @@ __thread int last_exception;
 #define XTRY jumperidx++; \
 	switch( last_exception = setjmp( jumperstack[jumperidx] ) ){\
 		default: \
-			finally_called = last_exception; \
-			XRAISE( EX_FINALLY ); \
+			if( last_exception != EX_FINALLY ){ \
+				finally_called = last_exception; \
+				XRAISE( EX_FINALLY ); \
+			} \
 			break; \
 		case 0:
 
