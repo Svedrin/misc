@@ -8,10 +8,15 @@
  */
 
 #include <setjmp.h>
+#include <errno.h>
+#include <signal.h>
 
 #ifndef JUMPERCOUNT
 #define JUMPERCOUNT 100
 #endif
+
+#define EX_FINALLY  -1
+#define EX_SIGINT   -2
 
 __thread jmp_buf jumperstack[JUMPERCOUNT];
 __thread int jumperidx = -1;
@@ -19,17 +24,22 @@ __thread int finally_called = 0;
 __thread int last_exception;
 
 #define XRAISE( errcode ) if( jumperidx == -1 ){ \
-		perror( "Uncaught exception!" );\
+		perror( "Uncaught exception" );\
+		exit(1);\
 	} \
 	else{ \
 		longjmp( jumperstack[jumperidx], errcode ); \
+	}
+
+#define XASSERT( retval ) if( retval == -1 ){ \
+		XRAISE( errno ); \
 	}
 
 #define XTRY jumperidx++; \
 	switch( last_exception = setjmp( jumperstack[jumperidx] ) ){\
 		default: \
 			finally_called = last_exception; \
-			XRAISE( -1 ); \
+			XRAISE( EX_FINALLY ); \
 			break; \
 		case 0:
 
@@ -37,15 +47,15 @@ __thread int last_exception;
 		case errcode :
 
 #define XFINALLY break; \
-		case -1:
+		case EX_FINALLY :
 
 #define XEND break; \
 	} \
 	if( finally_called == 0){ \
-		finally_called = -1; \
-		XRAISE( -1 );\
+		finally_called = EX_FINALLY; \
+		XRAISE( EX_FINALLY );\
 	}\
-	else if( finally_called > 0 ){ \
+	else if( finally_called != EX_FINALLY ){ \
 		jumperidx--; \
 		last_exception = finally_called; \
 		finally_called = 0;\
@@ -56,3 +66,9 @@ __thread int last_exception;
 		jumperidx--; \
 	}
 
+#define XCATCHSIGINT signal(SIGINT, Xraise_sigint);
+
+void Xraise_sigint( int sig ){
+	XCATCHSIGINT
+	XRAISE( EX_SIGINT );
+}
