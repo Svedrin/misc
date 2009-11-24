@@ -5,6 +5,7 @@
  */
 
 #include <Python.h>
+#include "structmember.h"
 
 #include <setjmp.h>
 #include <stdarg.h>
@@ -28,6 +29,7 @@ __thread jmp_buf jumper;
 #undef printf
 #undef exit
 
+#define CLAMP_DEFAULT 1
 
 /**
  *  The FIS object type.
@@ -40,6 +42,7 @@ typedef struct {
 	int         fis_row_n, fis_col_n;
 	DOUBLE    **fisMatrix;
 	FIS        *fis;
+	int clampInputs;
 } fisObject;
 
 
@@ -101,6 +104,8 @@ static PyObject* fis_new( PyTypeObject* type, PyObject* args ){
 		return NULL;
 	}
 	
+	self->clampInputs = CLAMP_DEFAULT;
+	
 	// Parse file into FIS Matrix
 	self->fisMatrix = returnFismatrix( (char *)self->fis_file, &self->fis_row_n, &self->fis_col_n );
 	
@@ -127,18 +132,13 @@ static PyObject* fis_process( fisObject* self, PyObject* args ){
 	DOUBLE     *input,  *output;
 	PyObject   *result, *currItem;
 	Py_ssize_t argc, argIdx, resIdx;
-	
+	DOUBLE inval;
 	
 	// Sanity checks
-	if( !PyTuple_Check( args ) ){
-		PyErr_SetString( PyExc_TypeError, "Args is not a tuple." );
-		return NULL;
-	}
-	
 	argc = PyTuple_Size( args );
 	
 	if( argc != self->fis->in_n ){
-		PyErr_SetString( PyExc_IndexError, "You need to provide as many arguments as there are input variables." );
+		PyErr_SetString( PyExc_IndexError, "You need to provide exactly as many arguments as there are input variables." );
 		return NULL;
 	}
 	
@@ -151,13 +151,38 @@ static PyObject* fis_process( fisObject* self, PyObject* args ){
 		currItem = PyTuple_GetItem( args, argIdx );
 		
 		if( PyFloat_Check( currItem ) )
-			input[argIdx] = (DOUBLE) PyFloat_AsDouble( currItem );
+			inval = (DOUBLE) PyFloat_AsDouble( currItem );
 		else if( PyInt_Check( currItem ) )
-			input[argIdx] = (DOUBLE) PyInt_AsLong( currItem );
+			inval = (DOUBLE) PyInt_AsLong( currItem );
 		else{
 			PyErr_SetString( PyExc_TypeError, "Args must be of type int or float." );
 			free(input);
 			return NULL;
+		}
+		
+		if(self->clampInputs){
+			if( inval < self->fis->input[argIdx]->bound[0] ){
+				// Less than min
+				input[argIdx] = self->fis->input[argIdx]->bound[0];
+			}
+			else if( inval > self->fis->input[argIdx]->bound[1] ){
+				// Greater than max
+				input[argIdx] = self->fis->input[argIdx]->bound[1];
+			}
+			else{
+				input[argIdx] = inval;
+			}
+		}
+		else{
+			if( inval < self->fis->input[argIdx]->bound[0] ||
+			    inval > self->fis->input[argIdx]->bound[1] ){
+				PyErr_SetString( PyExc_ValueError, "Input value is out of range" );
+				free( input );
+				return NULL;
+			}
+			else{
+				input[argIdx] = inval;
+			}
 		}
 	}
 	
@@ -232,6 +257,42 @@ static PyObject* fis_getPath( fisObject* self ){
 	return Py_BuildValue( "s", self->fis_file );
 }
 
+
+static PyObject* fis_getInputBounds( fisObject* self, PyObject* args ){
+	int idx;
+	
+	if( !PyArg_ParseTuple( args, "i", &idx ) )
+		return NULL;
+	
+	if( idx >= self->fis->in_n ){
+		PyErr_SetString( PyExc_IndexError, "Given input does not exist." );
+		return NULL;
+	}
+	
+	return Py_BuildValue( "(ff)",
+		self->fis->input[idx]->bound[0],
+		self->fis->input[idx]->bound[1]
+		);
+}
+
+static PyObject* fis_getOutputBounds( fisObject* self, PyObject* args ){
+	int idx;
+	
+	if( !PyArg_ParseTuple( args, "i", &idx ) )
+		return NULL;
+	
+	if( idx >= self->fis->out_n ){
+		PyErr_SetString( PyExc_IndexError, "Given output does not exist." );
+		return NULL;
+	}
+	
+	return Py_BuildValue( "(ff)",
+		self->fis->output[idx]->bound[0],
+		self->fis->output[idx]->bound[1]
+		);
+}
+
+
 /**
  *  Macros to easily create getters for FIS fields.
  */
@@ -244,10 +305,13 @@ static PyObject* fis_get##PythonName ( fisObject* self ){          \
 #define FIS_FIELD_GETTER_DEF(  PythonName, DocString ) \
 	{ "get" #PythonName, (PyCFunction)fis_get##PythonName, METH_NOARGS, DocString },
 
+#define FIS_FIELD_GETTER_DEF_A(  PythonName, DocString ) \
+	{ "get" #PythonName, (PyCFunction)fis_get##PythonName, METH_VARARGS, DocString },
 
-FIS_FIELD_GETTER_IMPL( Inputs,		in_n,		"i" )
-FIS_FIELD_GETTER_IMPL( Outputs, 	out_n,		"i" )
-FIS_FIELD_GETTER_IMPL( Rules,		rule_n, 	"i" )
+
+FIS_FIELD_GETTER_IMPL( InputCount,	in_n,		"i" )
+FIS_FIELD_GETTER_IMPL( OutputCount,	out_n,		"i" )
+FIS_FIELD_GETTER_IMPL( RuleCount,	rule_n, 	"i" )
 FIS_FIELD_GETTER_IMPL( Name,		name,		"s" )
 FIS_FIELD_GETTER_IMPL( Type,		type,		"s" )
 FIS_FIELD_GETTER_IMPL( AndMethod,	andMethod,	"s" )
@@ -264,9 +328,11 @@ FIS_FIELD_GETTER_IMPL( DefuzzMethod,	defuzzMethod,	"s" )
 static PyMethodDef fisObject_Methods[] = {
 	FIS_FIELD_GETTER_DEF( Matrix,		"Return the FIS matrix as a 2-dimensional Tuple." )
 	FIS_FIELD_GETTER_DEF( Path,		"Return the file path used to open the FIS file." )
-	FIS_FIELD_GETTER_DEF( Inputs,		"Return the number of input variables." )
-	FIS_FIELD_GETTER_DEF( Outputs,		"Return the number of output variables." )
-	FIS_FIELD_GETTER_DEF( Rules,		"Return the number of rules." )
+	FIS_FIELD_GETTER_DEF( InputCount,	"Return the number of input variables." )
+	FIS_FIELD_GETTER_DEF_A( InputBounds,	"Return the boundaries for the given Input index." )
+	FIS_FIELD_GETTER_DEF( OutputCount,	"Return the number of output variables." )
+	FIS_FIELD_GETTER_DEF_A( OutputBounds,	"Return the boundaries for the given Output index." )
+	FIS_FIELD_GETTER_DEF( RuleCount,	"Return the number of rules." )
 	FIS_FIELD_GETTER_DEF( Name,		NULL )
 	FIS_FIELD_GETTER_DEF( Type,		NULL )
 	FIS_FIELD_GETTER_DEF( AndMethod,	NULL )
@@ -276,6 +342,14 @@ static PyMethodDef fisObject_Methods[] = {
 	FIS_FIELD_GETTER_DEF( DefuzzMethod,	NULL )
 	{ NULL, NULL, 0, NULL }
 };
+
+static PyMemberDef fisObject_Members[] = {
+    { "clamp", T_INT, offsetof(fisObject, clampInputs), 0,
+      "If True, input values will be clamped to be in the defined range. If False, a ValueError is raised instead." },
+    { NULL }
+};
+
+
 
 static PyTypeObject fisType = {
 	PyObject_HEAD_INIT(NULL)
@@ -307,7 +381,7 @@ static PyTypeObject fisType = {
 	0,                         /* tp_iter */
 	0,                         /* tp_iternext */
 	fisObject_Methods,         /* tp_methods */
-	0,                         /* tp_members */
+	fisObject_Members,         /* tp_members */
 	0,                         /* tp_getset */
 	0,                         /* tp_base */
 	0,                         /* tp_dict */
