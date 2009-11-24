@@ -31,7 +31,7 @@ __thread int last_exception;
 		longjmp( jumperstack[jumperidx], errcode ); \
 	}
 
-#define XASSERT( retval ) if( retval == -1 ){ \
+#define XASSERT( boolval ) if( !(boolval) ){ \
 		XRAISE( errno ); \
 	}
 
