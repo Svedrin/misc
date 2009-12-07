@@ -7,6 +7,10 @@
  *  <svedrin> aber die dunkle seite der macht hat einfach was, das muss man echt mal sagen -.-
  */
 
+#ifndef _EXCEPTIONS_H_
+#define _EXCEPTIONS_H_
+
+#include <stdlib.h>
 #include <setjmp.h>
 #include <errno.h>
 #include <signal.h>
@@ -74,3 +78,5 @@ void Xraise_sigint( int sig ){
 	XCATCHSIGINT
 	XRAISE( EX_SIGINT );
 }
+
+#endif
