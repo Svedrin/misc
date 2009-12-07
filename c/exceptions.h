@@ -53,7 +53,8 @@ __thread int last_exception;
 		case errcode :
 
 #define XFINALLY break; \
-		case EX_FINALLY :
+		case EX_FINALLY : \
+			jumperidx--;
 
 #define XEND break; \
 	} \
@@ -62,14 +63,12 @@ __thread int last_exception;
 		XRAISE( EX_FINALLY );\
 	}\
 	else if( finally_called != EX_FINALLY ){ \
-		jumperidx--; \
 		last_exception = finally_called; \
 		finally_called = 0;\
 		XRAISE( last_exception ); \
 	} \
 	else{ \
 		finally_called = 0;\
-		jumperidx--; \
 	}
 
 #define XCATCHSIGINT signal(SIGINT, Xraise_sigint);
