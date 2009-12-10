@@ -6,6 +6,9 @@
 #define EpicFailException 3
 
 int main( int argc, char *argv[] ){
+	if( argc > 4 )
+		XRAISE( EpicFailException );
+	
 	XTRY{
 		printf( "Ich bin so klug!\n" );
 		
@@ -34,5 +37,4 @@ int main( int argc, char *argv[] ){
 		printf( "Na endlich außen\n" );
 	}
 	XEND
-	
 }
