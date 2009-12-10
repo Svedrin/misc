@@ -37,4 +37,6 @@ int main( int argc, char *argv[] ){
 		printf( "Na endlich außen\n" );
 	}
 	XEND
+	
+	return 0;
 }

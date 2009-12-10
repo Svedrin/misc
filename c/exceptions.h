@@ -46,7 +46,7 @@ __thread char    ex_exception_string[ERRSTRLEN];
 			memcpy( &ex_exception_string, message, ERRSTRLEN ); \
 			} \
 		if( ex_jumperidx == -1 ){ \
-			fprintf( stderr, "Uncaught exception %s\n", &ex_exception_string );\
+			fprintf( stderr, "Uncaught exception %s\n", (char *)&ex_exception_string );\
 			exit(1);\
 		} \
 		else{ \
