@@ -79,6 +79,9 @@ __thread char    ex_exception_string[ERRSTRLEN];
 				ex_finally_state = ex_orig_exception; \
 				XRAISE( EX_FINALLY ); \
 			} \
+			else{ \
+				ex_jumperidx--; \
+			} \
 			break; \
 		case 0:
 
