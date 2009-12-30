@@ -7,6 +7,8 @@
  *  <philipp> dass diese funktionen sowas wie schwarze magie sind? ;)
  *  <svedrin> ja schon
  *  <svedrin> aber die dunkle seite der macht hat einfach was, das muss man echt mal sagen -.-
+ *
+ *  For inspiration, see: http://www.on-time.com/ddj0011.htm
  */
 
 #ifndef _EXCEPTIONS_H_
@@ -34,6 +36,8 @@ __thread int     ex_jumperidx        = -1;
 __thread int     ex_finally_state    =  0;
 __thread int     ex_orig_exception   =  0;
 __thread char    ex_exception_string[ERRSTRLEN];
+
+void Xraise_sigint( int sig );
 
 /**
  *  XRAISE, XRAISESTR: Raise an exception.
