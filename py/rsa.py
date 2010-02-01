@@ -21,14 +21,13 @@ keypairs = []
 for e in range( 1, (phi_n + 1), 2 ):
 	d = (phi_n + 1.0)/e
 	if d == int(d):
-		keypairs.append( ( e, int(d) ) )
-
-
-for pair in keypairs:
-	janein = raw_input( "e = %d, d = %d -- dieses Schlüsselpaar benutzen? [jN] " % pair )
-	if janein == 'j':
-		pubkey, privkey = pair
-		break
+		d = int(d)
+		
+		janein = raw_input( "e = %d, d = %d -- dieses Schlüsselpaar benutzen? [jN] " % ( e, d ) )
+		
+		if janein == 'j':
+			pubkey, privkey = e, d
+			break
 
 print
 print "Öffentlicher Schlüssel = (%d,%d)" % ( pubkey,  n )
@@ -36,7 +35,7 @@ print "Geheimer Schlüssel     = (%d,%d)" % ( privkey, n )
 print
 
 while(True):
-	msg = raw_input( "Nachricht:   " )
+	msg = raw_input( "Nachricht:     " )
 	if not msg:
 		break
 	
