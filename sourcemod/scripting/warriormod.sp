@@ -838,8 +838,14 @@ public Handle_VoteWarmupEnd( Handle:menu, MenuAction:action, param1, param2 ){
 		}
 	}
 
-public Handle_Panel( Handle:menu, MenuAction:action, param1, param2 ){
-	// This handles the panel, if the user fired it. Nothing to do here, just added to satisfy the compiler :/
+public Handle_Panel( Handle:menu, MenuAction:action, client, selIdx ){
+	// Fire slot1-5 if the according keys have been pressed
+	if( action == MenuAction_Select && selIdx < 10 ){
+		ClientCommand( client, "slot%d", selIdx );
+		}
+	else if( action == MenuAction_End ){
+		CloseHandle(menu);
+		}
 	}
 
 public Handle_VoteKnifeRound( Handle:menu, MenuAction:action, param1, param2 ){
@@ -878,7 +884,7 @@ void:ShowStatusPanelClient( theClient ){
 		Format( roundnr, sizeof(roundnr), "%T", "round x of y", theClient, rounds_played, rounds2play );
 		DrawPanelText( panel, roundnr );
 		// Panel only reacts to key 0
-		SetPanelKeys( panel, (1<<9) );
+		SetPanelKeys( panel, (1<<0)|(1<<1)|(1<<2)|(1<<3)|(1<<4)|(1<<9) );
 		SendPanelToClient( panel, theClient, Handle_Panel, mp_freezetime );
 		CloseHandle( panel );
 		}
@@ -888,7 +894,7 @@ void:ShowStatusPanelClient( theClient ){
 		DrawPanelItem( panel, "", ITEMDRAW_SPACER );
 		DrawPanelText( panel, "Drop or lose" );
 		// Panel only reacts to key 0
-		SetPanelKeys( panel, (1<<9) );
+		SetPanelKeys( panel, (1<<0)|(1<<1)|(1<<2)|(1<<3)|(1<<4)|(1<<9) );
 		SendPanelToClient( panel, theClient, Handle_Panel, mp_freezetime );
 		CloseHandle( panel );
 		}
@@ -996,7 +1002,7 @@ void:ShowStatusPanelClient( theClient ){
 			}
 		
 		// Panel only reacts to key 0
-		SetPanelKeys( panel, (1<<9) );
+		SetPanelKeys( panel, (1<<0)|(1<<1)|(1<<2)|(1<<3)|(1<<4)|(1<<9) );
 		
 		SendPanelToClient( panel, theClient, Handle_Panel, mp_freezetime );
 	 
@@ -1008,7 +1014,7 @@ void:ShowStatusPanelClient( theClient ){
 		DrawPanelItem( panel, "", ITEMDRAW_SPACER );
 		DrawPanelText( panel, "Go shoot 'em up!" );
 		// Panel only reacts to key 0
-		SetPanelKeys( panel, (1<<9) );
+		SetPanelKeys( panel, (1<<0)|(1<<1)|(1<<2)|(1<<3)|(1<<4)|(1<<9) );
 		SendPanelToClient( panel, theClient, Handle_Panel, mp_freezetime );
 		CloseHandle( panel );
 		}
@@ -1025,7 +1031,7 @@ void:ShowRestartsPanel(){
 			new Handle:panel = CreatePanel();
 			SetPanelTitle( panel, "Restarting" );
 			DrawPanelItem( panel, "", ITEMDRAW_SPACER );
-			SetPanelKeys( panel, (1<<9) );
+			SetPanelKeys( panel, (1<<0)|(1<<1)|(1<<2)|(1<<3)|(1<<4)|(1<<9) );
 			
 			DrawPanelText( panel, "Get ready for" );
 			switch( war_mode ){
