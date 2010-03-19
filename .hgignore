@@ -3,3 +3,5 @@ syntax: glob
 *~
 c
 *.pyc
+sctp/bin
+
