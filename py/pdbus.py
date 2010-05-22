@@ -55,6 +55,13 @@ elif busmethod is None:
 			print "\t\t%s" % method.getAttribute( 'name' );
 			for arg in method.getElementsByTagName( 'arg' ):
 				print "\t\t\t%s:%s - %s" % ( arg.getAttribute( 'type' ), arg.getAttribute( 'name' ), arg.getAttribute( 'direction' ) );
+		signodes = iface.getElementsByTagName( 'signal' )
+		if signodes:
+			print "\t    Signals:"
+			for signal in signodes:
+				print "\t\t%s" % signal.getAttribute( 'name' );
+				for arg in signal.getElementsByTagName( 'arg' ):
+					print "\t\t\t%s:%s - %s" % ( arg.getAttribute( 'type' ), arg.getAttribute( 'name' ), arg.getAttribute( 'direction' ) );
 	
 	print "Nodes:"
 	for node  in xml.getElementsByTagName( 'node' ):
