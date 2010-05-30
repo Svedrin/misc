@@ -8,6 +8,8 @@ from xml.dom.minidom import parseString
 import dbus.mainloop.glib
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
+import simplejson
+
 bus       = dbus.SystemBus()
 busname   = None
 buspath   = None
@@ -142,38 +144,12 @@ else:
 		realobj = dbus.Interface( bus.get_object( busname, buspath ), ifc.getAttribute( 'name' ) )
 		resp    = getattr( realobj, busmethod )(*cmdargs)
 		
-		# Process response according to introspecshun
-		xmlresp = [ ( arg.getAttribute('name'), arg.getAttribute('type') )
-			for arg in meth.getElementsByTagName( 'arg' )
-			if arg.getAttribute( 'direction' ) == 'out'
-			]
-		
-		if len(xmlresp) == 1:
-			# XmlResp[0] = Format specification, resp: the returned value (note: resp is NOT a list!)
-			if isinstance( resp, list ):
-				print "%s (List: %s)\n{" % xmlresp[0]
-				for line in resp:
-					if isinstance( line, dbus.Struct ):
-						print "\t{"
-						for field in line:
-							print "\t\t%s" % field
-						print "\t}"
-					else:
-						print "\t%s" % line
-				print "}"
-			else:
-				print "%s:%s = %s" % ( xmlresp[0][1], xmlresp[0][0], resp )
-		else:
-			for field in xmlresp:
-				print "%s:%s = %s" % ( field[1], field[0], resp[ xmlresp.index(field) ] )
+		print simplejson.dumps(resp, indent=4)
 	
 	elif sig:
-		import pprint
-		pp = pprint.PrettyPrinter(indent=4)
-		
 		def signal_handler( *args ):
-			print "Received signal! Args:"
-			pp.pprint(args)
+			print "Received signal '%s'! Args:" % busmethod
+			print simplejson.dumps(args, indent=4)
 		
 		realobj = dbus.Interface( bus.get_object( busname, buspath ), ifc.getAttribute( 'name' ) )
 		realobj.connect_to_signal( busmethod, signal_handler )
