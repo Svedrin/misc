@@ -573,11 +573,12 @@ public Event_PlayerActivate(Handle:event, const String:name[], bool:dontBroadcas
 		
 		if( strcmp( automode, "knife" ) == 0 || strcmp( automode, "live" ) == 0 ){
 			new autoplayers = GetConVarInt( cvar_autostart_pl ),
-			    players_t   = GetTeamClientCount( TEAMINDEX_T  ),
-			    players_ct  = GetTeamClientCount( TEAMINDEX_CT );
+			    count_t     = GetTeamClientCount( TEAMINDEX_T  ),
+			    count_ct    = GetTeamClientCount( TEAMINDEX_CT );
 			
-			if( ( players_t + players_ct ) >= autoplayers ){
-				new inter = GetConVarInt( cvar_autostart_tm );
+			if( ( count_t + count_ct ) >= autoplayers ){
+				new Float:inter = GetConVarFloat( cvar_autostart_tm );
+				PrintToChatAll( "%T", "autostart in x seconds", LANG_SERVER, inter );
 				CreateTimer( inter, Timer_Autostart );
 				}
 			}
@@ -1227,10 +1228,10 @@ public Action:Timer_Autostart( Handle:timer ){
 		GetConVarString( cvar_autostart, automode, sizeof(automode) );
 		
 		new autoplayers = GetConVarInt( cvar_autostart_pl ),
-		    players_t   = GetTeamClientCount( TEAMINDEX_T  ),
-		    players_ct  = GetTeamClientCount( TEAMINDEX_CT );
+		    count_t     = GetTeamClientCount( TEAMINDEX_T  ),
+		    count_ct    = GetTeamClientCount( TEAMINDEX_CT );
 		
-		if( ( players_t + players_ct ) >= autoplayers ){
+		if( ( count_t + count_ct ) >= autoplayers ){
 			if( strcmp( automode, "knife" ) == 0 ){
 				Command_Knife( 0, 0 );
 				}

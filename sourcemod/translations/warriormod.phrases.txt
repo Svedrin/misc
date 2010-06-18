@@ -63,6 +63,13 @@
 		"ru"	"Начать игровой раунд"
 	}
 	
+	"autostart in x seconds"
+	{
+		"#format"	"{1:f}"
+		"en"	"A war will automatically start in {1} seconds."
+		"de"	"Ein War wird in {1} Sekunden automatisch starten."
+	}
+	
 	"reset plugin"
 	{
 		"en"	"Reset plugin"
