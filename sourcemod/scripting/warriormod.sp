@@ -70,6 +70,9 @@ new	Handle:hAdminMenu = INVALID_HANDLE,
 	Handle:cvar_money,
 	Handle:cvar_config_end,
 	Handle:cvar_suddendeath,
+	Handle:cvar_autostart,
+	Handle:cvar_autostart_pl,
+	Handle:cvar_autostart_tm,
 	Handle:theMapMenu = INVALID_HANDLE,
 	Handle:dbase = INVALID_HANDLE,
 	bool:config_done = false,
@@ -119,6 +122,9 @@ public OnPluginStart(){
 	cvar_finish       = CreateConVar( "war_finish",      "1",     "Always finish wars? If 0, war is cancelled after one team has won", FCVAR_NOTIFY );
 	cvar_money        = CreateConVar( "war_showmoney",   "0",     "Show teammate's cash in status panel?", FCVAR_NOTIFY );
 	cvar_suddendeath  = CreateConVar( "war_suddendeath", "1",     "Play Sudden Death on a draw?", FCVAR_NOTIFY );
+	cvar_autostart    = CreateConVar( "war_autostart",   "off",   "Autostart mode: off | live | knife", FCVAR_NOTIFY );
+	cvar_autostart_pl = CreateConVar( "war_autostart_pl","10",    "Player count for autostart", FCVAR_NOTIFY );
+	cvar_autostart_pl = CreateConVar( "war_autostart_tm","20",    "Time to wait with autostart after the last player joins", FCVAR_NOTIFY );
 	
 	cvar_friendlyfire = FindConVar( "mp_friendlyfire" );
 	
@@ -145,6 +151,7 @@ public OnPluginStart(){
 	HookEvent( "player_spawn",	Event_PlayerSpawn	);
 	HookEvent( "weapon_fire",	Event_WeaponFire,	EventHookMode_Post );
 	HookEvent( "player_activate",	Event_PlayerActivate	);
+	// HookEvent( "player_disconnect", Event_PlayerDisconnect	);
 	
 	AutoExecConfig( true, "warriormod" );
 	SetConVarString( cvar_version, WARRIORMOD_VERSION );
@@ -559,6 +566,22 @@ public Event_PlayerActivate(Handle:event, const String:name[], bool:dontBroadcas
 	if( war_mode == MODE_KNIFE || war_mode == MODE_LIVE ){
 		// User may only join Specs
 		ClientCommand( GetClientOfUserId(GetEventInt(event,"userid")), "jointeam %d", TEAMINDEX_SPEC );
+		}
+	else if( war_mode == MODE_NONE ){
+		decl String:automode[10];
+		GetConVarString( cvar_autostart, automode, sizeof(automode) );
+		
+		if( strcmp( automode, "knife" ) == 0 || strcmp( automode, "live" ) == 0 ){
+			new autoplayers = GetConVarInt( cvar_autostart_pl ),
+			    players_t   = GetTeamClientCount( TEAMINDEX_T  ),
+			    players_ct  = GetTeamClientCount( TEAMINDEX_CT );
+			
+			if( ( players_t + players_ct ) >= autoplayers ){
+				new inter = GetConVarInt( cvar_autostart_tm );
+				CreateTimer( inter, Timer_Autostart );
+				}
+			}
+		
 		}
 	}
 
@@ -1198,6 +1221,27 @@ DoWarEndProcessing( winTeamId = -1 ){
  *                                   HELPER FUNCTIONS                                     *
  ******************************************************************************************/
 
+public Action:Timer_Autostart( Handle:timer ){
+	if( war_mode == MODE_NONE ){
+		decl String:automode[10];
+		GetConVarString( cvar_autostart, automode, sizeof(automode) );
+		
+		new autoplayers = GetConVarInt( cvar_autostart_pl ),
+		    players_t   = GetTeamClientCount( TEAMINDEX_T  ),
+		    players_ct  = GetTeamClientCount( TEAMINDEX_CT );
+		
+		if( ( players_t + players_ct ) >= autoplayers ){
+			if( strcmp( automode, "knife" ) == 0 ){
+				Command_Knife( 0, 0 );
+				}
+			else if( strcmp( automode, "live" ) == 0 ){
+				Command_Live( 0, 0 );
+				}
+			}
+		}
+	return Plugin_Stop;
+	}
+
 public Action:Timer_ResetPlugin( Handle:timer ){
 	Command_Reset( 0, 0 );
 	return Plugin_Stop;
@@ -1242,9 +1286,9 @@ bool:WarInit( client = 0 ){
 		PrintToServer( "[WAR] Number of players in teams is not equal." );
 		PrintToServer( "      Repeat command to start anyway." );
 		if( client != 0 ){
-				PrintToChat( client, "[WAR] %T", "number not equal", client );
-				PrintToChat( client, "      %T", "repeat command",  client );
-				}
+			PrintToChat( client, "[WAR] %T", "number not equal", client );
+			PrintToChat( client, "      %T", "repeat command",  client );
+			}
 		teamsizes_uneq_checked = true;
 		return false;
 		}
@@ -1571,3 +1615,5 @@ Mysql_InsertResult(){
 	
 	CloseHandle( dbase_insert );
 	}
+
+// kate: hl c++
