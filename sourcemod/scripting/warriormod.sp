@@ -151,7 +151,7 @@ public OnPluginStart(){
 	HookEvent( "player_spawn",	Event_PlayerSpawn	);
 	HookEvent( "weapon_fire",	Event_WeaponFire,	EventHookMode_Post );
 	HookEvent( "player_activate",	Event_PlayerActivate	);
-	// HookEvent( "player_disconnect", Event_PlayerDisconnect	);
+	HookEvent( "player_disconnect", Event_PlayerDisconnect	);
 	
 	AutoExecConfig( true, "warriormod" );
 	SetConVarString( cvar_version, WARRIORMOD_VERSION );
@@ -584,6 +584,17 @@ public Event_PlayerActivate(Handle:event, const String:name[], bool:dontBroadcas
 				}
 			}
 		
+		}
+	}
+
+public Event_PlayerDisconnect(Handle:event, const String:name[], bool:dontBroadcast){
+	if( war_mode == MODE_LIVE ){
+		new count_t  = GetTeamClientCount( TEAMINDEX_T  ),
+		    count_ct = GetTeamClientCount( TEAMINDEX_CT );
+		// Team sizes are BEFORE the player left
+		if( count_t == 1 || count_ct == 1 ){
+			Command_Reset( 0, 0 );
+			}
 		}
 	}
 
