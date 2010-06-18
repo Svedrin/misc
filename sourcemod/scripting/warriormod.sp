@@ -124,7 +124,7 @@ public OnPluginStart(){
 	cvar_suddendeath  = CreateConVar( "war_suddendeath", "1",     "Play Sudden Death on a draw?", FCVAR_NOTIFY );
 	cvar_autostart    = CreateConVar( "war_autostart",   "off",   "Autostart mode: off | live | knife", FCVAR_NOTIFY );
 	cvar_autostart_pl = CreateConVar( "war_autostart_pl","10",    "Player count for autostart", FCVAR_NOTIFY );
-	cvar_autostart_pl = CreateConVar( "war_autostart_tm","20",    "Time to wait with autostart after the last player joins", FCVAR_NOTIFY );
+	cvar_autostart_tm = CreateConVar( "war_autostart_tm","20",    "Time to wait with autostart after the last player joins", FCVAR_NOTIFY );
 	
 	cvar_friendlyfire = FindConVar( "mp_friendlyfire" );
 	
@@ -576,10 +576,11 @@ public Event_PlayerActivate(Handle:event, const String:name[], bool:dontBroadcas
 			    count_t     = GetTeamClientCount( TEAMINDEX_T  ),
 			    count_ct    = GetTeamClientCount( TEAMINDEX_CT );
 			
-			if( ( count_t + count_ct ) >= autoplayers ){
+			if( ( count_t + count_ct ) >= ( autoplayers - 1 /* player needs time to choose team */ ) ){
 				new Float:inter = GetConVarFloat( cvar_autostart_tm );
-				PrintToChatAll( "%T", "autostart in x seconds", LANG_SERVER, inter );
 				CreateTimer( inter, Timer_Autostart );
+				PrintToServer( "[WAR] Autostart in %f seconds", inter );
+				PrintToChatAll( "\x03%T", "autostart in x seconds", LANG_SERVER, inter );
 				}
 			}
 		
