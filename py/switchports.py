@@ -109,7 +109,12 @@ if len(sys.argv) == 2:
         os.unlink(LOCKFILE)
     for pp in ports:
         if pp['port'] == portno:
-            print pp['link']
+            if pp['link']:
+                print "Port is up at %d MBit/s %s Duplex" % (
+                    pp['speed'], {True: "Full", False: "Half"}[pp['duplex']]
+                    )
+            else:
+                print "Port is down"
             sys.exit( {True: 0, False: 2}[pp['link']] )
 else:
     pcount = 0
