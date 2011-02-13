@@ -69,7 +69,10 @@ class Me42( serial.Serial ):
 
 
 if __name__ == '__main__':
-	me42 = Me42();
+	if len(sys.argv) > 1:
+		me42 = Me42( tty=sys.argv[1] );
+	else:
+		me42 = Me42();
 	
 	def ausgabe( mode, value, unit ):
 		print "%s -- Modus: %s -- %f %s" % ( datetime.datetime.now(), mode, value, unit );
