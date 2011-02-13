@@ -30,7 +30,7 @@ while True:
             s = os.stat(LOCKFILE)
 
         except OSError, e:
-            if e.errno != errno.EEXIST:
+            if e.errno != errno.ENOENT:
                 sys.exit("%s exists but stat() failed: %s" %
                          (LOCKFILE, e.strerror))
             # we didn't create the LOCKFILE, so it did exist, but it's
