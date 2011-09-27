@@ -22,7 +22,11 @@ class LogThread(threading.Thread):
             rdy_read, _, _ = select.select( [self.sock.fileno()], [], [], 0.5 )
             if rdy_read:
                 data, addr = self.sock.recvfrom( 1024 )
-                print data[5:-2]
+                # \r = carriage return, \x1b[K = VT100 delete everything right of the cursor
+                print "\r\x1b[K" + data[5:-2]
+                # re-print whatever the user had entered before we printed the above line
+                sys.stdout.write( readline.get_line_buffer() )
+                sys.stdout.flush()
 
         self.sock.close()
 
