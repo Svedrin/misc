@@ -66,7 +66,6 @@ if __name__ == '__main__':
         while True:
             cmd = raw_input()
             if cmd == "\\q":
-                lt.shutdown = True
                 break
             if cmd:
                 print ds.rcon_command(cmd)
