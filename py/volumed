@@ -1,0 +1,154 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# kate: space-indent on; indent-width 4; replace-tabs on;
+
+""" Volume Daemon for the Nokia N900.
+
+    Monitors the current movement speed via GPS and adapts the
+    music player's volume level accordingly.
+"""
+
+from __future__ import division
+
+import os
+import location
+import mafw
+
+import gobject
+
+from optparse import OptionParser
+
+from dbus.mainloop.glib import DBusGMainLoop
+
+
+class Volumed(object):
+    def __init__(self, pinit, pmin, pmax, vmin, vmax):
+        self.player  = None
+        self.plast   = None
+
+        self.pinit   = pinit
+        self.pmin    = pmin
+        self.pmax    = pmax
+        self.vmin    = vmin
+        self.vmax    = vmax
+
+    def setvol(self, pnext):
+        print "Set volume", pnext
+        if pnext != self.plast:
+            print "Adjusting volume..."
+            #self.player.set_property_uint("volume", pnext)
+            os.system("dbus-send --type=method_call "
+                "--dest=com.nokia.mafw.renderer.Mafw-Gst-Renderer-Plugin.gstrenderer "
+                "/com/nokia/mafw/renderer/gstrenderer "
+                "com.nokia.mafw.extension.set_extension_property "
+                "string:volume variant:uint32:%d" % pnext)
+            self.plast = pnext
+
+    def process(self, vcur):
+        if   vcur <= self.vmin:
+            self.setvol(self.pmin)
+        elif vcur >= self.vmax:
+            self.setvol(self.pmax)
+        else:
+            vfactor = (vcur - self.vmin) / (self.vmax - self.vmin)
+            pfactor = vfactor ** 2
+            pnext   = self.pmin + pfactor * (self.pmax - self.pmin)
+            self.setvol(pnext)
+
+    def on_statechange(self, rnd, state, *args):
+        print "Player state changed", state
+
+    def on_error(self, control, error, data):
+        print "location error: %d... quitting" % error
+        data.quit()
+
+    def on_changed(self, device, data):
+        if not device:
+            return
+        print "Viewing %d satellites, using %d." % (device.satellites_in_view, device.satellites_in_use)
+        if device.fix:
+            if device.fix[1] & location.GPS_DEVICE_SPEED_SET:
+                print "Lightning speed!", device.fix[11]
+                self.process(device.fix[11])
+            else:
+                print "Fix didn't contain speed info :("
+
+            if not self.running:
+                data.stop()
+
+    def on_stop(self, control, data):
+        print "quitting"
+        data.quit()
+
+    def start_location(self, data):
+        data.start()
+        return False
+
+    def run(self):
+        self.running = True
+
+        #registry = mafw.Registry.get_instance()
+        #mafw.mafw_shared_init(registry)
+        #registry.load_plugins()
+        #self.player = registry.get_renderers()[0]
+        #self.player.connect("state-changed", self.on_statechange)
+        #mafw.mafw_log_init("ALL")
+
+        loop    = gobject.MainLoop()
+        control = location.GPSDControl.get_default()
+        device  = location.GPSDevice()
+        control.set_properties(preferred_method   = location.METHOD_USER_SELECTED,
+                               preferred_interval = location.INTERVAL_DEFAULT)
+
+        control.connect( "error-verbose", self.on_error,   loop    )
+        device.connect(  "changed",       self.on_changed, control )
+        control.connect( "gpsd-stopped",  self.on_stop,    loop    )
+
+        gobject.idle_add(self.start_location, control)
+
+        self.setvol(pinit)
+
+        try:
+            print "Running..."
+            loop.run()
+        except KeyboardInterrupt:
+            print "Caught ^c, shutting down..."
+            self.running = False
+            loop.run()
+
+
+
+if __name__ == '__main__':
+    parser = OptionParser()
+
+    parser.add_option( "-v", "--vmin", type="int",
+        help="Minimum speed, everything below this will result in volume pmin.", default=50
+        )
+
+    parser.add_option( "-V", "--vmax", type="int",
+        help="Maximum speed, everything above this will result in volume pmax.", default=130
+        )
+
+    parser.add_option( "-i", "--pinit", type="int",
+        help="Initial power (volume). Defaults to pmin.", default=None
+        )
+
+    parser.add_option( "-p", "--pmin", type="int",
+        help="Minimum power (volume).", default=65
+        )
+
+    parser.add_option( "-P", "--pmax", type="int",
+        help="Maximum power (volume).", default=90
+        )
+
+    options, progargs = parser.parse_args()
+
+    if options.pinit is None:
+        pinit = options.pmin
+    else:
+        pinit = options.pinit
+
+    DBusGMainLoop(set_as_default=True)
+
+    daemon = Volumed(pinit, options.pmin, options.pmax, options.vmin, options.vmax)
+    daemon.run()
