@@ -152,7 +152,7 @@ else:
 			print "Received signal '%s'! Args:" % busmethod
 			print simplejson.dumps(args, indent=4)
 		
-		realobj = dbus.Interface( bus.get_object( busname, buspath ), ifc.getAttribute( 'name' ) )
+		realobj = dbus.Interface( bus.get_object( busname, buspath, follow_name_owner_changes=True ), ifc.getAttribute( 'name' ) )
 		realobj.connect_to_signal( busmethod, signal_handler )
 		
 		print "Starting to listen. Hit ^c to exit."
