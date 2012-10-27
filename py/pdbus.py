@@ -128,7 +128,8 @@ else:
 			'u':	dbus.UInt32,
 			's':	dbus.String,
 			'd':	dbus.Double,
-			'f':	dbus.Double
+			'f':	dbus.Double,
+			'v':	dbus.String,
 			}
 		
 		cmdargs = []
