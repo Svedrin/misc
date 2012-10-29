@@ -1,0 +1,71 @@
+#ifndef _LANG_H_
+#define _LANG_H_
+
+//#define ENGLISH
+#define GERMAN
+
+#ifdef ENGLISH
+#define LANG_TEAMNAMEHASBEENSET		"[WAR] Your team's name has been set to \"%s\".\n"
+#define LANG_TEAMNAMEALREADYSET		"[WAR] %s already set your team's name to \"%s\".\n"
+#define LANG_NOOPPONENTS		"[WAR] You should at least have someone to play with you!\n"
+#define LANG_LIVEAFTER3RR		"say \"[---LIVE GAMING AFTER 3 RESTARTS---]\"; mp_restartgame 1\n"
+#define LANG_KNIFEAFTER3RR		"say \"[---KNIFE ROUND AFTER 3 RESTARTS---]\"; mp_restartgame 1\n"
+#define LANG_RECORDINGDEMO		"tv_record \"%s\"; say \"[---Recording demo: %s---]\"\n"
+#define LANG_DEMONAME			"clanwar-%s_vs_%s-%s"
+#define LANG_WARCANCELLED		"say \"[---%s is leaving, war cancelled---]\"\n"
+#define LANG_PLAYERSLAYEDINKNIFE	"say \"[---%s dies for using %s in KNIFE ROUND---]\"\n"
+#define LANG_ROUNDSCORE			"say \"[---Round %d / %d - Score %s (now %s) %d, %s (now %s) %d---]\"\n"
+#define LANG_LASTROUNDSCORE		"say \"[---LAST ROUND - Score %s (now %s) %d, %s (now %s) %d---]\"\n"
+#define LANG_CTWINSWAR			"say \"[---%s (NOW CT) WINS THE WAR WITH %d:%d---]\"\n"
+#define LANG_TWINSWAR			"say \"[---%s (NOW T) WINS THE WAR WITH %d:%d---]\"\n"
+#define LANG_DRAW			"say \"[---DRAW WITH %d:%d---]\"\n"
+#define LANG_TEAMCHANGE			"say \"[---TEAMCHANGE - Score %s (still T) %d, %s (still CT) %d---]\"\n"
+#define LANG_TEAMCHANGE_NOTCOUNTED	"say \"[---TEAMCHANGE - SCORE NOT COUNTED---]\"\n"
+#define LANG_WONMAJORITY		"say \"[---%s has now won the majority of rounds---]\"\n"
+#define LANG_WINSKNIFE			"say \"[---TEAM %s WINS KNIFE ROUND---]\"; wait; say \"[---%s: STAY OR LEAVE?---]\"\n"
+#define LANG_NAMEYOURTEAM		"say \"[---Name your team by typing war_name <name> into console---]\"\n"
+#define LANG_STFUFAKER			"say \"[---%s tried to fake stay/leave via hacking console! GET HIM!!!---]\"\n"
+#define LANG_MENUBODY_NRDY		"Ready?\n->1. Ready, go!\n->0. Not ready, w8!\n-> \nTs are %sready\nCTs are %sready\n-> \nSettings:\n-> MR%d\n-> FTB: %s\n-> Pausable: %s\n-> Recording a demo: %s\n-> Password: %s\n-> %s when rdy\n\n"
+#define LANG_MENUBODY_RDY		"\n-> \n-> \n-> \n-> \nTs are %sready\nCTs are %sready\n-> \nSettings:\n-> MR%d\n-> FTB: %s\n-> Pausable: %s\n-> Recording a demo: %s\n-> Password: %s\n-> %s when rdy\n\n"
+#define LANG_YES			"YES"
+#define LANG_NO				"NO"
+#define LANG_ON				"ON"
+#define LANG_OFF			"OFF"
+#define LANG_NOT			"not "
+#define LANG_UNCHANGED			"unchanged"
+#define LANG_NOTEAMCHANGEALLOWED	"[WAR] Teamchange is not allowed right now!\n"
+#endif
+
+#ifdef GERMAN
+#define LANG_TEAMNAMEHASBEENSET		"[WAR] Der Name deines Teams wurde auf \"%s\" gesetzt.\n"
+#define LANG_TEAMNAMEALREADYSET		"[WAR] %s hat den Teamname bereits auf \"%s\" gesetzt.\n"
+#define LANG_NOOPPONENTS		"[WAR] ...und wo sind eure Gegner?\n"
+#define LANG_LIVEAFTER3RR		"say \"[---LIVE GAMING NACH 3 RESTARTS---]\"; mp_restartgame 1\n"
+#define LANG_KNIFEAFTER3RR		"say \"[---KNIFE ROUND NACH 3 RESTARTS---]\"; mp_restartgame 1\n"
+#define LANG_RECORDINGDEMO		"tv_record \"%s\"; say \"[---Zeichne Demo auf: %s---]\"\n"
+#define LANG_DEMONAME			"clanwar_%s_vs_%s_%s_%d"
+#define LANG_WARCANCELLED		"say \"[---%s verlaesst uns, War abgebrochen---]\"\n"
+#define LANG_PLAYERSLAYEDINKNIFE	"say \"[---%s stirbt weil er eine %s in der MESSERRUNDE benutzt---]\"\n"
+#define LANG_ROUNDSCORE			"say \"[---Runde %d / %d - Score %s (jetzt %s) %d, %s (jetzt %s) %d---]\"\n"
+#define LANG_LASTROUNDSCORE		"say \"[---LETZTE RUNDE - Score %s (jetzt %s) %d, %s (jetzt %s) %d---]\"\n"
+#define LANG_CTWINSWAR			"say \"[---%s (jetzt CT) GEWINNT DEN WAR MIT %d:%d---]\"\n"
+#define LANG_TWINSWAR			"say \"[---%s (jetzt T) GEWINNT DEN WAR MIT %d:%d---]\"\n"
+#define LANG_DRAW			"say \"[---GLEICHSTAND MIT %d:%d---]\"\n"
+#define LANG_TEAMCHANGE			"say \"[---TEAMWECHSEL - Score %s (noch T) %d, %s (noch CT) %d---]\"\n"
+#define LANG_TEAMCHANGE_NOTCOUNTED	"say \"[---TEAMWECHSEL - SCORE ZAEHLT NICHT---]\"\n"
+#define LANG_WONMAJORITY		"say \"[---%s hat jetzt die meisten Runden gewonnen---]\"\n"
+#define LANG_WINSKNIFE			"say \"[---TEAM %s GEWINNT DIE MESSERRUNDE---]\"; wait; say \"[---%s: STAY ODER LEAVE?---]\"\n"
+#define LANG_NAMEYOURTEAM		"say \"[---Gib deinem Team einen Namen - schreib war_name <name> in die KONSOLE---]\"\n"
+#define LANG_STFUFAKER			"say \"[---%s versucht per Konsole das Ergebnis zu faelschen! SCHLAGT IHN!!!---]\"\n"
+#define LANG_MENUBODY_NRDY		"Bereit?\n->1. Los geht's!\n->0. Noch nicht!\n-> \nTs sind %sbereit\nCTs sind %sbereit\n-> \nSettings:\n-> MR%d\n-> FTB: %s\n-> Pausable: %s\n-> Zeichne Demo auf: %s\n-> Password: %s\n-> %s wenn rdy\n\n"
+#define LANG_MENUBODY_RDY		"-> \n-> \n-> \n-> \nTs sind %sbereit\nCTs sind %sbereit\n-> \nSettings:\n-> MR%d\n-> FTB: %s\n-> Pausable: %s\n-> Zeichne Demo auf: %s\n-> Password: %s\n-> %s wenn rdy\n\n"
+#define LANG_YES			"JA"
+#define LANG_NO				"NEIN"
+#define LANG_ON				"AN"
+#define LANG_OFF			"AUS"
+#define LANG_NOT			"nicht "
+#define LANG_UNCHANGED			"nicht geaendert"
+#define LANG_NOTEAMCHANGEALLOWED	"[WAR] Teamchange ist jetzt nicht erlaubt!\n"
+#endif
+
+#endif // _LANG_H_
