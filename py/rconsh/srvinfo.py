@@ -8,6 +8,7 @@ import socket
 import struct
 import bz2
 import operator
+import datetime
 
 from time import time
 from optparse import OptionParser
@@ -321,7 +322,7 @@ def main():
         table.align["Score"] = "r"
         table.align["Online since"] = "l"
         for player in ds.players:
-            table.add_row([ player["name"], player["score"], player["duration"] ])
+            table.add_row([ player["name"], player["score"], datetime.datetime.now() - datetime.timedelta(seconds=player["duration"]) ])
         print table.get_string(sortby="Score")
 
     if options.rules or options.getrule:
