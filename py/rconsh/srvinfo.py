@@ -6,12 +6,12 @@
 import sys
 import socket
 import struct
-import json
 import bz2
 import operator
 
 from time import time
 from optparse import OptionParser
+from prettytable import PrettyTable
 
 def get_struct(fmt, inp):
     # unpack a single value according to <fmt from the input data.
@@ -302,14 +302,30 @@ def main():
 
     ds = SRCDS(progargs[0], options.port)
 
-    print json.dumps(ds.info, indent=4)
+    table = PrettyTable(["Field", "Value"])
+    table.align["Field"] = "l"
+    table.align["Value"] = "l"
+    for item in ds.info.items():
+        table.add_row(item)
+    print table.get_string(sortby="Field")
 
     if options.players:
-        print json.dumps(ds.players, indent=4)
+        table = PrettyTable(["Name", "Score", "Online since"])
+        table.align["Name"] = "l"
+        table.align["Score"] = "r"
+        table.align["Online since"] = "l"
+        for player in ds.players:
+            table.add_row([ player["name"], player["score"], player["duration"] ])
+        print table.get_string(sortby="Score")
 
     if options.rules or options.getrule:
         if options.getrule is None:
-            print json.dumps(ds.rules, indent=4)
+            table = PrettyTable(["CVar", "Value"])
+            table.align["CVar"] = "l"
+            table.align["Value"] = "l"
+            for item in ds.rules.items():
+                table.add_row(item)
+            print table.get_string(sortby="CVar")
         else:
             print "%s = %s" % (options.getrule, ds.rules[options.getrule])
 
