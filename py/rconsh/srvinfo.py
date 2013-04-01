@@ -177,7 +177,7 @@ def recvresponse(sock):
             return inforsp
         elif magic == -2:   # packet *is* chunked and maybe compressed
             (pkid, total, number, size), chunk = unpack("iBBh", rest)
-            compressed = pkid & (1<<32)
+            compressed = pkid & (1<<31)
             if number == 0 and compressed:
                 # the first packet contains extra stuff if compressed, read it out
                 (size, checksum), chunk = unpack("ii", chunk)
