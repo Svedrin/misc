@@ -323,7 +323,7 @@ def main():
         table.align["Online since"] = "l"
         for player in ds.players:
             table.add_row([ player["name"], player["score"], datetime.datetime.now() - datetime.timedelta(seconds=player["duration"]) ])
-        print table.get_string(sortby="Score")
+        print table.get_string(sortby="Score", reversesort=True)
 
     if options.rules or options.getrule:
         if options.getrule is None:
