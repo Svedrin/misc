@@ -28,7 +28,7 @@ def get_zstring(inp):
         if char == '\0':
             break
         ret += char
-    return ret, inp
+    return unicode(ret, "utf-8"), inp
 
 def unpack(fmt, inp):
     # unpack one or more values according to fmt from the input data.
