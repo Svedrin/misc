@@ -295,6 +295,11 @@ def main():
         default=None
         )
 
+    parser.add_option( "-i", "--noinfo",
+        help="Don't show server info (only makes sense in conjunction with -P, -g or -r).",
+        default=False, action="store_true"
+        )
+
     options, progargs = parser.parse_args()
 
     if len(progargs) != 1:
@@ -302,12 +307,13 @@ def main():
 
     ds = SRCDS(progargs[0], options.port)
 
-    table = PrettyTable(["Field", "Value"])
-    table.align["Field"] = "l"
-    table.align["Value"] = "l"
-    for item in ds.info.items():
-        table.add_row(item)
-    print table.get_string(sortby="Field")
+    if not options.noinfo:
+        table = PrettyTable(["Field", "Value"])
+        table.align["Field"] = "l"
+        table.align["Value"] = "l"
+        for item in ds.info.items():
+            table.add_row(item)
+        print table.get_string(sortby="Field")
 
     if options.players:
         table = PrettyTable(["Name", "Score", "Online since"])
