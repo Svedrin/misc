@@ -17,9 +17,9 @@ class NetstatsSensor(AbstractSensor):
             if dev["SUBSYSTEM"] == "net"
         ]
 
-    def check(self, iface):
+    def check(self, uuid, iface):
         # Read the state file (if possible).
-        storetime, storedata = self._load_store()
+        storetime, storedata = self._load_store(uuid)
 
         ctx = Context()
         dev = Device.from_name(ctx, "net", iface)
@@ -43,7 +43,7 @@ class NetstatsSensor(AbstractSensor):
         else:
             diff = None
 
-        self._save_store({
+        self._save_store(uuid, {
             "state": currstate
         })
 

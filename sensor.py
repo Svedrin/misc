@@ -26,8 +26,8 @@ class AbstractSensor(object):
         out, err = proc.communicate()
         return proc.returncode, out, err
 
-    def _load_store(self):
-        fpath = os.path.join(self.conf["environ"]["datadir"], "%s.store.json" % self.conf["uuid"])
+    def _load_store(self, uuid):
+        fpath = os.path.join(self.conf.environ["datadir"], "%s.store.json" % uuid)
         if not os.path.exists(fpath):
             return None, None
         mtime = os.path.getmtime(fpath)
@@ -37,8 +37,8 @@ class AbstractSensor(object):
         finally:
             fd.close()
 
-    def _save_store(self, data):
-        fpath = os.path.join(self.conf["environ"]["datadir"], "%s.store.json" % self.conf["uuid"])
+    def _save_store(self, uuid, data):
+        fpath = os.path.join(self.conf.environ["datadir"], "%s.store.json" % uuid)
         fd = open(fpath + ".new", "wb")
         try:
             json.dump(data, fd, indent=2)

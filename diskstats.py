@@ -26,12 +26,12 @@ class DiskstatsSensor(AbstractSensor):
                 not dev["DEVNAME"].startswith("/dev/loop"))
         ]
 
-    def check(self, disk):
+    def check(self, uuid, disk):
         # Resolve the real device path, dereferencing symlinks as necessary.
         disk = os.path.realpath(disk).replace("/dev/", "")
 
         # Read the state file (if possible).
-        storetime, storedata = self._load_store()
+        storetime, storedata = self._load_store(uuid)
         havestate = (storedata is not None)
 
         ctx = Context()
@@ -84,7 +84,7 @@ class DiskstatsSensor(AbstractSensor):
         else:
             diff = None
 
-        self._save_store({
+        self._save_store(uuid, {
             "device": {
                 "initialized": createstamp,
                 "uuid":        dev.get("DM_UUID", None),
