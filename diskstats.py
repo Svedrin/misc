@@ -37,6 +37,7 @@ class DiskstatsSensor(AbstractSensor):
         ctx = Context()
         dev = Device.from_name(ctx, "block", disk)
 
+        # <http://www.mjmwired.net/kernel/Documentation/block/stat.txt>
         currstate = ValueDict(zip((
             "rd_ios", "rd_merges", "rd_sectors", "rd_ticks",
             "wr_ios", "wr_merges", "wr_sectors", "wr_ticks",
@@ -73,6 +74,13 @@ class DiskstatsSensor(AbstractSensor):
             del diff["timestamp"]
             # ios_in_prog is the only value which is not a counter
             diff["ios_in_prog"] = currstate["ios_in_prog"]
+            # scale the ticks to seconds so RRDtool will use the correct scale factors
+            diff = diff.scale({
+                "rd_ticks":  1000 ** -1,
+                "wr_ticks":  1000 ** -1,
+                "rq_ticks":  1000 ** -1,
+                "tot_ticks": 1000 ** -1,
+            })
         else:
             diff = None
 
