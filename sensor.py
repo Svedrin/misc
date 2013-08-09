@@ -12,7 +12,7 @@ class SensorMeta(type):
     def __init__( cls, name, bases, attrs ):
         type.__init__( cls, name, bases, attrs )
         if name.endswith("Sensor") and not name.startswith("Abstract"):
-            sensortype = name.replace("Sensor", "")
+            sensortype = name.replace("Sensor", "").lower()
             SensorMeta.sensortypes[sensortype] = cls
 
 class AbstractSensor(object):
