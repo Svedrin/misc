@@ -24,6 +24,11 @@ class NetstatsSensor(AbstractSensor):
         ctx = Context()
         dev = Device.from_name(ctx, "net", iface)
 
+        try:
+            speed = int(dev.attributes["speed"]) * 125000
+        except (KeyError, ValueError):
+            speed = None
+
         statfields = os.listdir(dev.sys_path + "/statistics")
 
         currstate = ValueDict(zip(statfields, [
@@ -42,4 +47,7 @@ class NetstatsSensor(AbstractSensor):
             "state": currstate
         })
 
-        return diff
+        return diff, {
+            "rx_bytes": speed,
+            "tx_bytes": speed
+        }

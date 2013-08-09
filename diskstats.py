@@ -93,4 +93,4 @@ class DiskstatsSensor(AbstractSensor):
             "state": currstate
         })
 
-        return diff
+        return diff, {}
