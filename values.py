@@ -11,7 +11,7 @@ def wrapdiff(curr, last):
         return curr - last
 
     boundary = None
-    for chkbound in (64,63,32,31,16,15):
+    for chkbound in (64, 63, 32, 31, 16, 15):
         if last > 2**chkbound:
             break
         boundary = chkbound

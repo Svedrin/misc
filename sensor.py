@@ -45,3 +45,9 @@ class AbstractSensor(object):
         finally:
             fd.close()
         os.rename(fpath + ".new", fpath)
+
+    def discover(self):
+        raise NotImplementedError("discover() is abstract")
+
+    def check(self, something):
+        raise NotImplementedError("check() is abstract")

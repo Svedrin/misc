@@ -2,10 +2,7 @@
 # kate: space-indent on; indent-width 4; replace-tabs on;
 
 import os
-import sys
-from time import time, mktime
-from datetime import datetime
-from ConfigParser import ConfigParser
+from time import time
 
 from pyudev import Context, Device
 
@@ -14,7 +11,6 @@ from sensors.values import ValueDict
 
 class NetstatsSensor(AbstractSensor):
     def discover(self):
-        ret = []
         ctx = Context()
         return [ dev["INTERFACE"]
             for dev in ctx.list_devices()

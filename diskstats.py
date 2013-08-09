@@ -2,10 +2,8 @@
 # kate: space-indent on; indent-width 4; replace-tabs on;
 
 import os
-import sys
 from time import time, mktime
 from datetime import datetime
-from ConfigParser import ConfigParser
 
 from pyudev import Context, Device
 
@@ -14,7 +12,6 @@ from sensors.values import ValueDict
 
 class DiskstatsSensor(AbstractSensor):
     def discover(self):
-        ret = []
         ctx = Context()
 
         def _devname(dev):
@@ -24,7 +21,9 @@ class DiskstatsSensor(AbstractSensor):
 
         return [ _devname(dev)
             for dev in ctx.list_devices()
-            if dev["SUBSYSTEM"] == "block" and dev["DEVTYPE"] in ("disk", "partition") and not dev["DEVNAME"].startswith("/dev/loop")
+            if (dev["SUBSYSTEM"] == "block" and
+                dev["DEVTYPE"] in ("disk", "partition") and
+                not dev["DEVNAME"].startswith("/dev/loop"))
         ]
 
     def check(self, disk):
