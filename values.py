@@ -75,3 +75,10 @@ class ValueDict(dict):
         """ abs(self[key]) for key in self. """
         return ValueDict([(key, abs(self[key])) for key in self ])
 
+    def scale(self, other, default=1.0):
+        """ self[key] * other[key] for key in self, but:
+            * does not support other being just a value (use __mul__)
+            * supports the other dictionary not having all our keys by using
+              the default parameter in that case.
+        """
+        return ValueDict([(key, self[key] * other.get(key, default)) for key in self ])
