@@ -53,6 +53,10 @@ class Check(models.Model):
         return models.Model.save(self, *args, **kwargs)
 
     @property
+    def last_update(self):
+        return self.rrd.last_update
+
+    @property
     def config(self):
         return "check %s uuid=%s sensor=%s node=%s target=%s obj=%s\n" % (
             self.uuid, self.uuid, self.sensor.name, self.exec_host.fqdn, self.target_host.fqdn, self.target_obj)

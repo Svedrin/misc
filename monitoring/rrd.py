@@ -2,6 +2,7 @@
 # kate: space-indent on; indent-width 4; replace-tabs on;
 
 import os
+import os.path
 import re
 import subprocess
 import datetime
@@ -73,6 +74,12 @@ class RRD(object):
 
     def get_source_perfdata(self, srcname):
         return self.info["ds"][srcname]["last_ds"]
+
+    @property
+    def last_update(self):
+        if os.path.exists(self.rrdpath):
+            return datetime.datetime.fromtimestamp(os.path.getmtime(self.rrdpath))
+        return None
 
     def update(self, result):
         if result["timestamp"] > self.last_check:

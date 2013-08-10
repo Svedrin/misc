@@ -13,7 +13,7 @@ class SensorAdmin(admin.ModelAdmin):
     list_display = ['name']
 
 class CheckAdmin(admin.ModelAdmin):
-    list_display = ['uuid', 'sensor', 'exec_host', 'target_host', 'target_obj']
+    list_display = ['uuid', 'sensor', 'exec_host', 'target_host', 'target_obj', 'last_update']
 
 admin.site.register( Sensor, SensorAdmin )
 admin.site.register( Check,  CheckAdmin )
