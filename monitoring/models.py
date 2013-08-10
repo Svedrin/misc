@@ -77,4 +77,5 @@ class Check(models.Model):
         return False
 
     def process_result(self, result):
-        self.rrd.update(result)
+        if result["data"] is not None:
+            self.rrd.update(result)
