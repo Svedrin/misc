@@ -10,6 +10,9 @@ class Domain(models.Model):
     ownergroups = models.ManyToManyField(auth.Group)
     subscribers = models.ManyToManyField(auth.User)
 
+    def __unicode__(self):
+        return "%s.%s" % (self.name, unicode(self.parent) if self.parent is not None else '')
+
 class Host(models.Model):
     fqdn        = models.CharField(max_length=255)
     domain      = models.ForeignKey(Domain)
@@ -20,4 +23,4 @@ class Host(models.Model):
         return "node %s\n" % self.fqdn
 
     def __unicode__(self):
-        return "Host %s" % self.fqdn
+        return self.fqdn
