@@ -16,7 +16,7 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
 
     url(r'^conf/(?P<host_fqdn>[\w\.\-]+)$',               'monitoring.views.config'),
-    url(r'^addchecks/?$',                                 'monitoring.views.add_checks'),
-    url(r'^submit/?$',                                    'monitoring.views.process'),
+    url(r'^submit/checks/?$',                             'monitoring.views.add_checks'),
+    url(r'^submit/results/?$',                            'monitoring.views.process'),
     url(r'^render/(?P<uuid>[\w\d-]+)/(?P<ds>[\w_]+).png', 'monitoring.views.render_check'),
 )

@@ -23,6 +23,7 @@ def config(request, host_fqdn):
     conf.extend([chk.config for chk in hh.check_exec_set.all()])
     return HttpResponse(''.join(conf).encode("utf-8"), mimetype="text/plain")
 
+
 @csrf_exempt
 def add_checks(request):
     if not request.user.is_authenticated():
@@ -41,14 +42,14 @@ def add_checks(request):
     for params in data:
         try:
             check = Check.objects.get(uuid=params["uuid"])
-            added = True
+            added = False
         except Check.DoesNotExist:
             exec_host   = Host.objects.get(fqdn=params["node"])
             target_host = Host.objects.get(fqdn=params["target"])
             sensor      = Sensor.objects.get(name=params["sensor"])
-            check = Check(uuid=params["uuid"], exec_host=exec_host, target_host=target_host, target_obj=params["obj"])
+            check = Check(uuid=params["uuid"], sensor=sensor, exec_host=exec_host, target_host=target_host, target_obj=params["obj"])
             check.save()
-            added = False
+            added = True
         results.append({"added": added, "uuid": check.uuid})
 
     return HttpResponse(json.dumps(results, indent=2), mimetype="application/json")

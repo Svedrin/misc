@@ -35,10 +35,12 @@ class FluxAccount(WolfObject):
             fd.close()
             return
 
-        return json.loads( resp.read() )
+        respdata = json.loads( resp.read() )
+        print respdata
+        return respdata
 
     def submit(self, data):
-        return self._request("http://fluxmon.de/submit/", data)
+        return self._request("http://fluxmon.de/submit/results/", data)
 
     def add_checks(self, data):
-        return self._request("http://fluxmon.de/addchecks/", data)
+        return self._request("http://fluxmon.de/submit/checks/", data)
