@@ -24,6 +24,37 @@ def config(request, host_fqdn):
     return HttpResponse(''.join(conf).encode("utf-8"), mimetype="text/plain")
 
 @csrf_exempt
+def add_checks(request):
+    if not request.user.is_authenticated():
+        return HttpResponseForbidden("unauthorized")
+
+    try:
+        data = json.loads( request.raw_post_data )
+    except ValueError, err:
+        return HttpResponseBadRequest(err)
+
+    if not isinstance(data, list):
+        data = [data]
+
+    results = []
+
+    for params in data:
+        try:
+            check = Check.objects.get(uuid=params["uuid"])
+            added = True
+        except Check.DoesNotExist:
+            exec_host   = Host.objects.get(fqdn=params["node"])
+            target_host = Host.objects.get(fqdn=params["target"])
+            sensor      = Sensor.objects.get(name=params["sensor"])
+            check = Check(uuid=params["uuid"], exec_host=exec_host, target_host=target_host, target_obj=params["obj"])
+            check.save()
+            added = False
+        results.append({"added": added, "uuid": check.uuid})
+
+    return HttpResponse(json.dumps(results, indent=2), mimetype="application/json")
+
+
+@csrf_exempt
 def process(request):
     if not request.user.is_authenticated():
         return HttpResponseForbidden("unauthorized")

@@ -12,10 +12,10 @@ from wolfobject import WolfObject
 class FluxAccount(WolfObject):
     objtype = "fluxaccount"
 
-    def submit(self, data):
+    def _request(self, url, data):
         data = json.dumps(data, indent=2)
         print "POST", data
-        purl = urlparse( "http://fluxmon.de/submit/" )
+        purl = urlparse( url )
         conn = {
             "http":  httplib.HTTPConnection,
             "https": httplib.HTTPSConnection
@@ -35,5 +35,10 @@ class FluxAccount(WolfObject):
             fd.close()
             return
 
-        respdata = json.loads( resp.read() )
-        print respdata
+        return json.loads( resp.read() )
+
+    def submit(self, data):
+        return self._request("http://fluxmon.de/submit/", data)
+
+    def add_checks(self, data):
+        return self._request("http://fluxmon.de/addchecks/", data)
