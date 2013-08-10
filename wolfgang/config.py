@@ -182,6 +182,24 @@ class WolfConfig(object):
     def find_objects_by_type(self, objtype):
         return [obj for obj in self.objects.values() if obj.objtype == objtype]
 
+    def find_object_by_params(self, objtype, **kwargs):
+        ret = []
+        for obj in self.objects.values():
+            # check objtype...
+            if objtype is not None and obj.objtype != objtype:
+                continue
+            # check params...
+            parammismatch = False
+            for param in kwargs:
+                if param not in obj.params or obj.params[param] != kwargs[param]:
+                    parammismatch = True
+                    break
+            if parammismatch:
+                continue
+            # if those didn't fail, return obj
+            ret.append(obj)
+        return ret
+
     def parse(self):
         return confparse(self.fpath, self._add_object)
 
