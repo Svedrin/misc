@@ -182,7 +182,7 @@ class WolfConfig(object):
     def find_objects_by_type(self, objtype):
         return [obj for obj in self.objects.values() if obj.objtype == objtype]
 
-    def find_object_by_params(self, objtype, **kwargs):
+    def find_objects_by_params(self, objtype, **kwargs):
         ret = []
         for obj in self.objects.values():
             # check objtype...

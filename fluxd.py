@@ -62,8 +62,8 @@ def main():
                 "target": myhostname,
                 "obj":    target_obj
             }
-            check = wc.find_object_by_params("check", **params)
-            if check is None:
+            checks = wc.find_object_by_params("check", **params)
+            if not checks:
                 print "Found new target:", target_obj
                 check = wc.add_object("check", myhostname + target_obj, (), params)
                 params["uuid"] = check["uuid"]
