@@ -133,7 +133,6 @@ class WolfConfig(object):
         self.fpath   = fpath
         self.objects = {}
         self.objmap  = {}
-        self.cluster = None
         self._lock   = RLock()
         self.event   = Dispatcher()
         self.event["object_added"] = False
@@ -152,18 +151,14 @@ class WolfConfig(object):
         obj = WolfObjectMeta.objtypes[objtype]( self, objname, args, params )
         self.objects[objname] = obj
         self.objmap[obj.params["uuid"]] = obj
-        if objtype == "cluster":
-            self.cluster = obj
         return obj
 
     def add_object(self, objtype, objname, args, params):
         self.lock()
         try:
-            self.cluster.inc_generation()
             obj = self._add_object(objtype, objname, args, params)
             self.write()
             self.event("object_added", obj)
-            self.event("object_param_changed", self.cluster, "generation", self.cluster["generation"])
             return obj
         finally:
             self.unlock()
@@ -171,11 +166,9 @@ class WolfConfig(object):
     def set_object_param(self, uuid, param, value):
         self.lock()
         try:
-            self.cluster.inc_generation()
             self.objmap[uuid][param] = value
             self.write()
             self.event("object_param_changed", self.objmap[uuid], param, value)
-            self.event("object_param_changed", self.cluster, "generation", self.cluster["generation"])
         finally:
             self.unlock()
 
