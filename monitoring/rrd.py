@@ -75,6 +75,9 @@ class RRD(object):
     def get_source_perfdata(self, srcname):
         return self.info["ds"][srcname]["last_ds"]
 
+    def get_source_rrdpath(self, srcname):
+        return self.rrdpath
+
     @property
     def last_update(self):
         if os.path.exists(self.rrdpath):
