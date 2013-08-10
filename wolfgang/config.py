@@ -194,8 +194,7 @@ class WolfConfig(object):
         try:
             print >> fd, "# kate: space-indent on; indent-width 4; replace-tabs on;\n"
             serialize_order = [
-                "cluster", "node", "target", "connection", "notify", "contact", "contactgroup",
-                "checkplugin", "check", "aggregate", "view"
+                "fluxaccount", "node", "target", "sensor", "check"
                 ]
             objs_by_type = {}
             for obj in self.objmap.values():
