@@ -59,7 +59,7 @@ class Check(models.Model):
     @property
     def config(self):
         return "check %s uuid=%s sensor=%s node=%s target=%s obj=%s\n" % (
-            self.uuid, self.uuid, self.sensor.name, self.exec_host.fqdn, self.target_host.fqdn, self.target_obj)
+            self.target_host.fqdn + self.target_obj, self.uuid, self.sensor.name, self.exec_host.fqdn, self.target_host.fqdn, self.target_obj)
 
     @property
     def rrd(self):
