@@ -14,3 +14,10 @@ class Host(models.Model):
     fqdn        = models.CharField(max_length=255)
     domain      = models.ForeignKey(Domain)
     subscribers = models.ManyToManyField(auth.User)
+
+    @property
+    def config(self):
+        return "node %s\n" % self.fqdn
+
+    def __unicode__(self):
+        return "Host %s" % self.fqdn
