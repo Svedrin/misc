@@ -8,23 +8,5 @@
     Thing is, for that to happen, we need to have alerts first.
   </p>
 
-  <h2>Search</h2>
-
-  <div>
-    <form action="{% url monitoring.views.search %}" method="post">
-      {% csrf_token %}
-      {{ searchform.non_field_errors }}
-      <div class="fieldWrapper">
-          {{ searchform.query.errors }}
-          {{ searchform.query }}
-      </div>
-      <center><input type="submit" value="Submit" /></center>
-    </form>
-  </div>
-
-  <script type="text/javascript">
-    setTimeout(function(){
-      document.getElementById('id_query').focus();
-    }, 500);
-  </script>
+  {% include "monitoring/searchform.html" %}
 {% endblock %}
