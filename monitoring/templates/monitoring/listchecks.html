@@ -22,14 +22,14 @@ tbody tr:hover {
   </thead>
   <tbody>
   {% for check in list_checks %}
-    <tr onclick="window.location='/render/{{ check.uuid }}/';">
+    <tr onclick="window.location='{% url monitoring.views.check_details check.uuid %}';">
       <td>
         {{ check.target_host }}
         {% if check.target_host != check.exec_host %}(as seen by {{ check.exec_host }}){% endif %}
       </td>
       <td>{{ check.sensor }}</td>
       <td>{{ check.target_obj }}</td>
-      <td><a href="/render/{{ check.uuid }}/" title="View details" style="text-decoration: none">→</a></td>
+      <td><a href="{% url monitoring.views.check_details check.uuid %}" title="View details" style="text-decoration: none">→</a></td>
     </tr>
   {% endfor %}
   </tbody>
