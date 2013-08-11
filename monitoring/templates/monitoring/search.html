@@ -11,10 +11,15 @@
           {{ searchform.query.errors }}
           {{ searchform.query }}
       </div>
-      <input type="submit" value="Submit" />
+      <center><input type="submit" value="Submit" /></center>
     </form>
   </div>
 
+  <script type="text/javascript">
+    setTimeout(function(){
+      document.getElementById('id_query').focus();
+    }, 500);
+  </script>
   {% if have_query %}
   {% include "monitoring/listchecks.html" %}
   {% endif %}
