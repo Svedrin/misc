@@ -50,10 +50,13 @@ class DiskstatsSensor(AbstractSensor):
         # Sanity-Check the state file. We expect the Device UUID and creation timestamp to
         # match those from the statfile (if possible).
 
-        try:
-            createstamp = int(mktime((datetime.now() - dev.time_since_initialized).timetuple()))
-        except AttributeError:
-            createstamp = None
+        if hasattr(dev, "time_since_initialized") and dev.time_since_initialized:
+            uptime = dev.time_since_initialized
+        else:
+            with open( "/proc/uptime" ) as ut:
+                uptime = timedelta(seconds=int(float(ut.read().split()[0])))
+
+        createstamp = int(mktime((datetime.now() - uptime).timetuple()))
 
         if havestate:
             if "device" not in storedata:

@@ -2,7 +2,8 @@
 # kate: space-indent on; indent-width 4; replace-tabs on;
 
 import os
-from time import time
+from time import time, mktime
+from datetime import datetime, timedelta
 
 from pyudev import Context, Device
 
@@ -20,9 +21,21 @@ class NetstatsSensor(AbstractSensor):
     def check(self, uuid, iface):
         # Read the state file (if possible).
         storetime, storedata = self._load_store(uuid)
+        havestate = (storedata is not None)
 
         ctx = Context()
         dev = Device.from_name(ctx, "net", iface)
+
+        if hasattr(dev, "time_since_initialized") and dev.time_since_initialized:
+            uptime = dev.time_since_initialized
+        else:
+            with open( "/proc/uptime" ) as ut:
+                uptime = timedelta(seconds=int(float(ut.read().split()[0])))
+
+        createstamp = int(mktime((datetime.now() - uptime).timetuple()))
+
+        if havestate and ("device" not in storedata or "initialized" not in storedata["device"] or createstamp != storedata["device"]["initialized"]):
+            havestate = False
 
         try:
             speed = int(dev.attributes["speed"]) * 125000
@@ -36,7 +49,7 @@ class NetstatsSensor(AbstractSensor):
         ]))
         currstate["timestamp"] = time()
 
-        if storedata is not None:
+        if havestate:
             diff = currstate - storedata["state"]
             diff /= diff["timestamp"]
             del diff["timestamp"]
@@ -44,7 +57,10 @@ class NetstatsSensor(AbstractSensor):
             diff = None
 
         self._save_store(uuid, {
-            "state": currstate
+            "state": currstate,
+            "device": {
+                "initialized": createstamp
+            },
         })
 
         return diff, {
