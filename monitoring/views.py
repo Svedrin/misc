@@ -65,6 +65,7 @@ def search(request):
             if host_kwds:
                 hostqry = Host.objects.filter(reduce(operator.or_, host_kwds))
                 results = results.filter(Q(exec_host__in=hostqry) | Q(target_host__in=hostqry))
+            results = results.distinct()
             if results.count() == 1:
                 if len(var_kwds) == 1:
                     try:
