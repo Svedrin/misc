@@ -2,26 +2,71 @@
 # kate: space-indent on; indent-width 4; replace-tabs on;
 
 import json
+import operator
 
 from django.shortcuts               import render_to_response, get_object_or_404, get_list_or_404
 from django.template                import RequestContext
 from django.http                    import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, HttpResponseBadRequest
 from django.views.decorators.csrf   import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from django.db.models               import Q
 
 from hosts.models import Host
 from monitoring.models import Sensor, Check
+from monitoring.forms  import SearchForm
 from monitoring.graphbuilder import Graph
 
-def config(request, host_fqdn):
-    if not request.user.is_authenticated():
-        return HttpResponseForbidden("unauthorized")
 
+@login_required
+def config(request, host_fqdn):
     hh = get_object_or_404(Host, fqdn=(host_fqdn + '.'))
     conf = [request.user.apikey_set.all()[0].config]
     conf.append(hh.config)
     conf.extend([s.config for s in Sensor.objects.all()])
     conf.extend([chk.config for chk in hh.check_exec_set.all()])
     return HttpResponse(''.join(conf).encode("utf-8"), mimetype="text/plain")
+
+
+@login_required
+def profile(request):
+    return render_to_response("profile.html", {
+        'searchform': SearchForm()
+        }, context_instance=RequestContext(request))
+
+
+@login_required
+def search(request):
+    results = None
+
+    if request.method == 'POST':
+        searchform = SearchForm(request.POST)
+        if searchform.is_valid():
+            host_kwds  = []
+            check_kwds = []
+            for keyword in searchform.cleaned_data["query"].split():
+                if Host.objects.filter(fqdn__startswith=keyword):
+                    host_kwds.append(Q(fqdn__startswith=keyword))
+                else:
+                    check_kwds.append(Q(uuid__icontains=keyword))
+                    check_kwds.append(Q(target_obj__icontains=keyword))
+                    check_kwds.append(Q(sensor__name__icontains=keyword))
+            if check_kwds:
+                results = Check.objects.filter(reduce(operator.or_, check_kwds))
+            else:
+                results = Check.objects.all()
+            if host_kwds:
+                hostqry = Host.objects.filter(reduce(operator.or_, host_kwds))
+                results = results.filter(Q(exec_host__in=hostqry) | Q(target_host__in=hostqry))
+            results = results.order_by('target_host__fqdn', 'exec_host__fqdn', 'sensor__name', 'target_obj')
+            #print results.query
+    else:
+        searchform = SearchForm()
+
+    return render_to_response("monitoring/search.html", {
+        'searchform':  searchform,
+        'have_query':  results is not None,
+        'list_checks': results,
+        }, context_instance=RequestContext(request))
 
 
 @csrf_exempt
@@ -102,6 +147,7 @@ def process(request):
     return HttpResponse(json.dumps(results, indent=2), mimetype="application/json")
 
 
+@login_required
 def render_check(request, uuid, ds):
     check = Check.objects.get(uuid=uuid)
 

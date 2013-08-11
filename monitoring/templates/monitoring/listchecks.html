@@ -1,0 +1,39 @@
+{% comment %} kate: space-indent on; indent-width 2; replace-tabs on; {% endcomment %}
+{% if list_checks %}
+<style>
+table {
+  width: 100%;
+}
+tr {
+  width: 100%;
+}
+tbody tr:hover {
+  background-color: #DDEEFF;
+}
+</style>
+<table>
+  <thead>
+    <tr>
+      <th>Host</th>
+      <th>Sensor</th>
+      <th>Object</th>
+      <td> </td>
+    </tr>
+  </thead>
+  <tbody>
+  {% for check in list_checks %}
+    <tr onclick="window.location='/render/{{ check.uuid }}/';">
+      <td>
+        {{ check.target_host }}
+        {% if check.target_host != check.exec_host %}(as seen by {{ check.exec_host }}){% endif %}
+      </td>
+      <td>{{ check.sensor }}</td>
+      <td>{{ check.target_obj }}</td>
+      <td><a href="/render/{{ check.uuid }}/" title="View details" style="text-decoration: none">→</a></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>No checks found.</p>
+{% endif %}

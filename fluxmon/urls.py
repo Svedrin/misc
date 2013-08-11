@@ -5,18 +5,18 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    # Examples:
-    # url(r'^$', 'fluxmon.views.home', name='home'),
-    # url(r'^fluxmon/', include('fluxmon.foo.urls')),
+    url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
+    url(r'^admin/',     include(admin.site.urls)),
+    #url(r'^accounts/',  include('registration.urls') ),
 
-    # Uncomment the admin/doc line below to enable admin documentation:
-    # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
-
-    # Uncomment the next line to enable the admin:
-    url(r'^admin/', include(admin.site.urls)),
-
+    url(r'^accounts/login/$',                             'django.contrib.auth.views.login'),
+    url(r'^accounts/logout/$',                            'django.contrib.auth.views.logout', {'next_page': '/'}),
+    url(r'^accounts/profile/$',                           'monitoring.views.profile'),
+    url(r'^search/$',                                     'monitoring.views.search'),
     url(r'^conf/(?P<host_fqdn>[\w\.\-]+)$',               'monitoring.views.config'),
-    url(r'^submit/checks/?$',                             'monitoring.views.add_checks'),
-    url(r'^submit/results/?$',                            'monitoring.views.process'),
+    url(r'^submit/checks/$',                              'monitoring.views.add_checks'),
+    url(r'^submit/results/$',                             'monitoring.views.process'),
     url(r'^render/(?P<uuid>[\w\d-]+)/(?P<ds>[\w_]+).png', 'monitoring.views.render_check'),
+
+    url(r'^/?$',                                          'django.views.generic.simple.direct_to_template', {'template': 'index.html'}),
 )

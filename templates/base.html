@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Fluxmon</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel='stylesheet'    href='http://fonts.googleapis.com/css?family=PT+Sans' type='text/css'>
+    <style type="text/css">
+      #content {
+        width: 700px;
+        orphans: 2;
+        margin: 30px auto 40px auto;
+        font-family: 'PT Sans', sans-serif;
+        font-size: 14pt;
+      }
+      h1, h2 {
+        color: #003366;
+        border-bottom: 1px solid #003366;
+        page-break-after: avoid;
+      }
+      ul {
+        page-break-before: avoid;
+        padding-left:1.5em;
+      }
+      ul li {
+        list-style-type: circle;
+      }
+      div.fieldWrapper {
+         width: 100%;
+      }
+      div.fieldWrapper input {
+         width: 100%;
+      }
+      @media screen and (max-width:725px) {
+        #content {
+          width: 500px;
+          font-size: 12pt;
+        }
+      }
+      @media screen and (max-width:525px) {
+        #content {
+          width: 310px;
+          font-size: 10pt;
+        }
+        .screenonly {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="content">
+      {% block content %}
+      {% endblock %}
+      <div style="position: fixed; bottom: 20px; font-size: 10pt;">
+        {% if user.is_authenticated %}
+          {{ user }} | <a href="{% url django.contrib.auth.views.logout %}">Logout</a>
+        {% else %}
+          <a href="{% url django.contrib.auth.views.login %}">Login</a>
+        {% endif %}
+      </div>
+    </div>
+  </body>
+</html>
+{% comment %} kate: space-indent on; indent-width 2; replace-tabs on; {% endcomment %}
+

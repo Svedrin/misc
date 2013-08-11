@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% comment %} kate: space-indent on; indent-width 2; replace-tabs on; {% endcomment %}
+{% block content %}
+  <h2>Search</h2>
+
+  <div>
+    <form action="{% url monitoring.views.search %}" method="post">
+      {% csrf_token %}
+      {{ searchform.non_field_errors }}
+      <div class="fieldWrapper">
+          {{ searchform.query.errors }}
+          {{ searchform.query }}
+      </div>
+      <input type="submit" value="Submit" />
+    </form>
+  </div>
+
+  {% if have_query %}
+  {% include "monitoring/listchecks.html" %}
+  {% endif %}
+{% endblock %}

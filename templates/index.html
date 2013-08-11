@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% comment %} kate: space-indent on; indent-width 2; replace-tabs on; {% endcomment %}
+{% block content %}
+  <h1>Fluxmon</h1>
+
+  <p>
+    Fluxmon is an attempt to build a monitoring system that does not require the configuration of thresholds.
+  </p>
+
+  <p>
+    Most monitoring systems these days operate using check plugins that measure a given set of values, compare
+    them to configured thresholds, and return a status code accordingly. This approach is problematic, because
+    everything relies on the configured thresholds to be sensible. Let's face it: Us admins are lazy, and more
+    often than not, they aren't.
+  </p>
+
+  <p>
+    Fluxmon tries to get rid of configured thresholds by using statistical methods to analyze the measured data,
+    see where regularities emerge, and use those for predictions.
+  </p>
+
+  <div>
+    <h2>Some features</h2>
+    <ul>
+      <li>OK/Critical thresholds emerge from measured data instead of being configured</li>
+      <li>Multiple hosts can submit measurements for a single target host</li>
+      <li>Measurements can be correlated</li>
+      <li>Configuration is kept on the measuring nodes and synced automatically</li>
+      <li>Checks are discovered and configured automatically</li>
+    </ul>
+  </div>
+
+  <div>
+    <h2>Some principles</h2>
+    <ul>
+      <li>Sensors deliver measurements <i>only</i>, they never evaluate anything</li>
+      <li>Deduced values are handled by the master</li>
+      <li>Meta data (e.g. existing parameters, their ranges and their units) are stored on the master, they are not reported by the sensor modules</li>
+      <li>Should credentials be necessary for a sensor to operate, they are stored in the measuring node's configuration <i>only</i></li>
+    </ul>
+  </div>
+{% endblock %}

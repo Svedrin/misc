@@ -10,11 +10,14 @@ class Domain(models.Model):
     ownergroups = models.ManyToManyField(auth.Group, blank=True)
     subscribers = models.ManyToManyField(auth.User,  blank=True)
 
+    class Meta:
+        unique_together=( ('name', 'parent'), )
+
     def __unicode__(self):
         return "%s.%s" % (self.name, unicode(self.parent) if self.parent is not None else '')
 
 class Host(models.Model):
-    fqdn        = models.CharField(max_length=255)
+    fqdn        = models.CharField(max_length=255, unique=True)
     domain      = models.ForeignKey(Domain)
     subscribers = models.ManyToManyField(auth.User, blank=True)
 

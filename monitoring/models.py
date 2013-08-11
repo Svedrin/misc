@@ -33,6 +33,9 @@ class SensorVariable(models.Model):
     is_rate     = models.BooleanField("Describes a rate of something per second", default=False)
     scale_by_2  = models.BooleanField("Scale by 1024 (Default: 1000)",            default=False)
 
+    class Meta:
+        unique_together=( ('sensor', 'name'), )
+
     def __unicode__(self):
         return "%s: %s" % (self.sensor.name, self.name)
 
