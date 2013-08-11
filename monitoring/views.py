@@ -10,9 +10,10 @@ from django.http                    import Http404, HttpResponse, HttpResponseRe
 from django.views.decorators.csrf   import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.db.models               import Q
+from django.core.urlresolvers       import reverse
 
 from hosts.models import Host
-from monitoring.models import Sensor, Check
+from monitoring.models import Sensor, SensorVariable, Check
 from monitoring.forms  import SearchForm
 from monitoring.graphbuilder import Graph
 
@@ -43,9 +44,12 @@ def search(request):
         if searchform.is_valid():
             host_kwds  = []
             check_kwds = []
+            var_kwds   = []
             for keyword in searchform.cleaned_data["query"].split():
                 if Host.objects.filter(fqdn__startswith=keyword):
                     host_kwds.append(Q(fqdn__startswith=keyword))
+                elif SensorVariable.objects.filter(name__startswith=keyword):
+                    var_kwds.append(keyword)
                 else:
                     check_kwds.append(Q(uuid__icontains=keyword))
                     check_kwds.append(Q(target_obj__icontains=keyword))
@@ -54,9 +58,22 @@ def search(request):
                 results = Check.objects.filter(reduce(operator.or_, check_kwds))
             else:
                 results = Check.objects.all()
+            if var_kwds:
+                results = results.filter(reduce(operator.or_, [
+                    Q(sensor__sensorvariable__name__startswith=kw) for kw in var_kwds
+                ]))
             if host_kwds:
                 hostqry = Host.objects.filter(reduce(operator.or_, host_kwds))
                 results = results.filter(Q(exec_host__in=hostqry) | Q(target_host__in=hostqry))
+            if results.count() == 1:
+                if len(var_kwds) == 1:
+                    try:
+                        var = results[0].sensor.sensorvariable_set.get(name__startswith=var_kwds[0])
+                    except SensorVariable.DoesNotExist:
+                        pass
+                    else:
+                        return HttpResponseRedirect(reverse(render_check_page, args=(results[0].uuid, var.name)))
+                return HttpResponseRedirect(reverse(check_details, args=(results[0].uuid,)))
             results = results.order_by('target_host__fqdn', 'exec_host__fqdn', 'sensor__name', 'target_obj')
             #print results.query
     else:
