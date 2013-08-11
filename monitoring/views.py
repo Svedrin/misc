@@ -68,12 +68,8 @@ def search(request):
             results = results.distinct()
             if results.count() == 1:
                 if len(var_kwds) == 1:
-                    try:
-                        var = results[0].sensor.sensorvariable_set.get(name__startswith=var_kwds[0])
-                    except SensorVariable.DoesNotExist:
-                        pass
-                    else:
-                        return HttpResponseRedirect(reverse(render_check_page, args=(results[0].uuid, var.name)))
+                    var = results[0].sensor.sensorvariable_set.get(name__startswith=var_kwds[0])
+                    return HttpResponseRedirect(reverse(render_check_page, args=(results[0].uuid, var.name)))
                 return HttpResponseRedirect(reverse(check_details, args=(results[0].uuid,)))
             results = results.order_by('target_host__fqdn', 'exec_host__fqdn', 'sensor__name', 'target_obj')
             #print results.query
