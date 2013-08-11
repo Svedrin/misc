@@ -69,8 +69,9 @@
     <div id="content">
       {% block content %}
       {% endblock %}
-      <div style="font-size: 10pt">
+      <div style="font-size: 10pt; margin-top: 50px">
         {% if user.is_authenticated %}
+          <a href="/">Home</a> &mdash;
           <a href="{% url monitoring.views.profile %}">{{ user }}</a> &mdash;
           <a href="{% url monitoring.views.search %}">Search</a> &mdash;
           <a href="{% url django.contrib.auth.views.logout %}">Logout</a>
