@@ -75,6 +75,13 @@ def check_details(request, uuid):
         'check': get_object_or_404(Check, uuid=uuid)
         }, context_instance=RequestContext(request))
 
+@login_required
+def render_check_page(request, uuid, ds):
+    return render_to_response("monitoring/graph.html", {
+        'check': get_object_or_404(Check, uuid=uuid),
+        'ds':    ds
+        }, context_instance=RequestContext(request))
+
 @csrf_exempt
 def add_checks(request):
     if not request.user.is_authenticated():

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% comment %} kate: space-indent on; indent-width 2; replace-tabs on; {% endcomment %}
+{% block content %}
+<ul>
+  <li><b>Sensor:</b> {{ check.sensor }}</li>
+  <li><b>Executed on host:</b> {{ check.exec_host }}</li>
+  <li><b>Target host:</b> {{ check.target_host }}</li>
+  <li><b>Object:</b> {{ check.target_obj }}</li>
+  <li><b>Last update:</b> {{ check.last_update }}</li>
+</ul>
+<h3>{{ ds }}</h3>
+<div style="width: 100%">
+  <img src="{% url monitoring.views.render_check check.uuid ds %}" alt="graph" style="margin: 0 auto" />
+</div>
+<p><a href="{% url monitoring.views.check_details check.uuid %}" title="back" style="text-decoration: none">←</a></p>
+{% endblock %}

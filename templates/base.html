@@ -53,7 +53,9 @@
       {% endblock %}
       <div style="position: fixed; bottom: 20px; font-size: 10pt;">
         {% if user.is_authenticated %}
-          {{ user }} | <a href="{% url django.contrib.auth.views.logout %}">Logout</a>
+          <a href="{% url monitoring.views.profile %}">{{ user }}</a> &mdash;
+          <a href="{% url monitoring.views.search %}">Search</a> &mdash;
+          <a href="{% url django.contrib.auth.views.logout %}">Logout</a>
         {% else %}
           <a href="{% url django.contrib.auth.views.login %}">Login</a>
         {% endif %}
