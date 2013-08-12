@@ -2,8 +2,7 @@
 # kate: space-indent on; indent-width 4; replace-tabs on;
 
 import json
-import httplib
-import base64
+import requests
 
 from urlparse import urljoin, urlparse
 
@@ -15,27 +14,19 @@ class FluxAccount(WolfObject):
     def _request(self, url, data):
         data = json.dumps(data, indent=2)
         print "POST", data
-        purl = urlparse( url )
-        conn = {
-            "http":  httplib.HTTPConnection,
-            "https": httplib.HTTPSConnection
-            }[purl.scheme.lower()]( purl.netloc )
-        conn.putrequest( "POST", purl.path )
-        conn.putheader( "Content-Type", "application/json" )
-        conn.putheader( "Content-Length", str(len(data)) )
-        auth = base64.encodestring('%s:%s' % (self.name, self["apikey"])).replace('\n', '')
-        conn.putheader( "Authorization", "Basic %s" % auth )
-        conn.endheaders()
-        conn.send(data)
-        resp = conn.getresponse()
 
-        if resp.status != 200:
+        resp = requests.post(url, data=data, auth=(self.name, self["apikey"]), headers={
+            "Content-Type": "application/json",
+            "Content-Length": str(len(data)),
+        })
+
+        if resp.status_code != 200:
             fd = open("/tmp/lasterr", "wb")
-            print >> fd, resp.read()
+            print >> fd, resp.text
             fd.close()
             return
 
-        respdata = json.loads( resp.read() )
+        respdata = json.loads( resp.text )
         print respdata
         return respdata
 
