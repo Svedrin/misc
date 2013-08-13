@@ -27,6 +27,7 @@ class Sensor(models.Model):
 class SensorVariable(models.Model):
     sensor      = models.ForeignKey(Sensor)
     name        = models.CharField(   "Variable name as returned by the sensor",  max_length=255)
+    display     = models.CharField(   "Human-readable name",                      max_length=255, default='', blank=True)
     unit        = models.CharField(   "Unit",                                     max_length=50, blank=True, default='')
     max_const   = models.FloatField(  "Global constant maximum, if available",    null=True, blank=True)
     max_in_rrd  = models.BooleanField("Maximum is measured by the sensor",        default=False)
@@ -46,6 +47,7 @@ class Check(models.Model):
     exec_host   = models.ForeignKey(hosts.Host, verbose_name="The host that executes the check", related_name="check_exec_set")
     target_host = models.ForeignKey(hosts.Host, verbose_name="The host that is being checked",   related_name="check_target_set")
     target_obj  = models.CharField("Target object being checked (e.g. /dev/sda, eth0)", max_length=255, blank=True, default='')
+    display     = models.CharField("Human-readable name", max_length=255, default='', blank=True)
 
     def __unicode__(self):
         return "%s for %s on %s" % (self.sensor.name, self.target_obj, self.target_host.fqdn[:-1])
