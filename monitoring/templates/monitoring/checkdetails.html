@@ -29,7 +29,7 @@ tbody tr:hover {
   <tbody>
   {% for variable in check.sensor.sensorvariable_set.all %}
     <tr onclick="window.location='{% url monitoring.views.render_check_page check.uuid variable.name %}';">
-      <td>{{ variable.name }}</td>
+      <td>{% if variable.display %}{{ variable.display }}{% else %}{{ variable.name }}{% endif %}</td>
       <td><a href="{% url monitoring.views.render_check_page check.uuid variable.name %}" title="View graph" style="text-decoration: none">→</a></td>
     </tr>
   {% endfor %}

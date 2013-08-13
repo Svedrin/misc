@@ -8,11 +8,11 @@
   <li><b>Object:</b> {{ check.target_obj }}</li>
   <li><b>Last update:</b> {{ check.last_update }}</li>
 </ul>
-<h3>{{ ds }}</h3>
+<h3>{% if variable.display %}{{ variable.display }}{% else %}{{ variable.name }}{% endif %}</h3>
 <div style="width: 100%">
-  <img class="widescreenonly"   src="{% url monitoring.views.render_check check.uuid ds %}" alt="graph" style="margin: 0 auto" />
-  <img class="narrowscreenonly" src="{% url monitoring.views.render_check check.uuid ds %}?width=410" alt="graph" style="margin: 0 auto" />
-  <img class="tinyscreenonly"   src="{% url monitoring.views.render_check check.uuid ds %}?width=220" alt="graph" style="margin: 0 auto" />
+  <img class="widescreenonly"   src="{% url monitoring.views.render_check check.uuid variable.name %}" alt="graph" style="margin: 0 auto" />
+  <img class="narrowscreenonly" src="{% url monitoring.views.render_check check.uuid variable.name %}?width=410" alt="graph" style="margin: 0 auto" />
+  <img class="tinyscreenonly"   src="{% url monitoring.views.render_check check.uuid variable.name %}?width=220" alt="graph" style="margin: 0 auto" />
 </div>
 <p><a href="{% url monitoring.views.check_details check.uuid %}" title="back" style="text-decoration: none">←</a></p>
 {% endblock %}

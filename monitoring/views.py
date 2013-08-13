@@ -46,9 +46,9 @@ def search(request):
             check_kwds = []
             var_kwds   = []
             for keyword in searchform.cleaned_data["query"].split():
-                if Host.objects.filter(fqdn__startswith=keyword):
-                    host_kwds.append(Q(fqdn__startswith=keyword))
-                elif SensorVariable.objects.filter(name__startswith=keyword):
+                if Host.objects.filter(fqdn__istartswith=keyword):
+                    host_kwds.append(Q(fqdn__istartswith=keyword))
+                elif SensorVariable.objects.filter(Q(name__istartswith=keyword) | Q(display__istartswith=keyword)):
                     var_kwds.append(keyword)
                 else:
                     check_kwds.append(Q(uuid__icontains=keyword))
@@ -60,7 +60,9 @@ def search(request):
                 results = Check.objects.all()
             if var_kwds:
                 results = results.filter(reduce(operator.or_, [
-                    Q(sensor__sensorvariable__name__startswith=kw) for kw in var_kwds
+                    Q(sensor__sensorvariable__name__istartswith=kw) for kw in var_kwds
+                ] + [
+                    Q(sensor__sensorvariable__display__istartswith=kw) for kw in var_kwds
                 ]))
             if host_kwds:
                 hostqry = Host.objects.filter(reduce(operator.or_, host_kwds))
@@ -68,7 +70,7 @@ def search(request):
             results = results.distinct()
             if results.count() == 1:
                 if len(var_kwds) == 1:
-                    var = results[0].sensor.sensorvariable_set.get(name__startswith=var_kwds[0])
+                    var = results[0].sensor.sensorvariable_set.get(Q(name__istartswith=var_kwds[0]) | Q(sensor__sensorvariable__display__istartswith=var_kwds[0]))
                     return HttpResponseRedirect(reverse(render_check_page, args=(results[0].uuid, var.name)))
                 return HttpResponseRedirect(reverse(check_details, args=(results[0].uuid,)))
             results = results.order_by('target_host__fqdn', 'exec_host__fqdn', 'sensor__name', 'target_obj')
@@ -85,15 +87,20 @@ def search(request):
 
 @login_required
 def check_details(request, uuid):
+    check = get_object_or_404(Check, uuid=uuid)
+    if check.sensor.sensorvariable_set.count() == 1:
+        var = check.sensor.sensorvariable_set.all()[0]
+        return HttpResponseRedirect(reverse(render_check_page, args=(check.uuid, var.name)))
     return render_to_response("monitoring/checkdetails.html", {
-        'check': get_object_or_404(Check, uuid=uuid)
+        'check': check
         }, context_instance=RequestContext(request))
 
 @login_required
 def render_check_page(request, uuid, ds):
+    check = get_object_or_404(Check, uuid=uuid)
     return render_to_response("monitoring/graph.html", {
-        'check': get_object_or_404(Check, uuid=uuid),
-        'ds':    ds
+        'check':    check,
+        'variable': check.sensor.sensorvariable_set.get(name=ds)
         }, context_instance=RequestContext(request))
 
 @csrf_exempt
