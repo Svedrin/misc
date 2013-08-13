@@ -30,11 +30,8 @@ def calc_unit(inp):
                 upper.remove(currunit)
             else:
                 lower.append(currunit)
-        #else:
-            #print "unknown operator", currop
-            #print "upper:", upper
-            #print "lower:", lower
-            #print "unit: ", currunit
+        else:
+            raise ArithmeticError(currop)
 
     def process_units(_inp):
         """ Parse an iterator that yields a unit expression. """
@@ -57,7 +54,8 @@ def calc_unit(inp):
             # we found an operator, so the last unit has been completely parsed.
             # if it's the [ operator, currunit is empty and we will get the actual unit by
             # parsing the following sub-expression and multiplying/dividing by its result.
-            # if char isn't the [ operator, currunit is a valid unit, so multiply/divide by it.
+            # if char isn't the [ operator and currunit is a valid unit, multiply/divide by
+            # it. (currunit will be empty both before *and* after an [] operation.)
             if char == "[":
                 # parse a sub-expression
                 subupper, sublower = process_units(_inp)
@@ -67,7 +65,8 @@ def calc_unit(inp):
                 # multiply its lower part with our inverse
                 for subunit in sublower:
                     unit_mult(lower, upper, currop, subunit)
-            else:
+
+            elif currunit:
                 # plain unit
                 unit_mult(upper, lower, currop, currunit)
                 currunit = ""
