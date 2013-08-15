@@ -15,7 +15,7 @@ from django.core.urlresolvers       import reverse
 from hosts.models import Host
 from monitoring.models import Sensor, SensorVariable, Check
 from monitoring.forms  import SearchForm
-from monitoring.graphbuilder import Graph
+from monitoring.graphbuilder import Graph, parse
 
 
 @login_required
@@ -206,7 +206,11 @@ def render_check(request, uuid, ds):
     builder.grad   = request.GET.get("grad", "false") == "true"
     builder.title  = unicode(check)
 
-    builder.add_source( check.rrd.get_source(ds) )
+    var = check.sensor.sensorvariable_set.get(name=ds)
+
+    for src in parse( var.formula if var.formula else var.name ):
+        builder.add_source( src.get_value(check.rrd) )
+    #builder.add_source( check.rrd.get_source(ds) )
 
     return HttpResponse(builder.get_image(), mimetype="image/png")
 
