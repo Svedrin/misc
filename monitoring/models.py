@@ -24,6 +24,25 @@ class Sensor(models.Model):
         return self.name
 
 
+class SensorParameter(models.Model):
+    sensor      = models.ForeignKey(Sensor)
+    name        = models.CharField(   "Variable name as expected by the sensor",  max_length=255)
+    type        = models.CharField(   "Data type",                                max_length=255, default='string', choices=(
+        ("string",  "String"),
+        ("int",     "Integer"),
+        ("decimal", "Float")))
+    display     = models.CharField(   "Human-readable name",                      max_length=255, default='', blank=True)
+    help_text   = models.CharField(   "Help text",                                max_length=255, default='', blank=True)
+    required    = models.BooleanField(default=True)
+    default     = models.CharField(   "Default value",                            max_length=255, default='', blank=True)
+
+    class Meta:
+        unique_together=( ('sensor', 'name'), )
+
+    def __unicode__(self):
+        return "%s: %s" % (self.sensor.name, self.name)
+
+
 class SensorVariable(models.Model):
     sensor      = models.ForeignKey(Sensor)
     name        = models.CharField(   "Variable name as returned by the sensor",  max_length=255)
@@ -84,3 +103,12 @@ class Check(models.Model):
     def process_result(self, result):
         if result["data"] is not None:
             self.rrd.update(result)
+
+
+class CheckParameter(models.Model):
+    check       = models.ForeignKey(Check)
+    parameter   = models.ForeignKey(SensorParameter)
+    value       = models.CharField("Parameter value", max_length=255)
+
+    class Meta:
+        unique_together = (("check", "parameter"), )

@@ -3,16 +3,23 @@
 
 from django.contrib import admin
 
-from monitoring.models import Sensor, SensorVariable, Check
+from monitoring.models import Sensor, SensorParameter, SensorVariable, Check, CheckParameter
+
+class SensorParameterInline(admin.TabularInline):
+    model = SensorParameter
 
 class SensorVariableInline(admin.TabularInline):
     model = SensorVariable
 
 class SensorAdmin(admin.ModelAdmin):
-    inlines      = [SensorVariableInline]
+    inlines      = [SensorParameterInline, SensorVariableInline]
     list_display = ['name']
 
+class CheckParameterInline(admin.TabularInline):
+    model = CheckParameter
+
 class CheckAdmin(admin.ModelAdmin):
+    inlines      = [CheckParameterInline]
     list_display = ['uuid', 'sensor', 'exec_host', 'target_host', 'target_obj', 'last_update']
 
 admin.site.register( Sensor, SensorAdmin )
