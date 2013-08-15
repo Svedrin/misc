@@ -20,7 +20,7 @@ class CheckParameterInline(admin.TabularInline):
 
 class CheckAdmin(admin.ModelAdmin):
     inlines      = [CheckParameterInline]
-    list_display = ['uuid', 'sensor', 'exec_host', 'target_host', 'target_obj', 'last_update']
+    list_display = ['uuid', 'sensor', 'exec_host', 'target_host', 'last_update']
 
 admin.site.register( Sensor, SensorAdmin )
 admin.site.register( Check,  CheckAdmin )
