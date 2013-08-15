@@ -126,8 +126,11 @@ def add_checks(request):
             exec_host   = Host.objects.get(fqdn=params["node"])
             target_host = Host.objects.get(fqdn=params["target"])
             sensor      = Sensor.objects.get(name=params["sensor"])
-            check = Check(uuid=params["uuid"], sensor=sensor, exec_host=exec_host, target_host=target_host, target_obj=params["obj"])
+            check = Check(uuid=params["uuid"], sensor=sensor, exec_host=exec_host, target_host=target_host)
             check.save()
+            for sensorparam in check.sensor.sensorparameter_set.all():
+                if sensorparam.name in params:
+                    check.checkparameter_set.create(parameter=sensorparam, value=params[sensorparam.name])
             added = True
         results.append({"added": added, "uuid": check.uuid})
 
