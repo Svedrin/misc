@@ -87,6 +87,9 @@ def calc_unit(inp):
 if __name__ == '__main__':
     def calcnprint(inp):
         print "%-30s → %s" % (inp, calc_unit(inp))
-    calcnprint("sct/s * B/sct / [IO/s]")
+    calcnprint("[sct/s] * [B/sct] / [IO/s]")
     calcnprint("IO/s * s/IO * %")
     calcnprint("B/s / [Pkt/s]")
+    calcnprint("l/h / [100km/h]")
+    calcnprint("B / [B/sct]")
+    calcnprint("[[b] / [b/B]] / [B/sct]")
