@@ -16,8 +16,16 @@ tbody tr:hover {
   <li><b>Sensor:</b> {{ check.sensor }}</li>
   <li><b>Executed on host:</b> {{ check.exec_host }}</li>
   <li><b>Target host:</b> {{ check.target_host }}</li>
-  <li><b>Object:</b> {{ check.target_obj }}</li>
   <li><b>Last update:</b> {{ check.last_update }}</li>
+  {% if check.checkparameter_set.count %}
+    <li><b>Parameters:</b>
+      <ul>
+        {% for checkparam in check.checkparameter_set.all %}
+          <li><i>{% if checkparam.parameter.display %}{{ checkparam.parameter.display }}{% else %}{{ checkparam.parameter.name }}{% endif %}</i>: {{ checkparam.value }}</li>
+        {% endfor %}
+      </ul>
+    </li>
+  {% endif %}
 </ul>
 <table>
   <thead>

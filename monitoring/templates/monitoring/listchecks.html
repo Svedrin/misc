@@ -16,7 +16,7 @@ tbody tr:hover {
     <tr>
       <th>Host</th>
       <th>Sensor</th>
-      <th>Object</th>
+      <th>Parameters</th>
       <td> </td>
     </tr>
   </thead>
@@ -28,7 +28,7 @@ tbody tr:hover {
         {% if check.target_host != check.exec_host %}(as seen by {{ check.exec_host }}){% endif %}
       </td>
       <td>{{ check.sensor }}</td>
-      <td>{{ check.target_obj }}</td>
+      <td>{{ check.paramstring }}</td>
       <td><a href="{% url monitoring.views.check_details check.uuid %}" title="View details" style="text-decoration: none">→</a></td>
     </tr>
   {% endfor %}

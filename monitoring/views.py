@@ -52,7 +52,7 @@ def search(request):
                     var_kwds.append(keyword)
                 else:
                     check_kwds.append(Q(uuid__icontains=keyword))
-                    check_kwds.append(Q(target_obj__icontains=keyword))
+                    check_kwds.append(Q(checkparameter__value__icontains=keyword))
                     check_kwds.append(Q(sensor__name__icontains=keyword))
             if check_kwds:
                 results = Check.objects.filter(reduce(operator.or_, check_kwds))
@@ -73,7 +73,7 @@ def search(request):
                     var = results[0].sensor.sensorvariable_set.get(Q(name__istartswith=var_kwds[0]) | Q(sensor__sensorvariable__display__istartswith=var_kwds[0]))
                     return HttpResponseRedirect(reverse(render_check_page, args=(results[0].uuid, var.name)))
                 return HttpResponseRedirect(reverse(check_details, args=(results[0].uuid,)))
-            results = results.order_by('target_host__fqdn', 'exec_host__fqdn', 'sensor__name', 'target_obj')
+            results = results.order_by('target_host__fqdn', 'exec_host__fqdn', 'sensor__name')
             #print results.query
     else:
         searchform = SearchForm()
