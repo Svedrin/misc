@@ -70,7 +70,7 @@ def search(request):
             results = results.distinct()
             if results.count() == 1:
                 if len(var_kwds) == 1:
-                    var = results[0].sensor.sensorvariable_set.get(Q(name__istartswith=var_kwds[0]) | Q(sensor__sensorvariable__display__istartswith=var_kwds[0]))
+                    var = results[0].sensor.sensorvariable_set.get(Q(name__istartswith=var_kwds[0]) | Q(display__istartswith=var_kwds[0]))
                     return HttpResponseRedirect(reverse(render_check_page, args=(results[0].uuid, var.name)))
                 return HttpResponseRedirect(reverse(check_details, args=(results[0].uuid,)))
             results = results.order_by('target_host__fqdn', 'exec_host__fqdn', 'sensor__name')
