@@ -48,31 +48,31 @@ def main():
     print "Using account %s." % account.name
 
     # Discover checkable objects
-    new_checks = []
-    for sensortype in SensorMeta.sensortypes:
-        if sensortype not in wc.objects:
-            print "Sensor type '%s' is installed but unknown to the config, skipped."
-            continue
+    #new_checks = []
+    #for sensortype in SensorMeta.sensortypes:
+        #if sensortype not in wc.objects:
+            #print "Sensor type '%s' is installed but unknown to the config, skipped."
+            #continue
 
-        sensor = SensorMeta.sensortypes[sensortype](None)
-        for target_obj in sensor.discover():
-            params = {
-                "sensor": sensortype,
-                "node":   myhostname,
-                "target": myhostname,
-                "obj":    target_obj
-            }
-            checks = wc.find_objects_by_params("check", **params)
-            if not checks:
-                print "Found new target:", target_obj
-                check = wc.add_object("check", myhostname + target_obj, [], params)
-                params["uuid"] = check["uuid"]
-                new_checks.append(params)
-            else:
-                print "Found known target:", target_obj
+        #sensor = SensorMeta.sensortypes[sensortype](None)
+        #for target_obj in sensor.discover():
+            #params = {
+                #"sensor": sensortype,
+                #"node":   myhostname,
+                #"target": myhostname,
+                #"obj":    target_obj
+            #}
+            #checks = wc.find_objects_by_params("check", **params)
+            #if not checks:
+                #print "Found new target:", target_obj
+                #check = wc.add_object("check", myhostname + target_obj, [], params)
+                #params["uuid"] = check["uuid"]
+                #new_checks.append(params)
+            #else:
+                #print "Found known target:", target_obj
 
-    if new_checks:
-        account.add_checks(new_checks)
+    #if new_checks:
+        #account.add_checks(new_checks)
 
     try:
         while True:
