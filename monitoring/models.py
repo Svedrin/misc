@@ -52,6 +52,7 @@ class SensorVariable(models.Model):
     max_in_rrd  = models.BooleanField("Maximum is measured by the sensor",        default=False)
     is_rate     = models.BooleanField("Describes a rate of something per second", default=False)
     scale_by_2  = models.BooleanField("Scale by 1024 (Default: 1000)",            default=False)
+    formula     = models.CharField(   "Formula used to calculate this value",     max_length=255, default='', blank=True)
 
     class Meta:
         unique_together=( ('sensor', 'name'), )
