@@ -68,7 +68,7 @@ class Check(models.Model):
     display     = models.CharField("Human-readable name", max_length=255, default='', blank=True)
 
     def __unicode__(self):
-        return "%s(%s) %s" % (self.sensor.name,
+        return "%s(%s) @ %s" % (self.sensor.name,
             self.paramstring,
             self.target_host.fqdn[:-1])
 
