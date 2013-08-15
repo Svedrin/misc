@@ -70,7 +70,11 @@ class RRD(object):
         return srcname[:19]
 
     def get_source_label(self, srcname):
-        return srcname
+        var = self.check.sensor.sensorvariable_set.get(name=srcname)
+        varname = var.display if var.display else var.name
+        if var.unit:
+            return "%s [%s]" % (varname, var.unit)
+        return varname
 
     def get_source_perfdata(self, srcname):
         return self.info["ds"][srcname]["last_ds"]

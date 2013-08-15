@@ -122,3 +122,6 @@ class CheckParameter(models.Model):
 
     class Meta:
         unique_together = (("check", "parameter"), )
+
+    def __unicode__(self):
+        return "%s.%s = %s" % (self.parameter.sensor.name, self.parameter.name, self.value)
