@@ -65,11 +65,12 @@ class Check(models.Model):
     uuid        = models.CharField("Check UUID", max_length=40, blank=True, default='', editable=False, unique=True)
     exec_host   = models.ForeignKey(hosts.Host, verbose_name="The host that executes the check", related_name="check_exec_set")
     target_host = models.ForeignKey(hosts.Host, verbose_name="The host that is being checked",   related_name="check_target_set")
-    target_obj  = models.CharField("Target object being checked (e.g. /dev/sda, eth0)", max_length=255, blank=True, default='')
     display     = models.CharField("Human-readable name", max_length=255, default='', blank=True)
 
     def __unicode__(self):
-        return "%s for %s on %s" % (self.sensor.name, self.target_obj, self.target_host.fqdn[:-1])
+        return "%s(%s) %s" % (self.sensor.name,
+            ' '.join(["%s=%s" % (cp.parameter.name, cp.value) for cp in self.checkparameter_set.all()]),
+            self.target_host.fqdn[:-1])
 
     def save(self, *args, **kwargs):
         if not self.uuid:
@@ -82,8 +83,13 @@ class Check(models.Model):
 
     @property
     def config(self):
-        return "check %s uuid=%s sensor=%s node=%s target=%s obj=%s\n" % (
-            self.target_host.fqdn + self.target_obj, self.uuid, self.sensor.name, self.exec_host.fqdn, self.target_host.fqdn, self.target_obj)
+        return "check %s uuid=%s sensor=%s node=%s target=%s %s\n" % (
+            self.display.replace(" ", "_") if self.display else self.uuid,
+            self.uuid,
+            self.sensor.name,
+            self.exec_host.fqdn,
+            self.target_host.fqdn,
+            ' '.join(["%s=%s" % (cp.parameter.name, cp.value) for cp in self.checkparameter_set.all()]))
 
     @property
     def rrd(self):
