@@ -9,11 +9,13 @@ from sensors.sensor import AbstractSensor
 
 class AcpiTempSensor(AbstractSensor):
     def discover(self):
-        return [name.replace("thermal_zone", "") for name in os.listdir('/sys/devices/virtual/thermal') if name.startswith("thermal_zone")]
+        return [{"zone": name.replace("thermal_zone", "")}
+            for name in os.listdir('/sys/devices/virtual/thermal')
+            if name.startswith("thermal_zone")]
 
-    def check(self, uuid, tzone):
+    def check(self, checkinst):
         ctx = Context()
-        dev = Device.from_sys_path(ctx, "/sys/devices/virtual/thermal/thermal_zone" + tzone)
+        dev = Device.from_sys_path(ctx, "/sys/devices/virtual/thermal/thermal_zone" + checkinst["zone"])
         crittemp = None
         for key in dev.attributes:
             if key.startswith("trip_point_") and key.endswith("_type") and dev.attributes[key] == "critical":

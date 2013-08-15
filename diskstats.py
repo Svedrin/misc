@@ -19,19 +19,19 @@ class DiskstatsSensor(AbstractSensor):
                 return "/dev/%s/%s" % (dev["DM_VG_NAME"], dev["DM_LV_NAME"])
             return dev.device_node
 
-        return [ _devname(dev)
+        return [ {"disk": _devname(dev)}
             for dev in ctx.list_devices()
             if (dev["SUBSYSTEM"] == "block" and
                 dev["DEVTYPE"] in ("disk", "partition") and
                 not dev["DEVNAME"].startswith("/dev/loop"))
         ]
 
-    def check(self, uuid, disk):
+    def check(self, checkinst):
         # Resolve the real device path, dereferencing symlinks as necessary.
-        disk = os.path.realpath(disk).replace("/dev/", "")
+        disk = os.path.realpath(checkinst["disk"]).replace("/dev/", "")
 
         # Read the state file (if possible).
-        storetime, storedata = self._load_store(uuid)
+        storetime, storedata = self._load_store(checkinst["uuid"])
         havestate = (storedata is not None)
 
         ctx = Context()
@@ -87,7 +87,7 @@ class DiskstatsSensor(AbstractSensor):
         else:
             diff = None
 
-        self._save_store(uuid, {
+        self._save_store(checkinst["uuid"], {
             "device": {
                 "initialized": createstamp,
                 "uuid":        dev.get("DM_UUID", None),

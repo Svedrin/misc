@@ -13,18 +13,18 @@ from sensors.values import ValueDict
 class NetstatsSensor(AbstractSensor):
     def discover(self):
         ctx = Context()
-        return [ dev["INTERFACE"]
+        return [ {"interface": dev["INTERFACE"]}
             for dev in ctx.list_devices()
             if dev["SUBSYSTEM"] == "net"
         ]
 
-    def check(self, uuid, iface):
+    def check(self, checkinst):
         # Read the state file (if possible).
-        storetime, storedata = self._load_store(uuid)
+        storetime, storedata = self._load_store(checkinst["uuid"])
         havestate = (storedata is not None)
 
         ctx = Context()
-        dev = Device.from_name(ctx, "net", iface)
+        dev = Device.from_name(ctx, "net", checkinst["interface"])
 
         if hasattr(dev, "time_since_initialized") and dev.time_since_initialized:
             uptime = dev.time_since_initialized
@@ -56,7 +56,7 @@ class NetstatsSensor(AbstractSensor):
         else:
             diff = None
 
-        self._save_store(uuid, {
+        self._save_store(checkinst["uuid"], {
             "state": currstate,
             "device": {
                 "initialized": createstamp
