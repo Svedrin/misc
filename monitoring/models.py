@@ -69,13 +69,17 @@ class Check(models.Model):
 
     def __unicode__(self):
         return "%s(%s) %s" % (self.sensor.name,
-            ' '.join(["%s=%s" % (cp.parameter.name, cp.value) for cp in self.checkparameter_set.all()]),
+            self.paramstring,
             self.target_host.fqdn[:-1])
 
     def save(self, *args, **kwargs):
         if not self.uuid:
             self.uuid = str(uuid.uuid4())
         return models.Model.save(self, *args, **kwargs)
+
+    @property
+    def paramstring(self):
+        return ' '.join(["%s=%s" % (cp.parameter.name, cp.value) for cp in self.checkparameter_set.all()])
 
     @property
     def last_update(self):
@@ -89,7 +93,7 @@ class Check(models.Model):
             self.sensor.name,
             self.exec_host.fqdn,
             self.target_host.fqdn,
-            ' '.join(["%s=%s" % (cp.parameter.name, cp.value) for cp in self.checkparameter_set.all()]))
+            self.paramstring)
 
     @property
     def rrd(self):
