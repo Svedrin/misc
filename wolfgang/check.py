@@ -34,7 +34,7 @@ class Check(WolfObject):
         }
 
         try:
-            res["data"], res["max"] = self.sensor.check(self["uuid"], self["obj"])
+            res["data"], res["max"] = self.sensor.check(self)
         except Exception, err:
             res["errmessage"] = unicode(type(err)) + ": " + unicode(err),
 

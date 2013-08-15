@@ -18,5 +18,5 @@ class Sensor(WolfObject):
     def discover(self):
         return self.sensor.discover()
 
-    def check(self, uuid, obj):
-        return self.sensor.check(uuid, obj)
+    def check(self, checkinst):
+        return self.sensor.check(checkinst)
