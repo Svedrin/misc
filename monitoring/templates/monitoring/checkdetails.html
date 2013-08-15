@@ -21,7 +21,7 @@ tbody tr:hover {
     <li><b>Parameters:</b>
       <ul>
         {% for checkparam in check.checkparameter_set.all %}
-          <li><i>{% if checkparam.parameter.display %}{{ checkparam.parameter.display }}{% else %}{{ checkparam.parameter.name }}{% endif %}</i>: {{ checkparam.value }}</li>
+          <li><i>{% if checkparam.parameter.display %}{{ checkparam.parameter.display }}{% else %}{{ checkparam.parameter.name }}{% endif %}:</i> {{ checkparam.value }}</li>
         {% endfor %}
       </ul>
     </li>
