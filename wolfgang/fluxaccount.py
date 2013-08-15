@@ -17,7 +17,7 @@ except ImportError:
         raise
 
     from wolfgang.prettyprint import colorprint, Colors
-    colorprint(Colors.red, "The requests module is not available. You don't seem to require a proxy, so I'm gonnna work around this. If you do, you need to install requests.")
+    colorprint(Colors.red, "The requests module is not available. You don't seem to require a proxy, so I'm gonna work around this. If you do, you need to install requests.")
 
     class ReqResponse(object):
         def __init__(self, status_code, text):
