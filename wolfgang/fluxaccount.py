@@ -56,6 +56,7 @@ class FluxAccount(WolfObject):
         })
 
         if resp.status_code != 200:
+            print "Got some error, writing /tmp/lasterr."
             fd = open("/tmp/lasterr", "wb")
             print >> fd, resp.text
             fd.close()
