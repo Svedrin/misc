@@ -145,8 +145,8 @@ if __name__ == '__main__':
         "wr_sectors": "sct/s",
         "wr_ios": "IO/s"
     }
-    inp = "wr_sectors * 512[B/sct] / wr_ios * 4096[B/IO]"
+    inp = "wr_sectors * 512[B/sct] / wr_ios * 4096[B/IO] * 100[%]"
     calcnprint(sub_units(inp, units))
 
-    print re.sub("\[[\w/*]+\]", "", inp)
+    print re.sub("\[[\w/*+%-]+\]", "", inp)
 

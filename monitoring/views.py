@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # kate: space-indent on; indent-width 4; replace-tabs on;
 
+import re
 import json
 import operator
 
@@ -16,6 +17,7 @@ from hosts.models import Host
 from monitoring.models import Sensor, SensorVariable, Check
 from monitoring.forms  import SearchForm
 from monitoring.graphbuilder import Graph, parse
+from monitoring.unitcalc import calc_unit, sub_units
 
 
 @login_required
@@ -207,8 +209,20 @@ def render_check(request, uuid, ds):
     builder.title  = unicode(check)
 
     var = check.sensor.sensorvariable_set.get(name=ds)
+    if var.formula:
+        # formulas may denote units for constants in []. strip those out.
+        srcline = re.sub("\[[\w/*+%-]+\]", "", var.formula)
+        if var.unit:
+            builder.verttitle = var.unit
+        else:
+            # infer the resulting unit from the variables' units
+            units = dict([ (v["name"], v["unit"]) for v in check.sensor.sensorvariable_set.values("name", "unit") ])
+            builder.verttitle = calc_unit(sub_units(var.formula, units))
+    else:
+        srcline = var.name
+        builder.verttitle = var.unit
 
-    for src in parse( var.formula if var.formula else var.name ):
+    for src in parse(srcline):
         builder.add_source( src.get_value(check.rrd) )
     #builder.add_source( check.rrd.get_source(ds) )
 
