@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # kate: space-indent on; indent-width 4; replace-tabs on;
 
+import re
 
 def calc_unit(inp):
     """ Calculate the unit in which a calculation will result.
@@ -84,6 +85,51 @@ def calc_unit(inp):
     return ' / '.join([' * '.join(upper)] + lower)
 
 
+def sub_units(inp, units):
+    """ Parse a formula, substituting variable names with their respective units and
+        stripping out numbers.
+
+        The result can be passed to calc_unit in order to get the resulting unit.
+    """
+
+    def process_str(_inp):
+        currvar = ""
+        out = ""
+        in_unit = False
+        for char in _inp:
+            if char == ' ':
+                continue
+
+            if char == '[':
+                in_unit = True
+
+            if in_unit:
+                # keep units in [] as they are
+                out += char
+
+            elif 'a' <= char.lower() <= 'z' or char == '_':
+                # a-z_ denotes a variable name
+                currvar += char
+
+            else:
+                # anything else means we have read a complete variable name. check if
+                # that is the case (we might have just returned from a ] as well), and if
+                # so, replace the variable with its unit
+                if currvar:
+                    out += "[%s]" % units[currvar]
+                    currvar = ""
+                # keep operators
+                if char in ('+', '-', '*', '/', '(', ')'):
+                    out += char
+
+            if char == ']':
+                in_unit = False
+
+        return out
+
+    return process_str(iter(inp + "\n"))
+
+
 if __name__ == '__main__':
     def calcnprint(inp):
         print "%-30s → %s" % (inp, calc_unit(inp))
@@ -93,3 +139,14 @@ if __name__ == '__main__':
     calcnprint("l/h / [100km/h]")
     calcnprint("B / [B/sct]")
     calcnprint("[[b] / [b/B]] / [B/sct]")
+
+
+    units = {
+        "wr_sectors": "sct/s",
+        "wr_ios": "IO/s"
+    }
+    inp = "wr_sectors * 512[B/sct] / wr_ios * 4096[B/IO]"
+    calcnprint(sub_units(inp, units))
+
+    print re.sub("\[[\w/*]+\]", "", inp)
+
