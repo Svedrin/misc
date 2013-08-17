@@ -138,7 +138,7 @@ class UnitSource(Source):
         var = self.rrd.check.sensor.sensorvariable_set.get(name=self.name)
         if var.unit:
             unitfac = UnitFactory()
-            parsed  = list(parse("sct/s"))[0]
+            parsed  = list(parse(var.unit))[0]
             return parsed.get_value(unitfac)
         return ""
 
