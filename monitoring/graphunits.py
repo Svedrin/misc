@@ -89,6 +89,32 @@ class Unit(object):
             unit_mult(res.lower, res.upper, currop, subunit)
         return res
 
+    def __eq__(self, other):
+        def _listcmp(lft, rgt):
+            lftcopy = lft + []
+            try:
+                for r in rgt:
+                    lftcopy.remove(r)
+            except ValueError:
+                return False # rgt has elements that lft doesn't have
+            if lftcopy:
+                return False # lft has elements that rgt doesn't have
+            return True      # lists have the same elements
+        return _listcmp(self.upper, other.upper) and _listcmp(self.lower, other.lower)
+
+    def __add__(self, other):
+        if self == other:
+            return self
+        raise TypeError("Cannot add units that are not equivalent")
+
+    def __sub__(self, other):
+        if self == other:
+            return self
+        raise TypeError("Cannot substract units that are not equivalent")
+
+    def __neg__(self):
+        return self
+
     def __mul__(self, other):
         return self._unit_mult(other, '*')
 
