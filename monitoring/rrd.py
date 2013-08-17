@@ -63,8 +63,8 @@ class RRD(object):
         self._info = None
 
     def get_source(self, srcname):
-        from graphbuilder import Source
-        return Source( self, srcname )
+        from graphunits import UnitSource
+        return UnitSource( self, srcname )
 
     def get_source_varname(self, srcname):
         return srcname[:19]
