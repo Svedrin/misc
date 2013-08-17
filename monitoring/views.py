@@ -17,8 +17,7 @@ from hosts.models import Host
 from monitoring.models import Sensor, SensorVariable, Check
 from monitoring.forms  import SearchForm
 from monitoring.graphbuilder import Graph
-from monitoring.graphunits   import parse
-from monitoring.unitcalc import calc_unit, sub_units
+from monitoring.graphunits   import parse, extract_units
 
 
 @login_required
@@ -212,19 +211,22 @@ def render_check(request, uuid, ds):
     var = check.sensor.sensorvariable_set.get(name=ds)
     if var.formula:
         srcline = var.formula
-        if var.unit:
-            builder.verttitle = var.unit
-        else:
-            # infer the resulting unit from the variables' units
-            units = dict([ (v["name"], v["unit"]) for v in check.sensor.sensorvariable_set.values("name", "unit") ])
-            builder.verttitle = calc_unit(sub_units(var.formula, units))
     else:
         srcline = var.name
-        builder.verttitle = var.unit
+
+    if var.unit:
+        unit = var.unit
+    else:
+        unit = None
 
     for src in parse(srcline):
-        builder.add_source( src.get_value(check.rrd) )
-    #builder.add_source( check.rrd.get_source(ds) )
+        node = src.get_value(check.rrd)
+        builder.add_source( node )
+        if unit is None:
+            unit = unicode(extract_units(node))
+
+    if unit is not None:
+        builder.verttitle = unit
 
     return HttpResponse(builder.get_image(), mimetype="image/png")
 
