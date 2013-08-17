@@ -14,7 +14,7 @@ class CablemodemMotorolaSensor(AbstractSensor):
     password = "motorola"
 
     def discover(self):
-        return [{"modemip": "192.168.100.1"}]
+        return []
 
     def check(self, checkinst):
         urllib.urlopen("http://%s/loginData.htm?loginUsername=%s&loginPassword=%s&LOGIN_BUTTON=Login" % (
