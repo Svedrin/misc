@@ -16,7 +16,8 @@ from django.core.urlresolvers       import reverse
 from hosts.models import Host
 from monitoring.models import Sensor, SensorVariable, Check
 from monitoring.forms  import SearchForm
-from monitoring.graphbuilder import Graph, parse
+from monitoring.graphbuilder import Graph
+from monitoring.graphunits   import parse
 from monitoring.unitcalc import calc_unit, sub_units
 
 
@@ -210,8 +211,7 @@ def render_check(request, uuid, ds):
 
     var = check.sensor.sensorvariable_set.get(name=ds)
     if var.formula:
-        # formulas may denote units for constants in []. strip those out.
-        srcline = re.sub("\[[\w/*+%-]+\]", "", var.formula)
+        srcline = var.formula
         if var.unit:
             builder.verttitle = var.unit
         else:
