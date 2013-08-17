@@ -8,7 +8,7 @@ import tokenize
 
 from StringIO import StringIO
 
-from graphbuilder import Symbol, Infix, Literal, Parser, LiteralNode, Source
+from graphbuilder import Symbol, Infix, Literal, Parser, Node, LiteralNode, Source
 
 # SYNTAX ELEMENTS
 
@@ -126,9 +126,38 @@ class Unit(object):
     def __unicode__(self):
         return '/'.join(['*'.join(self.upper)] + self.lower)
 
+    __str__ = __unicode__
+
 class UnitFactory(object):
     def get_source(self, name):
         return Unit([name], [])
+
+class UnitSource(Source):
+    @property
+    def unit(self):
+        var = self.rrd.check.sensor.sensorvariable_set.get(name=self.name)
+        if var.unit:
+            unitfac = UnitFactory()
+            parsed  = list(parse("sct/s"))[0]
+            return parsed.get_value(unitfac)
+        return ""
+
+
+def extract_units(node):
+    if not isinstance(node, Node):
+        raise ValueError("this only works for nodes")
+    if isinstance(node, Source):
+        return node.unit
+    if isinstance(node, LiteralWithUnitNode):
+        return node._unit
+    if node.op == '+':
+        return extract_units(node.lft) + extract_units(node.rgt)
+    if node.op == '-':
+        return extract_units(node.lft) - extract_units(node.rgt)
+    if node.op == '*':
+        return extract_units(node.lft) * extract_units(node.rgt)
+    if node.op == '/':
+        return extract_units(node.lft) / extract_units(node.rgt)
 
 
 # PARSER
