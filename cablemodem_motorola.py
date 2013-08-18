@@ -4,7 +4,6 @@
 import os
 import sys
 import urllib
-import BeautifulSoup
 
 from sensors.sensor import AbstractSensor
 
@@ -17,6 +16,7 @@ class CablemodemMotorolaSensor(AbstractSensor):
         return []
 
     def check(self, checkinst):
+        import BeautifulSoup
         urllib.urlopen("http://%s/loginData.htm?loginUsername=%s&loginPassword=%s&LOGIN_BUTTON=Login" % (
             self.modemip, self.username, self.password
             ))
