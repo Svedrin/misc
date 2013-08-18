@@ -63,8 +63,8 @@ class RRD(object):
         self._info = None
 
     def get_source(self, srcname):
-        from graphunits import UnitAwareSource
-        return UnitAwareSource( self, srcname )
+        from graphpredict import PredictingSource
+        return PredictingSource( self, srcname )
 
     def get_source_varname(self, srcname):
         return srcname[:19]
