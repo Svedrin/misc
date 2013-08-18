@@ -157,3 +157,42 @@ class RRD(object):
             dictset(data, varname, value)
         self._info = data
         return data
+
+    def get_confidence_interval(self, name, start=None, end=None):
+        if end is None:
+            end = self.last_check
+        if start is None:
+            start = end - 24*60*60
+
+        args = [
+            "rrdtool", "graph", "/dev/null", "--start", str(int(start)), "--end", str(int(end)),
+            ]
+        src = self.get_source(name)
+        src.args = args
+        varname = src.define()
+        args.extend([
+            "VDEF:%s_upper_last=%s_upper,LAST"    % (varname, varname),
+            "VDEF:%s_lower_last=%s_lower,LAST"    % (varname, varname),
+            "VDEF:%s_fail_last=%s_fail,LAST"      % (varname, varname),
+            "PRINT:%s_upper_last:upper=%%.2lf%%s" % (varname),
+            "PRINT:%s_lower_last:lower=%%.2lf%%s" % (varname),
+            "PRINT:%s_fail_last:fail=%%.0lf"      % (varname),
+        ])
+
+        #print '"' + '" "'.join(args).encode("utf-8") + '"'
+        rrdtool = subprocess.Popen([arg.encode("utf-8") for arg in args], stdout=subprocess.PIPE)
+        out, err = rrdtool.communicate()
+
+        upper = None
+        lower = None
+        fail  = None
+        for line in out.split("\n"):
+            if "=" in line:
+                key, val = line.strip().split("=", 1)
+                if key == "upper":
+                    upper = float(val)
+                elif key == "lower":
+                    lower = float(val)
+                elif key == "fail":
+                    fail  = bool(int(val))
+        return lower, upper, fail
