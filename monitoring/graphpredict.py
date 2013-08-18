@@ -16,7 +16,7 @@ class PredictingSource(UnitAwareSource):
         return varname
 
     def _draw_graph(self, varname):
-        UnitAwareSource._draw_graph(self, varname)
         self.args.append( "TICK:%s_fail#ffffa0:1.0:" % varname )
+        UnitAwareSource._draw_graph(self, varname)
         self.args.append( "LINE1:%s_upper#AA0000CC:" % varname )
         self.args.append( "LINE1:%s_lower#00AA00CC:" % varname )
