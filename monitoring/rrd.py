@@ -158,7 +158,7 @@ class RRD(object):
         self._info = data
         return data
 
-    def get_confidence_interval(self, name, start=None, end=None):
+    def get_confidence_interval(self, names, start=None, end=None):
         if end is None:
             end = self.last_check
         if start is None:
@@ -167,32 +167,32 @@ class RRD(object):
         args = [
             "rrdtool", "graph", "/dev/null", "--start", str(int(start)), "--end", str(int(end)),
             ]
-        src = self.get_source(name)
-        src.args = args
-        varname = src.define()
-        args.extend([
-            "VDEF:%s_upper_last=%s_upper,LAST"    % (varname, varname),
-            "VDEF:%s_lower_last=%s_lower,LAST"    % (varname, varname),
-            "VDEF:%s_fail_last=%s_fail,LAST"      % (varname, varname),
-            "PRINT:%s_upper_last:upper=%%.2lf%%s" % (varname),
-            "PRINT:%s_lower_last:lower=%%.2lf%%s" % (varname),
-            "PRINT:%s_fail_last:fail=%%.0lf"      % (varname),
-        ])
+        for name in names:
+            src = self.get_source(name)
+            src.args = args
+            varname = src.define()
+            args.extend([
+                "VDEF:%s_upper_last=%s_upper,LAST"    % (varname, varname),
+                "VDEF:%s_lower_last=%s_lower,LAST"    % (varname, varname),
+                "VDEF:%s_fail_last=%s_fail,LAST"      % (varname, varname),
+                "PRINT:%s_upper_last:%s.upper=%%.2lf" % (varname, varname),
+                "PRINT:%s_lower_last:%s.lower=%%.2lf" % (varname, varname),
+                "PRINT:%s_fail_last:%s.fail=%%.0lf"    % (varname, varname),
+            ])
 
         #print '"' + '" "'.join(args).encode("utf-8") + '"'
         rrdtool = subprocess.Popen([arg.encode("utf-8") for arg in args], stdout=subprocess.PIPE)
         out, err = rrdtool.communicate()
 
-        upper = None
-        lower = None
-        fail  = None
+        values = {}
         for line in out.split("\n"):
-            if "=" in line:
+            if "." in line and "=" in line:
                 key, val = line.strip().split("=", 1)
-                if key == "upper":
-                    upper = float(val)
-                elif key == "lower":
-                    lower = float(val)
-                elif key == "fail":
-                    fail  = bool(int(val))
-        return lower, upper, fail
+                src, field = key.split(".", 1)
+                if src not in values:
+                    values[src] = {"upper": None, "lower": None, "fail": None}
+                if field in ("upper", "lower"):
+                    values[src][field] = float(val)
+                elif field == "fail":
+                    values[src][field] = bool(int(val))
+        return values
