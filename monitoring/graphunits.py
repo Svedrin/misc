@@ -132,7 +132,7 @@ class UnitFactory(object):
     def get_source(self, name):
         return Unit([name], [])
 
-class UnitSource(Source):
+class UnitAwareSource(Source):
     @property
     def unit(self):
         var = self.rrd.check.sensor.sensorvariable_set.get(name=self.name)
