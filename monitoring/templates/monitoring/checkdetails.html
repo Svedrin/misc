@@ -1,17 +1,6 @@
 {% extends "base.html" %}
 {% comment %} kate: space-indent on; indent-width 2; replace-tabs on; {% endcomment %}
 {% block content %}
-<style>
-table {
-  width: 100%;
-}
-tr {
-  width: 100%;
-}
-tbody tr:hover {
-  background-color: #DDEEFF;
-}
-</style>
 <ol class="breadcrumb">
   <li><a href="/">Home</a></li>
   <li><a href="{% url monitoring.views.check_details check.uuid %}">{% if check.display %}{{ check.display }}{% else %}{{ check.uuid }}{% endif %}</a></li>
@@ -39,11 +28,11 @@ tbody tr:hover {
     </dd>
   {% endif %}
 </dl>
-<table>
+<table class="table table-hover">
   <thead>
     <tr>
       <th>Variable</th>
-      <td> </td>
+      <th> </th>
     </tr>
   </thead>
   <tbody>
