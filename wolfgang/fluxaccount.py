@@ -48,7 +48,7 @@ class FluxAccount(WolfObject):
 
     def _request(self, url, data):
         data = json.dumps(data, indent=2)
-        print "POST", data
+        #print "POST", data
 
         resp = requests.post(url, data=data, auth=(self.name, self["apikey"]), headers={
             "Content-Type": "application/json",
@@ -63,7 +63,7 @@ class FluxAccount(WolfObject):
             return
 
         respdata = json.loads( resp.text )
-        print respdata
+        #print respdata
         return respdata
 
     def submit(self, data):
