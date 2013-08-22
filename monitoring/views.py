@@ -169,16 +169,24 @@ def process(request):
         except Check.DoesNotExist, err:
             results.append({
                 "uuid": result["uuid"],
-                "errmessage": err,
+                "errmessage": unicode(err),
                 "success": False
             })
         else:
             if check.user_allowed(request.user):
-                check.process_result(result)
-                results.append({
-                    "uuid": result["uuid"],
-                    "success": True
-                })
+                try:
+                    check.process_result(result)
+                except Exception, err:
+                    results.append({
+                        "uuid": result["uuid"],
+                        "errmessage": unicode(err),
+                        "success": False
+                    })
+                else:
+                    results.append({
+                        "uuid": result["uuid"],
+                        "success": True
+                    })
             else:
                 results.append({
                     "uuid": result["uuid"],
