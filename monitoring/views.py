@@ -167,6 +167,7 @@ def process(request):
         try:
             check = Check.objects.get(uuid=result["check"])
         except Check.DoesNotExist, err:
+            print "Check %s does not exist" % result["uuid"]
             results.append({
                 "uuid": result["uuid"],
                 "errmessage": unicode(err),
@@ -177,6 +178,8 @@ def process(request):
                 try:
                     check.process_result(result)
                 except Exception, err:
+                    import traceback
+                    traceback.print_exc()
                     results.append({
                         "uuid": result["uuid"],
                         "errmessage": unicode(err),
