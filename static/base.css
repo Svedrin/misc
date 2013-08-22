@@ -10,15 +10,9 @@ h1, h2 {
   border-bottom: 1px solid #003366;
   page-break-after: avoid;
 }
-ul {
-  page-break-before: avoid;
-  padding-left:1.5em;
-}
-ul li {
-  list-style-type: circle;
-}
 div.fieldWrapper {
-    width: 100%;
+    width:  100%;
+    margin: 20px 0;
 }
 div.fieldWrapper input {
     width: 100%;

@@ -12,21 +12,33 @@ tbody tr:hover {
   background-color: #DDEEFF;
 }
 </style>
-<ul>
-  <li><b>Sensor:</b> {{ check.sensor }}</li>
-  <li><b>Executed on host:</b> {{ check.exec_host }}</li>
-  <li><b>Target host:</b> {{ check.target_host }}</li>
-  <li><b>Last update:</b> {{ check.last_update }}</li>
+<ol class="breadcrumb">
+  <li><a href="/">Home</a></li>
+  <li><a href="{% url monitoring.views.check_details check.uuid %}">{% if check.display %}{{ check.display }}{% else %}{{ check.uuid }}{% endif %}</a></li>
+  <li class="active">{% if variable.display %}{{ variable.display }}{% else %}{{ variable.name }}{% endif %}</li>
+</ol>
+<dl class="dl-horizontal">
+  <dt>Check:</dt>
+  <dd>{% if check.display %}{{ check.display }}{% else %}{{ check.uuid }}{% endif %}</dd>
+  <dt>Sensor:</dt>
+  <dd>{{ check.sensor }}</dd>
+  <dt>Executed on host:</dt>
+  <dd>{{ check.exec_host }}</dd>
+  <dt>Target host:</dt>
+  <dd>{{ check.target_host }}</dd>
+  <dt>Last update:</dt>
+  <dd>{{ check.last_update }}</dd>
   {% if check.checkparameter_set.count %}
-    <li><b>Parameters:</b>
-      <ul>
+    <dt>Parameters:</dt>
+    <dd>
+      <ul class="list-unstyled">
         {% for checkparam in check.checkparameter_set.all %}
           <li><i>{% if checkparam.parameter.display %}{{ checkparam.parameter.display }}{% else %}{{ checkparam.parameter.name }}{% endif %}:</i> {{ checkparam.value }}</li>
         {% endfor %}
       </ul>
-    </li>
+    </dd>
   {% endif %}
-</ul>
+</dl>
 <table>
   <thead>
     <tr>

@@ -5,11 +5,16 @@
     <form action="{% url monitoring.views.search %}" method="post">
       {% csrf_token %}
       {{ searchform.non_field_errors }}
-      <div class="fieldWrapper">
-          {{ searchform.query.errors }}
-          {{ searchform.query }}
+      <div class="input-group fieldWrapper">
+        {{ searchform.query.errors }}
+        <input type="text" class="form-control"
+          name="{{ searchform.query.html_name }}"
+          {% if searchform.query.value %} value="{{ searchform.query.value }}" {% endif %}
+          placeholder="{{ searchform.query.label }}" />
+        <span class="input-group-btn">
+          <button class="btn btn-default" type="submit">Go!</button>
+        </span>
       </div>
-      <center><input type="submit" value="Submit" /></center>
     </form>
   </div>
 
