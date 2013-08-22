@@ -4,82 +4,53 @@
     <title>Fluxmon</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <link rel='stylesheet'    href='http://fonts.googleapis.com/css?family=PT+Sans' type='text/css'>
-    <style type="text/css">
-      #content {
-        width: 800px;
-        orphans: 2;
-        margin: 30px auto 40px auto;
-        font-family: 'PT Sans', sans-serif;
-        font-size: 14pt;
-      }
-      h1, h2 {
-        color: #003366;
-        border-bottom: 1px solid #003366;
-        page-break-after: avoid;
-      }
-      ul {
-        page-break-before: avoid;
-        padding-left:1.5em;
-      }
-      ul li {
-        list-style-type: circle;
-      }
-      div.fieldWrapper {
-         width: 100%;
-      }
-      div.fieldWrapper input {
-         width: 100%;
-      }
-      .narrowscreenonly {
-        display: none;
-      }
-      .tinyscreenonly {
-        display: none;
-      }
-      @media screen and (max-width:825px) {
-        #content {
-          width: 500px;
-          font-size: 12pt;
-        }
-        .widescreenonly {
-          display: none;
-        }
-        .narrowscreenonly {
-          display: inline;
-        }
-        .tinyscreenonly {
-          display: none;
-        }
-      }
-      @media screen and (max-width:525px) {
-        #content {
-          width: 310px;
-          font-size: 10pt;
-        }
-        .narrowscreenonly {
-          display: none;
-        }
-        .tinyscreenonly {
-          display: inline;
-        }
-      }
-    </style>
+    <link rel="stylesheet"    href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet"    href="/static/base.css">
+    <link rel="stylesheet"    href="/static/bootstrap_footer.css">
   </head>
   <body>
-    <div id="content">
-      {% block content %}
-      {% endblock %}
-      <div style="font-size: 10pt; margin-top: 50px">
-        {% if user.is_authenticated %}
-          <a href="/">Home</a> &mdash;
-          <a href="{% url monitoring.views.profile %}">{{ user }}</a> &mdash;
-          <a href="{% url monitoring.views.search %}">Search</a> &mdash;
-          <a href="{% url django.contrib.auth.views.logout %}">Logout</a>
-        {% else %}
-          <a href="{% url django.contrib.auth.views.login %}">Login</a>
-        {% endif %}
+    <div id="wrap">
+
+      <!-- Fixed navbar -->
+      <div class="navbar navbar-default navbar-fixed-top">
+        <div class="container">
+          <div class="navbar-header">
+<!--            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>-->
+            <a class="navbar-brand" href="/">Fluxmon</a>
+          </div>
+          <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+              <li><a href="/">Home</a></li>
+              {% if user.is_authenticated %}
+              <li><a href="{% url monitoring.views.profile %}">{{ user }}</a></li>
+              <li><a href="{% url monitoring.views.search %}">Search</a></li>
+              <li><a href="{% url django.contrib.auth.views.logout %}">Logout</a></li>
+              {% else %}
+              <li><a href="{% url django.contrib.auth.views.login %}">Login</a></li>
+              {% endif %}
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+
+      <!-- Begin page content -->
+      <div class="container">
+        {% block content %}
+        {% endblock %}
       </div>
     </div>
+
+    <div id="footer">
+      <div class="container">
+      </div>
+    </div>
+
+    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
   </body>
 </html>
 {% comment %} kate: space-indent on; indent-width 2; replace-tabs on; {% endcomment %}
