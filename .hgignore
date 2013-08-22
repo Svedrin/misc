@@ -3,6 +3,9 @@ syntax: glob
 *~
 *.pyc
 
+*.bkp
+
 fluxd.conf
 MANIFEST
-dist
+dist/
+htdocs/
