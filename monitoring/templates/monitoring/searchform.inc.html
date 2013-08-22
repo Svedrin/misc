@@ -9,6 +9,7 @@
         {{ searchform.query.errors }}
         <input type="text" class="form-control"
           name="{{ searchform.query.html_name }}"
+          id="id_{{ searchform.query.html_name }}"
           {% if searchform.query.value %} value="{{ searchform.query.value }}" {% endif %}
           placeholder="{{ searchform.query.label }}" />
         <span class="input-group-btn">
