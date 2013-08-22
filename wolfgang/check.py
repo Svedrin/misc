@@ -39,6 +39,9 @@ class Check(WolfObject):
             import traceback
             traceback.print_exc()
             res["errmessage"] = unicode(type(err)) + ": " + unicode(err),
+        else:
+            if res["data"] is None:
+                print "Sensor for %s didn't return any data..." % self["uuid"]
 
         return res
 
