@@ -54,7 +54,7 @@ class DiskstatsSensor(AbstractSensor):
             uptime = dev.time_since_initialized
         else:
             with open( "/proc/uptime" ) as ut:
-                uptime = timedelta(seconds=int(float(ut.read().split()[0])))
+                uptime = timedelta(seconds=float(ut.read().split()[0]))
 
         createstamp = int(mktime((datetime.now() - uptime).timetuple()))
 
