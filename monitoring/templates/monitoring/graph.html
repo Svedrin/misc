@@ -23,7 +23,7 @@
     <dd>
       <ul class="list-unstyled">
         {% for checkparam in check.checkparameter_set.all %}
-          <li><i>{{ checkparam.parameter|display }}</li>
+          <li><i>{{ checkparam.parameter|display }}:</i> {{ checkparam.value }}</li>
         {% endfor %}
       </ul>
     </dd>
@@ -35,5 +35,4 @@
   <img class="narrowscreenonly" src="{% url monitoring.views.render_check check.uuid variable.name %}?width=410" alt="graph" style="margin: 0 auto" />
   <img class="tinyscreenonly"   src="{% url monitoring.views.render_check check.uuid variable.name %}?width=220" alt="graph" style="margin: 0 auto" />
 </div>
-<p><a href="{% url monitoring.views.check_details check.uuid %}" title="back" style="text-decoration: none">←</a></p>
 {% endblock %}
