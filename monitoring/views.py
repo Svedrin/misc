@@ -54,6 +54,7 @@ def search(request):
                     var_kwds.append(keyword)
                 else:
                     check_kwds.append(Q(uuid__icontains=keyword))
+                    check_kwds.append(Q(display__icontains=keyword))
                     check_kwds.append(Q(checkparameter__value__icontains=keyword))
                     check_kwds.append(Q(sensor__name__icontains=keyword))
             if check_kwds:
