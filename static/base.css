@@ -17,6 +17,11 @@ div.fieldWrapper {
 div.fieldWrapper input {
     width: 100%;
 }
+
+.fluxhidden {
+  display: none;
+}
+
 .narrowscreenonly {
   display: none;
 }

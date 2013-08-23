@@ -8,8 +8,45 @@
 </ol>
 <dl class="dl-horizontal">
   <dt>Check:</dt>
-  <dd><span class="edit">{{ check|display:"uuid" }}</span>
-    <button type="button" class="btn btn-default btn-xs edit"><span class="glyphicon glyphicon-pencil" title="Edit..."></span></button>
+  <dd>
+    <div class="fluxeditable">
+      <div class="fluxlabel">
+        <span>{{ check|display:"uuid" }}</span>
+        <button type="button" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-pencil" title="Edit..."></span></button>
+      </div>
+      <div class="fluxeditor fluxhidden">
+        <form class="form-inline" role="form">
+          <input type="hidden" name="objid" value="{{ check.id }}" />
+          <input type="hidden" name="uuid" value="{{ check.uuid }}" />
+          <div class="form-group"><input name="display" value="{{ check.display }}" class="form-control" size="50" placeholder="{{ check.uuid }}"/></div>
+          <button type="submit" class="btn btn-default">Submit</button>
+        </form>
+      </div>
+    </div>
+    <script>
+      $("div.fluxeditable").children("div.fluxlabel").children("button").click(function(){
+        var fluxeditable = $(this.parentNode.parentNode);
+        fluxeditable.children("div.fluxlabel").addClass("fluxhidden");
+        fluxeditable.children("div.fluxeditor").removeClass("fluxhidden");
+        fluxeditable.children("div.fluxeditor").children("form").submit(function(){
+          var fallback = this.uuid.value;
+          $.ajax({
+            type: "POST",
+            url:  "/display/monitoring/check",
+            data: {
+              id:      this.objid.value,
+              display: this.display.value,
+            },
+            dataType: "json",
+            success: function(data){
+              fluxeditable.children("div.fluxlabel").children("span").html(data.display || fallback);
+              fluxeditable.children("div.fluxlabel").removeClass("fluxhidden");
+              fluxeditable.children("div.fluxeditor").addClass("fluxhidden");
+            }});
+          return false;
+        });
+      });
+    </script>
   </dd>
   <dt>Sensor:</dt>
   <dd>{{ check.sensor }}</dd>
