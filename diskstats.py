@@ -17,6 +17,12 @@ class DiskstatsSensor(AbstractSensor):
         def _devname(dev):
             if "DM_VG_NAME" in dev and "DM_LV_NAME" in dev:
                 return "/dev/%s/%s" % (dev["DM_VG_NAME"], dev["DM_LV_NAME"])
+            for link in dev.device_links:
+                if "/dev/disk/by-uuid/" in link:
+                    return link
+            for link in dev.device_links:
+                if "/dev/disk/by-id/" in link:
+                    return link
             return dev.device_node
 
         return [ {"disk": _devname(dev)}
