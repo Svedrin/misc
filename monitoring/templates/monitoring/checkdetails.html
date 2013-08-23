@@ -1,14 +1,16 @@
 {% extends "base.html" %}
+{% load display %}
 {% comment %} kate: space-indent on; indent-width 2; replace-tabs on; {% endcomment %}
 {% block content %}
 <ol class="breadcrumb">
   <li><a href="/">Home</a></li>
-  <li><a href="{% url monitoring.views.check_details check.uuid %}">{% if check.display %}{{ check.display }}{% else %}{{ check.uuid }}{% endif %}</a></li>
-  <li class="active">{% if variable.display %}{{ variable.display }}{% else %}{{ variable.name }}{% endif %}</li>
+  <li><a href="{% url monitoring.views.check_details check.uuid %}">{{ check|display:"uuid" }}</a></li>
 </ol>
 <dl class="dl-horizontal">
   <dt>Check:</dt>
-  <dd>{% if check.display %}{{ check.display }}{% else %}{{ check.uuid }}{% endif %}</dd>
+  <dd><span class="edit">{{ check|display:"uuid" }}</span>
+    <button type="button" class="btn btn-default btn-xs edit"><span class="glyphicon glyphicon-pencil" title="Edit..."></span></button>
+  </dd>
   <dt>Sensor:</dt>
   <dd>{{ check.sensor }}</dd>
   <dt>Executed on host:</dt>
@@ -22,7 +24,7 @@
     <dd>
       <ul class="list-unstyled">
         {% for checkparam in check.checkparameter_set.all %}
-          <li><i>{% if checkparam.parameter.display %}{{ checkparam.parameter.display }}{% else %}{{ checkparam.parameter.name }}{% endif %}:</i> {{ checkparam.value }}</li>
+          <li><i>{{ checkparam.parameter|display }}:</i> {{ checkparam.value }}</li>
         {% endfor %}
       </ul>
     </dd>
@@ -38,7 +40,7 @@
   <tbody>
   {% for variable in check.sensor.sensorvariable_set.all %}
     <tr onclick="window.location='{% url monitoring.views.render_check_page check.uuid variable.name %}';">
-      <td>{% if variable.display %}{{ variable.display }}{% else %}{{ variable.name }}{% endif %}</td>
+      <td>{{ variable|display }}</td>
       <td><a href="{% url monitoring.views.render_check_page check.uuid variable.name %}" title="View graph" style="text-decoration: none">→</a></td>
     </tr>
   {% endfor %}

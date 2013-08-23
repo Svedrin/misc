@@ -4,13 +4,16 @@
   <h2>Login</h2>
 
   {% if form.errors %}
-  <p>Username or password don't exist or are not correct. Please try again.</p>
+  <div class="alert alert-info">
+    <p>Username or password don't exist or are not correct. Please try again.</p>
+  </div>
   {% endif %}
 
   <div>
     <form role="form" class="form-horizontal" method="post" action=".">
       {% csrf_token %}
-      <div class="form-group">
+      <div class="form-group {% if form.username.errors %}has-error{% endif %}">
+        {{ form.username.errors }}
         <label for="id_{{ form.username.html_name }}" class="col-lg-2 control-label">{{ form.username.label }}</label>
         <div class="col-lg-10">
           <input type="text" class="form-control"
@@ -20,7 +23,8 @@
             placeholder="{{ form.username.label }}" />
         </div>
       </div>
-      <div class="form-group">
+      <div class="form-group {% if form.password.errors %}has-error{% endif %}">
+        {{ form.password.errors }}
         <label for="id_{{ form.password.html_name }}" class="col-lg-2 control-label">{{ form.password.label }}</label>
         <div class="col-lg-10">
           <input type="password" class="form-control"

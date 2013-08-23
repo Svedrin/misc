@@ -134,7 +134,8 @@ INSTALLED_APPS = (
     'registration',
     'apiauth',
     'hosts',
-    'monitoring'
+    'monitoring',
+    'display',
 )
 
 # A sample logging configuration. The only tangible logging
