@@ -18,7 +18,7 @@
         {{ check.target_host }}
         {% if check.target_host != check.exec_host %}(as seen by {{ check.exec_host }}){% endif %}
       </td>
-      <td>{{ check.display }}</td>
+      <td>{{ check|displayonly }}</td>
       <td>{{ check.sensor }}</td>
       <td>{{ check.paramstring }}</td>
       <td><a href="{% url monitoring.views.check_details check.uuid %}" title="View details" style="text-decoration: none">→</a></td>
