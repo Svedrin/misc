@@ -10,28 +10,7 @@
   </li>
   <li class="active">{{ check|display:"uuid" }}</li>
 </ol>
-<dl class="dl-horizontal">
-  <dt>Check:</dt>
-  <dd>{{ check|displayform:"uuid" }}</dd>
-  <dt>Sensor:</dt>
-  <dd>{{ check.sensor }}</dd>
-  <dt>Executed on host:</dt>
-  <dd><a href="{% url hosts.views.host check.exec_host.fqdn %}">{{ check.exec_host|display:"fqdn" }}</a></dd>
-  <dt>Target host:</dt>
-  <dd><a href="{% url hosts.views.host check.target_host.fqdn %}">{{ check.target_host|display:"fqdn" }}</a></dd>
-  <dt>Last update:</dt>
-  <dd>{{ check.last_update }}</dd>
-  {% if check.checkparameter_set.count %}
-    <dt>Parameters:</dt>
-    <dd>
-      <ul class="list-unstyled">
-        {% for checkparam in check.checkparameter_set.all %}
-          <li><i>{{ checkparam.parameter|display }}:</i> {{ checkparam.value }}</li>
-        {% endfor %}
-      </ul>
-    </dd>
-  {% endif %}
-</dl>
+{% include "monitoring/checkinfo.inc.html" %}
 <table class="table table-hover">
   <thead>
     <tr>
@@ -48,5 +27,4 @@
   {% endfor %}
   </tbody>
 </table>
-<script type="text/javascript" src="/static/display/display.js"></script>
 {% endblock %}
