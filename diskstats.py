@@ -14,15 +14,37 @@ class DiskstatsSensor(AbstractSensor):
     def discover(self):
         ctx = Context()
 
+        def _devlink_score(link):
+            if link.startswith("/dev/disk/by-uuid/"):
+                return 1000
+            if link.startswith("/dev/disk/by-id/md-uuid"):
+                return  900
+            if link.startswith("/dev/disk/by-id/md-name"):
+                return  800
+            if link.startswith("/dev/disk/by-id/dm-uuid"):
+                return  700
+            if link.startswith("/dev/disk/by-id/dm-name"):
+                return  600
+            if link.startswith("/dev/disk/by-id/scsi-SATA"):
+                return  500
+            if link.startswith("/dev/disk/by-id/scsi"):
+                return  400
+            if link.startswith("/dev/disk/by-id/ata"):
+                return  400
+            if link.startswith("/dev/disk/by-id/wwn"):
+                return  300
+            return 0
+
         def _devname(dev):
             if "DM_VG_NAME" in dev and "DM_LV_NAME" in dev:
                 return "/dev/%s/%s" % (dev["DM_VG_NAME"], dev["DM_LV_NAME"])
+            currscore, currlink = 0, ""
             for link in dev.device_links:
-                if "/dev/disk/by-uuid/" in link:
-                    return link
-            for link in dev.device_links:
-                if "/dev/disk/by-id/" in link:
-                    return link
+                linkscore = _devlink_score(link)
+                if linkscore > currscore:
+                    currscore, currlink = linkscore, link
+            if currscore > 0 and currlink:
+                return currlink
             return dev.device_node
 
         return [ {"disk": _devname(dev)}
