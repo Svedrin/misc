@@ -13,7 +13,7 @@ class DummyConf(object):
     environ = {}
 
 def main():
-    parser = OptionParser(usage="%prog [options] [<sensor>] [<target>]")
+    parser = OptionParser(usage="%prog [options] [<sensor>] [<parameter>=<value> ...]")
 
     parser.add_option("-u", "--uuid",     default="11111111-1111-1111-1111-111111111111")
     parser.add_option("-d", "--datadir",  default="/tmp")
@@ -32,10 +32,14 @@ def main():
         print json.dumps(sensor.discover(), indent=4)
         return 0
 
-    if len(posargs) == 2:
+    if len(posargs) >= 2:
         DummyConf.environ.update(options.__dict__)
+        params = {"uuid": options.uuid}
+        for arg in posargs[1:]:
+            key, val = arg.split("=", 1)
+            params[key] = val
         sensor = SensorMeta.sensortypes[posargs[0]](DummyConf)
-        print json.dumps(sensor.check(options.uuid, posargs[1]), indent=4)
+        print json.dumps(sensor.check(params), indent=4)
         return 0
 
 if __name__ == '__main__':
