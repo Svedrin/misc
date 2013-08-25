@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% comment %} kate: space-indent on; indent-width 2; replace-tabs on; {% endcomment %}
+{% load display_extras %}
+{% block content %}
+<ol class="breadcrumb">
+  <li><a href="/">Home</a></li>
+  <li class="active">{{ host|display:"fqdn" }}</li>
+</ol>
+<dl class="dl-horizontal">
+  <dt>Host:</dt>
+  <dd>{{ host.fqdn }}</dd>
+</dl>
+{% include "monitoring/listchecks.inc.html" with list_checks=host.check_target_set.all %}
+{% endblock %}

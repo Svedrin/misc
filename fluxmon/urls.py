@@ -11,6 +11,7 @@ urlpatterns = patterns('',
 
     url(r'^accounts/login/$',                              'django.contrib.auth.views.login'),
     url(r'^accounts/logout/$',                             'django.contrib.auth.views.logout', {'next_page': '/'}),
+    url(r'^hosts/(?P<fqdn>[\w\.\-]+)$',                    'hosts.views.host'),
     url(r'^accounts/profile/$',                            'monitoring.views.profile'),
     url(r'^search/$',                                      'monitoring.views.search'),
     url(r'^conf/(?P<host_fqdn>[\w\.\-]+)$',                'monitoring.views.config'),
