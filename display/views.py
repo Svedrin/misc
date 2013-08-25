@@ -5,12 +5,28 @@ import json
 
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.contenttypes.models import ContentType
 
 from monitoring.models import Check
+from display.models    import ItemDisplay
 
 @csrf_exempt
 def set_display(request, app, obj):
-    cc = Check.objects.get(id=request.POST["id"])
-    cc.display = request.POST["display"]
-    cc.save()
-    return HttpResponse( json.dumps({"display": cc.display}), mimetype="application/json" )
+    content_type = ContentType.objects.get(app_label=app, model=obj)
+
+    # TODO: use ItemDisplay.objects.update_or_create()
+    display, created = ItemDisplay.objects.get_or_create(
+        content_type = content_type,
+        object_id    = int(request.POST["id"]),
+        defaults     = {"display": request.POST["display"]}
+        )
+    if not created:
+        display.display = request.POST["display"]
+        display.save()
+
+    # make sure the old field is cleared (will be removed soon)
+    if hasattr(display.content_object, "display"):
+        display.content_object.display = ''
+        display.content_object.save()
+
+    return HttpResponse( json.dumps({"display": display.display}), mimetype="application/json" )

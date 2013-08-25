@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load display %}
+{% load display_extras %}
 {% comment %} kate: space-indent on; indent-width 2; replace-tabs on; {% endcomment %}
 {% block content %}
 <ol class="breadcrumb">
@@ -9,7 +9,7 @@
 </ol>
 <dl class="dl-horizontal">
   <dt>Check:</dt>
-  <dd>{{ check|display:"uuid" }}</dd>
+  <dd>{{ check|displayform:"uuid" }}</dd>
   <dt>Sensor:</dt>
   <dd>{{ check.sensor }}</dd>
   <dt>Executed on host:</dt>
@@ -35,4 +35,5 @@
   <img class="narrowscreenonly" src="{% url monitoring.views.render_check check.uuid variable.name %}?width=410" alt="graph" style="margin: 0 auto" />
   <img class="tinyscreenonly"   src="{% url monitoring.views.render_check check.uuid variable.name %}?width=220" alt="graph" style="margin: 0 auto" />
 </div>
+<script type="text/javascript" src="/static/display/display.js"></script>
 {% endblock %}

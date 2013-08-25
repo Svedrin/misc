@@ -1,0 +1,17 @@
+{% comment %} kate: space-indent on; indent-width 2; replace-tabs on; {% endcomment %}
+<div class="fluxeditable">
+  <div class="fluxlabel">
+    <span>{{ display }}</span>
+    <button type="button" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-pencil" title="Edit..."></span></button>
+  </div>
+  <div class="fluxeditor fluxhidden">
+    <form class="form-inline" role="form">
+      <input type="hidden" name="app"   value="{{ app }}" />
+      <input type="hidden" name="model" value="{{ model }}" />
+      <input type="hidden" name="objid" value="{{ obj.id }}" />
+      <input type="hidden" name="placeholder" value="{{ placeholder }}" />
+      <div class="form-group"><input name="display" value="{{ display }}" class="form-control" size="50" placeholder="{{ placeholder }}"/></div>
+      <button type="submit" class="btn btn-default">Submit</button>
+    </form>
+  </div>
+</div>
