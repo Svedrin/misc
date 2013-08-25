@@ -17,6 +17,10 @@ class DiskstatsSensor(AbstractSensor):
         def _devlink_score(link):
             if link.startswith("/dev/disk/by-uuid/"):
                 return 1000
+            if link.startswith("/dev/drbd/by-res/"):
+                return  900
+            if link.startswith("/dev/drbd/by-disk/"):
+                return  800
             if link.startswith("/dev/disk/by-id/md-uuid"):
                 return  900
             if link.startswith("/dev/disk/by-id/md-name"):
