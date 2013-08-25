@@ -5,12 +5,14 @@ import json
 
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
 
 from monitoring.models import Check
 from display.models    import ItemDisplay
 
 @csrf_exempt
+@login_required
 def set_display(request, app, obj):
     content_type = ContentType.objects.get(app_label=app, model=obj)
 
