@@ -26,5 +26,12 @@
   <dd>{{ check.current_alert.starttime }} ({{ check.current_alert.starttime|timesince }})</dd>
   <dt>Fail count:</dt>
   <dd>{{ check.current_alert.failcount }}</dd>
+  {% else %}
+  {% if check.alert_set.count %}
+  <dt>Last failure:</dt>
+  <dd>{{ check.alert_set.latest.starttime }} - {{ check.alert_set.latest.endtime }}</dd>
+  <dt>Fail count:</dt>
+  <dd>{{ check.alert_set.latest.failcount }}</dd>
+  {% endif %}
   {% endif %}
 </dl>
