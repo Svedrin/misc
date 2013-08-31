@@ -4,6 +4,7 @@
 
 import sys
 import socket
+import os.path
 
 from time     import time, sleep
 from datetime import datetime
@@ -30,6 +31,12 @@ def main():
     wc = WolfConfig(options.config)
     wc.parse()
     wc.environ.update(options.__dict__)
+
+    if not os.path.exists(options.spooldir):
+        return "The spool directory (%s) does not exist, please create it." % options.spooldir
+
+    if not os.path.exists(options.datadir):
+        return "The data directory (%s) does not exist, please create it." % options.datadir
 
     if options.fqdn:
         myhostname = options.fqdn
