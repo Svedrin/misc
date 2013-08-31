@@ -158,7 +158,7 @@ class RRD(object):
         self._info = data
         return data
 
-    def get_confidence_interval(self, names, start=None, end=None):
+    def get_confidence_intervals(self, names, start=None, end=None):
         if end is None:
             end = self.last_check
         if start is None:

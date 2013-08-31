@@ -119,6 +119,13 @@ class Check(models.Model):
     def rrd(self):
         return RRD(self)
 
+    @property
+    def current_alert(self):
+        try:
+            return self.alert_set.get(endtime=None)
+        except Alert.DoesNotExist:
+            return None
+
     def user_allowed(self, user):
         if user.is_superuser:
             return True
@@ -133,6 +140,26 @@ class Check(models.Model):
     def process_result(self, result):
         if result["data"] is not None:
             self.rrd.update(result)
+            confintervals = self.rrd.get_confidence_intervals(result["data"].keys())
+            curralert = self.current_alert
+            if max([ info["fail"] for info in confintervals.values() ]):
+                # if we have any failed values, update alerts
+                if curralert is None:
+                    curralert = Alert(check=self, starttime=datetime.now(), endtime=None, failcount=0)
+                curralert.failcount += 1
+                curralert.save()
+                for varname, info in confintervals.items():
+                    curralert.alertvariable_set.create(
+                        variable  = self.sensor.sensorvariable_set.get(name=varname),
+                        timestamp = datetime.now(),
+                        fail      = info["fail"],
+                        exp_lower = info["lower"],
+                        exp_upper = info["upper"],
+                        value     = result["data"][varname])
+            else:
+                if curralert is not None:
+                    curralert.endtime = datetime.now()
+                    curralert.save()
 
 
 class CheckParameter(models.Model):
@@ -145,3 +172,23 @@ class CheckParameter(models.Model):
 
     def __unicode__(self):
         return "%s.%s = %s" % (self.parameter.sensor.name, self.parameter.name, self.value)
+
+
+class Alert(models.Model):
+    check       = models.ForeignKey(Check)
+    starttime   = models.DateTimeField()
+    endtime     = models.DateTimeField(null=True)
+    failcount   = models.IntegerField()
+
+    class Meta:
+        get_latest_by = "starttime"
+
+
+class AlertVariable(models.Model):
+    alert       = models.ForeignKey(Alert)
+    variable    = models.ForeignKey(SensorVariable)
+    timestamp   = models.DateTimeField()
+    fail        = models.BooleanField()
+    exp_lower   = models.FloatField()
+    exp_upper   = models.FloatField()
+    value       = models.FloatField()
