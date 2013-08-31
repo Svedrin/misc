@@ -20,10 +20,9 @@
   </thead>
   <tbody>
   {% for variable, alerts in vars %}
-    <tr onclick="window.location='{% url monitoring.views.render_check_page check.uuid variable.name %}';">
+    <tr onclick="window.location='{% url monitoring.views.render_check_page check.uuid variable.name %}';" class="{% if alerts %}warning{% else %}success{% endif %}">
       <td>
         {{ variable|display }}
-        {% if alerts %}<span class="glyphicon glyphicon-warning-sign" title="Variable is in warning state"></span>{% endif %}
       </td>
       <td><a href="{% url monitoring.views.render_check_page check.uuid variable.name %}" title="View graph" style="text-decoration: none">→</a></td>
     </tr>
