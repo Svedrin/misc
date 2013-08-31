@@ -194,3 +194,6 @@ class AlertVariable(models.Model):
     exp_lower   = models.FloatField()
     exp_upper   = models.FloatField()
     value       = models.FloatField()
+
+    def __unicode__(self):
+        return unicode(self.variable)
