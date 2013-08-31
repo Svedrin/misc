@@ -6,6 +6,7 @@ import uuid
 from datetime import datetime, timedelta
 
 from django.db import models
+from django.utils.timezone import make_aware, get_default_timezone
 
 from hosts import models as hosts
 from sensors.sensor import SensorMeta
@@ -145,20 +146,20 @@ class Check(models.Model):
             if max([ info["fail"] for info in confintervals.values() ]):
                 # if we have any failed values, update alerts
                 if curralert is None:
-                    curralert = Alert(check=self, starttime=datetime.now(), endtime=None, failcount=0)
+                    curralert = Alert(check=self, starttime=make_aware(datetime.now(), get_default_timezone()), endtime=None, failcount=0)
                 curralert.failcount += 1
                 curralert.save()
                 for varname, info in confintervals.items():
                     curralert.alertvariable_set.create(
                         variable  = self.sensor.sensorvariable_set.get(name=varname),
-                        timestamp = datetime.now(),
+                        timestamp = make_aware(datetime.now(), get_default_timezone()),
                         fail      = info["fail"],
                         exp_lower = info["lower"],
                         exp_upper = info["upper"],
                         value     = result["data"][varname])
             else:
                 if curralert is not None:
-                    curralert.endtime = datetime.now()
+                    curralert.endtime = make_aware(datetime.now(), get_default_timezone())
                     curralert.save()
 
 
