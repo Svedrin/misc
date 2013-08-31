@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% comment %} kate: space-indent on; indent-width 2; replace-tabs on; {% endcomment %}
+{# kate: space-indent on; indent-width 2; replace-tabs on; #}
 {% block content %}
   <h2>Hi {{ user }}</h2>
 
@@ -8,11 +8,19 @@
     Thing is, for that to happen, we need to have alerts first.
   </p>
 
-  <div class="alert alert-success">This is what a success message looks like.</div>
+  <!--<div class="alert alert-success">This is what a success message looks like.</div>
   <div class="alert alert-info">Alerts could look like this...</div>
   <div class="alert alert-warning">...or this...</div>
-  <div class="alert alert-danger">...or this.</div>
+  <div class="alert alert-danger">...or this.</div>-->
 
+  {# include "monitoring/searchform.inc.html" #}
 
-  {% include "monitoring/searchform.inc.html" %}
+  {% if outdatedchecks.count %}
+  <h2>Outdated Checks</h2>
+  <div class="alert alert-info">
+    <strong>We haven't heard about these checks for a while:</strong>
+    {% include "monitoring/listchecks.inc.html" with list_checks=outdatedchecks %}
+  </div>
+  {% endif %}
+
 {% endblock %}
