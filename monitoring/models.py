@@ -143,7 +143,8 @@ class Check(models.Model):
             self.rrd.update(result)
             confintervals = self.rrd.get_confidence_intervals(result["data"].keys())
             curralert = self.current_alert
-            if max([ info["fail"] for info in confintervals.values() ]):
+            if max([info["fail"] and not (info["lower"] <= result["data"][varname] <= info["upper"])
+                    for varname, info in confintervals.items() ]):
                 # if we have any failed values, update alerts
                 if curralert is None:
                     curralert = Alert(check=self, starttime=make_aware(datetime.now(), get_default_timezone()), endtime=None, failcount=0)
