@@ -49,6 +49,40 @@
   <div class="alert alert-success">There's currently nothing to worry about.</div>
   {% endif %}
 
+  <h2>Alert Timeline</h2>
+  <div>
+    <strong>This is what happened in the last 24 hours:</strong>
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Host</th>
+          <th>Check Label</th>
+          <th>Sensor</th>
+          <th>Parameters</th>
+          <th>State change</th>
+          <th> </th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for timestamp, alert, statechange in timeline %}
+        <tr onclick="window.location='{% url monitoring.views.check_details alert.check.uuid %}';" class="{% if statechange == 'start' %}warning{% else %}success{% endif %}">
+          <td>{{ timestamp|time }}</td>
+          <td>
+            {{ alert.check.target_host }}
+            {% if alert.check.target_host != alert.check.exec_host %}(as seen by {{ alert.check.exec_host }}){% endif %}
+          </td>
+          <td>{{ alert.check|displayonly }}</td>
+          <td>{{ alert.check.sensor }}</td>
+          <td>{{ alert.check.paramstring }}</td>
+          <td>{% if statechange == "start" %}OK → Warning{% else %}Warning → OK{% endif %}</td>
+          <td><a href="{% url monitoring.views.check_details alert.check.uuid %}" title="View details" style="text-decoration: none">→</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
   {% if outdatedchecks.count %}
   <h2>Outdated Checks</h2>
   <div class="alert alert-info">

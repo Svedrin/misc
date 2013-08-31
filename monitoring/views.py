@@ -5,6 +5,8 @@ import re
 import json
 import operator
 
+from datetime import datetime, timedelta
+
 from django.shortcuts               import render_to_response, get_object_or_404, get_list_or_404
 from django.template                import RequestContext
 from django.http                    import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, HttpResponseBadRequest
@@ -12,6 +14,7 @@ from django.views.decorators.csrf   import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.db.models               import Q
 from django.core.urlresolvers       import reverse
+from django.utils.timezone          import make_aware, get_default_timezone
 
 from hosts.models import Host
 from monitoring.models import Sensor, SensorVariable, Check, Alert
@@ -34,10 +37,21 @@ def config(request, host_fqdn):
 
 @login_required
 def profile(request):
+    timeline = []
+    viewstart = make_aware(datetime.now() - timedelta(hours=24), get_default_timezone())
+    for alert in Alert.objects.filter( Q(starttime__gt=viewstart) | Q(endtime=None) | Q(endtime__gt=viewstart) ):
+        # alert switched state in the last 24 hours.
+        if alert.starttime >= viewstart:
+            timeline.append((alert.starttime, alert, "start"))
+        if alert.endtime is not None:
+            timeline.append((alert.endtime, alert, "end"))
+    timeline.sort(key=lambda rec: rec[0])
+
     return render_to_response("profile.html", {
         'currentalerts':  Alert.objects.filter(endtime=None).order_by("-failcount"),
         'outdatedchecks': Check.objects.get_outdated(),
-        'searchform': SearchForm()
+        'searchform': SearchForm(),
+        'timeline': timeline,
         }, context_instance=RequestContext(request))
 
 
