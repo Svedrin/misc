@@ -3,6 +3,8 @@
 
 import uuid
 
+from datetime import datetime, timedelta
+
 from django.db import models
 
 from hosts import models as hosts
@@ -61,12 +63,29 @@ class SensorVariable(models.Model):
         return "%s: %s" % (self.sensor.name, self.name)
 
 
+class OutdatedChecksQuerySet(models.query.QuerySet):
+    def __iter__(self):
+        for check in models.query.QuerySet.__iter__(self):
+            lu = check.last_update
+            if lu is None or (datetime.now() - lu) > timedelta(minutes=5):
+                yield check
+        raise StopIteration
+
+    def count(self):
+        return len(list(self))
+
+class CheckManager(models.Manager):
+    def get_outdated(self):
+        return OutdatedChecksQuerySet(self.model, using=self._db)
+
 class Check(models.Model):
     sensor      = models.ForeignKey(Sensor)
     uuid        = models.CharField("Check UUID", max_length=40, blank=True, default='', editable=False, unique=True)
     exec_host   = models.ForeignKey(hosts.Host, verbose_name="The host that executes the check", related_name="check_exec_set")
     target_host = models.ForeignKey(hosts.Host, verbose_name="The host that is being checked",   related_name="check_target_set")
     display     = models.CharField("Human-readable name", max_length=255, default='', blank=True)
+
+    objects     = CheckManager()
 
     def __unicode__(self):
         return "%s(%s) @ %s" % (self.sensor.name,

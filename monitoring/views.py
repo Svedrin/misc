@@ -35,6 +35,7 @@ def config(request, host_fqdn):
 @login_required
 def profile(request):
     return render_to_response("profile.html", {
+        'outdatedchecks': Check.objects.get_outdated(),
         'searchform': SearchForm()
         }, context_instance=RequestContext(request))
 
