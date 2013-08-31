@@ -21,4 +21,10 @@
       </ul>
     </dd>
   {% endif %}
+  {% if check.current_alert %}
+  <dt>Failing since:</dt>
+  <dd>{{ check.current_alert.starttime }} ({{ check.current_alert.starttime|timesince }})</dd>
+  <dt>Fail count:</dt>
+  <dd>{{ check.current_alert.failcount }}</dd>
+  {% endif %}
 </dl>

@@ -1,12 +1,8 @@
 {% extends "base.html" %}
 {# kate: space-indent on; indent-width 2; replace-tabs on; #}
+{% load display_extras %}
 {% block content %}
   <h2>Hi {{ user }}</h2>
-
-  <p>
-    This page should probably inform you of current alerts you are subscribed to or something.
-    Thing is, for that to happen, we need to have alerts first.
-  </p>
 
   <!--<div class="alert alert-success">This is what a success message looks like.</div>
   <div class="alert alert-info">Alerts could look like this...</div>
@@ -14,6 +10,44 @@
   <div class="alert alert-danger">...or this.</div>-->
 
   {# include "monitoring/searchform.inc.html" #}
+
+  <h2>Alerts</h2>
+  {% if currentalerts.count %}
+  <div class="alert alert-warning">
+    <strong>The following checks are currently in a bad mood:</strong>
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>Host</th>
+          <th>Check Label</th>
+          <th>Sensor</th>
+          <th>Parameters</th>
+          <th>Failing since</th>
+          <th>Failure count</th>
+          <th> </th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for alert in currentalerts %}
+        <tr onclick="window.location='{% url monitoring.views.check_details alert.check.uuid %}';">
+          <td>
+            {{ alert.check.target_host }}
+            {% if alert.check.target_host != alert.check.exec_host %}(as seen by {{ alert.check.exec_host }}){% endif %}
+          </td>
+          <td>{{ alert.check|displayonly }}</td>
+          <td>{{ alert.check.sensor }}</td>
+          <td>{{ alert.check.paramstring }}</td>
+          <td><span title="{{ alert.starttime }}">{{ alert.starttime|timesince }}</a></td>
+          <td>{{ alert.failcount }}</td>
+          <td><a href="{% url monitoring.views.check_details alert.check.uuid %}" title="View details" style="text-decoration: none">→</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="alert alert-success">There's currently nothing to worry about.</div>
+  {% endif %}
 
   {% if outdatedchecks.count %}
   <h2>Outdated Checks</h2>

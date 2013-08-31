@@ -14,7 +14,7 @@ from django.db.models               import Q
 from django.core.urlresolvers       import reverse
 
 from hosts.models import Host
-from monitoring.models import Sensor, SensorVariable, Check
+from monitoring.models import Sensor, SensorVariable, Check, Alert
 from monitoring.forms  import SearchForm
 from monitoring.graphbuilder import Graph
 from monitoring.graphunits   import parse, extract_units
@@ -35,6 +35,7 @@ def config(request, host_fqdn):
 @login_required
 def profile(request):
     return render_to_response("profile.html", {
+        'currentalerts':  Alert.objects.filter(endtime=None).order_by("-failcount"),
         'outdatedchecks': Check.objects.get_outdated(),
         'searchform': SearchForm()
         }, context_instance=RequestContext(request))
@@ -100,8 +101,15 @@ def check_details(request, uuid):
     if check.sensor.sensorvariable_set.count() == 1:
         var = check.sensor.sensorvariable_set.all()[0]
         return HttpResponseRedirect(reverse(render_check_page, args=(check.uuid, var.name)))
+    svars = []
+    for variable in check.sensor.sensorvariable_set.all():
+        alerts = []
+        if check.current_alert:
+            alerts = check.current_alert.alertvariable_set.filter(variable=variable, fail=True)
+        svars.append((variable, alerts))
     return render_to_response("monitoring/checkdetails.html", {
-        'check': check
+        'check': check,
+        'vars':  svars
         }, context_instance=RequestContext(request))
 
 @login_required
