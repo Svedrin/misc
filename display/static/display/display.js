@@ -4,6 +4,7 @@ $("div.fluxeditable").children("div.fluxlabel").children("button").click(functio
   var fluxeditable = $(this.parentNode.parentNode);
   fluxeditable.children("div.fluxlabel").addClass("fluxhidden");
   fluxeditable.children("div.fluxeditor").removeClass("fluxhidden");
+  fluxeditable.children("div.fluxeditor").children("form").children("div").children("input").focus();
   fluxeditable.children("div.fluxeditor").children("form").submit(function(){
     var self = this;
     $.ajax({
