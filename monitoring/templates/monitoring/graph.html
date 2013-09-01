@@ -13,9 +13,25 @@
 </ol>
 {% include "monitoring/checkinfo.inc.html" %}
 <h3>{{ variable|display }}</h3>
-<div style="width: 100%">
-  <img class="widescreenonly"   src="{% url monitoring.views.render_check check.uuid variable.name %}" alt="graph" style="margin: 0 auto" />
-  <img class="narrowscreenonly" src="{% url monitoring.views.render_check check.uuid variable.name %}?width=410" alt="graph" style="margin: 0 auto" />
-  <img class="tinyscreenonly"   src="{% url monitoring.views.render_check check.uuid variable.name %}?width=220" alt="graph" style="margin: 0 auto" />
+<div>
+  <button class="btn btn-default" onclick="loadimg(parseInt(new Date().getTime() / 1000) -      4*60*60);">4h</button>
+  <button class="btn btn-default" onclick="loadimg(parseInt(new Date().getTime() / 1000) -     24*60*60);">24h</button>
+  <button class="btn btn-default" onclick="loadimg(parseInt(new Date().getTime() / 1000) -     48*60*60);">48h</button>
+  <button class="btn btn-default" onclick="loadimg(parseInt(new Date().getTime() / 1000) -   7*24*60*60);">1w</button>
+  <button class="btn btn-default" onclick="loadimg(parseInt(new Date().getTime() / 1000) -  30*24*60*60);">1m</button>
+  <button class="btn btn-default" onclick="loadimg(parseInt(new Date().getTime() / 1000) - 365*24*60*60);">1y</button>
 </div>
+<div style="width: 100%">
+  <img class="widescreenonly"   src="{% url monitoring.views.render_check check.uuid variable.name %}?{{ request.META.QUERY_STRING }}" alt="graph" style="margin: 0 auto" />
+  <img class="narrowscreenonly" src="{% url monitoring.views.render_check check.uuid variable.name %}?width=410&amp;{{ request.META.QUERY_STRING }}" alt="graph" style="margin: 0 auto" />
+  <img class="tinyscreenonly"   src="{% url monitoring.views.render_check check.uuid variable.name %}?width=220&amp;{{ request.META.QUERY_STRING }}" alt="graph" style="margin: 0 auto" />
+</div>
+<script type="text/javascript">
+function loadimg(start, end){
+  start = start || (parseInt(new Date().getTime() / 1000) - 24*60*60);
+  end   = end   || null;
+  var baseurl = "{% url monitoring.views.render_check_page check.uuid variable.name %}";
+  location.href = baseurl + "?start=" + start + (end !== null ? "&end=" + end : "");
+}
+</script>
 {% endblock %}
