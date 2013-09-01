@@ -18,6 +18,10 @@ div.fieldWrapper input {
     width: 100%;
 }
 
+dd ul {
+  margin: 0;
+}
+
 .fluxhidden {
   display: none;
 }

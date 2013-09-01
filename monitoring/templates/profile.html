@@ -4,12 +4,12 @@
 {% block content %}
   <h2>Hi {{ user }}</h2>
 
+  {% include "monitoring/searchform.inc.html" %}
+
   <!--<div class="alert alert-success">This is what a success message looks like.</div>
   <div class="alert alert-info">Alerts could look like this...</div>
   <div class="alert alert-warning">...or this...</div>
   <div class="alert alert-danger">...or this.</div>-->
-
-  {# include "monitoring/searchform.inc.html" #}
 
   <h2>Alerts</h2>
   {% if currentalerts.count %}
