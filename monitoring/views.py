@@ -128,7 +128,7 @@ def check_details(request, uuid):
         }, context_instance=RequestContext(request))
 
 @login_required
-def render_check_page(request, uuid, ds, profile="4h"):
+def render_check_page(request, uuid, ds, profile="24h"):
     check = get_object_or_404(Check, uuid=uuid)
     profiles = (
         ( "4h",      6*60*60),
