@@ -20,6 +20,7 @@ urlpatterns = patterns('',
     url(r'^submit/results/$',                              'monitoring.views.process'),
     url(r'^details/(?P<uuid>[\w\d-]+)/',                   'monitoring.views.check_details'),
     url(r'^render/(?P<uuid>[\w\d-]+)/(?P<ds>[\w_]+).html', 'monitoring.views.render_check_page'),
+    url(r'^render/(?P<uuid>[\w\d-]+)/(?P<ds>[\w_]+)/(?P<profile>[\d\w]+).html', 'monitoring.views.render_check_page'),
     url(r'^render/(?P<uuid>[\w\d-]+)/(?P<ds>[\w_]+).png',  'monitoring.views.render_check'),
 
     url(r'^/?$',                                          'django.views.generic.simple.direct_to_template', {'template': 'index.html'}),

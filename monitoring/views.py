@@ -6,6 +6,7 @@ import json
 import operator
 
 from datetime import datetime, timedelta
+from time import time
 
 from django.shortcuts               import render_to_response, get_object_or_404, get_list_or_404
 from django.template                import RequestContext
@@ -127,10 +128,23 @@ def check_details(request, uuid):
         }, context_instance=RequestContext(request))
 
 @login_required
-def render_check_page(request, uuid, ds):
+def render_check_page(request, uuid, ds, profile="4h"):
     check = get_object_or_404(Check, uuid=uuid)
+    profiles = (
+        ( "4h",      6*60*60),
+        ("24h",     24*60*60),
+        ("48h",     48*60*60),
+        ( "1w",   7*24*60*60),
+        ( "1m",  30*24*60*60),
+        ( "1y", 365*24*60*60),
+    )
+    start = int(time()) - dict(profiles)[profile]
     return render_to_response("monitoring/graph.html", {
         'check':    check,
+        'profiles': [p[0] for p in profiles],
+        'active_profile': profile,
+        'start':    start,
+        'end':      check.rrd.last_check,
         'variable': check.sensor.sensorvariable_set.get(name=ds)
         }, context_instance=RequestContext(request))
 
