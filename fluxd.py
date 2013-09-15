@@ -58,7 +58,7 @@ def main():
     new_checks = []
     for sensortype in SensorMeta.sensortypes:
         if sensortype not in wc.objects:
-            print "Sensor type '%s' is installed but unknown to the config, skipped."
+            print "Sensor type '%s' is installed but unknown to the config, skipped." % sensortype
             continue
 
         sensor = SensorMeta.sensortypes[sensortype](None)
