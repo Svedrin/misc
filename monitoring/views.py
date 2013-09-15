@@ -52,7 +52,8 @@ def profile(request):
         'currentalerts':  Alert.objects.filter(endtime=None).order_by("-failcount"),
         'outdatedchecks': Check.objects.get_outdated(),
         'searchform': SearchForm(),
-        'timeline': timeline,
+        'timeline': timeline[:50][::-1],
+        'timeline_truncated': len(timeline) - 50,
         }, context_instance=RequestContext(request))
 
 

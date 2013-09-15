@@ -89,6 +89,9 @@
               <td><a href="{% url monitoring.views.check_details alert.check.uuid %}" title="View details" style="text-decoration: none">→</a></td>
             </tr>
           {% endfor %}
+          {% if timeline_truncated %}
+            <tr><td colspan="7">{{ timeline_truncated }} events truncated</td></tr>
+          {% endif %}
           </tbody>
         </table>
       </div>
