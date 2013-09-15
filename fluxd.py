@@ -22,6 +22,7 @@ def main():
     parser.add_option("-s", "--spooldir", default="/var/spool/fluxmon")
     parser.add_option("-i", "--interval", default=300, type="int")
     parser.add_option("-f", "--fqdn",     default="", type="string", help="FQDN to use")
+    parser.add_option("-n", "--noop",     default=False, action="store_true", help="Only detect checks and exit, don't commit or run them")
 
     options, posargs = parser.parse_args()
     if posargs:
@@ -77,6 +78,9 @@ def main():
                 new_checks.append(params)
             else:
                 print "Found known target:", target_params
+
+    if options.noop:
+        return "Check discovery finished but no-op is active, exiting."
 
     if new_checks:
         account.add_checks(new_checks)
