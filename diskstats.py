@@ -14,6 +14,17 @@ class DiskstatsSensor(AbstractSensor):
     def discover(self):
         ctx = Context()
 
+        def _check_lv(device):
+            if "DM_VG_NAME" in dev and "DM_LV_NAME" in dev:
+                return "/dev/%s/%s" % (dev["DM_VG_NAME"], dev["DM_LV_NAME"])
+            for link in os.listdir("/dev/mapper"):
+                linkdev = os.path.realpath(os.path.join("/dev/mapper", link))
+                if linkdev == device.device_node:
+                    vg, lv = link.split("-", 1)
+                    if os.path.exists(os.path.join("/dev", vg, lv)):
+                        return os.path.join("/dev", vg, lv)
+                    return linkdev
+
         def _devlink_score(link):
             if link.startswith("/dev/disk/by-uuid/"):
                 return 1000
@@ -40,8 +51,9 @@ class DiskstatsSensor(AbstractSensor):
             return 0
 
         def _devname(dev):
-            if "DM_VG_NAME" in dev and "DM_LV_NAME" in dev:
-                return "/dev/%s/%s" % (dev["DM_VG_NAME"], dev["DM_LV_NAME"])
+            lv = _check_lv(dev)
+            if lv is not None:
+                return lv
             currscore, currlink = 0, ""
             for link in dev.device_links:
                 linkscore = _devlink_score(link)
