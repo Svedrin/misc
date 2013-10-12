@@ -12,7 +12,8 @@ import json
 import os.path
 
 from BeautifulSoup import BeautifulSoup
-from time import time
+from time     import time, mktime
+from datetime import datetime
 
 
 conf = json.load(open(os.path.expanduser("~/.rss2imap.conf")))
@@ -33,11 +34,11 @@ conf = json.load(open(os.path.expanduser("~/.rss2imap.conf")))
 #        },
 #        "Comics": {
 #            "QC":             "http://www.questionablecontent.net/QCRSS.xml",
-#            "Dilbert":        "http://feeds.feedburner.com/DilbertDailyStrip?format=xml",
 #            "xkcd":           "http://xkcd.com/rss.xml",
 #            "wumo":           "http://feeds.feedburner.com/wulffmorgenthaler",
-#            "tpfd":           "http://www.toothpastefordinner.com/rss/rss.php",
 #            "ahoipolloi":     "http://feed43.com/ahoipolloi.xml"
+#            "Dilbert":        { "url": "http://feeds.feedburner.com/DilbertDailyStrip?format=xml", "proxy": "dilbert" },
+#            "tpfd":           { "url": "http://www.toothpastefordinner.com/rss/rss.php",           "proxy": "tpfd" },
 #        }
 #    }
 # }
@@ -54,6 +55,31 @@ content_template = """
 """
 
 
+USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64; rv:24.0) Gecko/20100101 Firefox/24.0 Iceweasel/24.0"
+
+class DilbertProxy(object):
+    def get_content(self, entry):
+        req = requests.get(entry.link, headers={"User-Agent": USER_AGENT})
+        soup = BeautifulSoup(req.content)
+        for soupimg in soup.findAll("img"):
+            if soupimg["src"].startswith("/dyn/str_strip/") and soupimg["src"].endswith(".strip.gif"):
+                return '<img src="http://www.dilbert.com%s">' % soupimg["src"]
+
+class TpfdProxy(object):
+    def get_content(self, entry):
+        entdate = datetime.fromtimestamp(mktime(feed.entries[0].published_parsed)).strftime("%m%d%y")
+        req = requests.get(entry.link, headers={"User-Agent": USER_AGENT})
+        soup = BeautifulSoup(req.content)
+        for soupimg in soup.findAll("img"):
+            if soupimg["src"].startswith("http://www.toothpastefordinner.com/%s/" % entdate):
+                return '<img src="%s">' % soupimg["src"]
+
+proxies = {
+    "dilbert": DilbertProxy(),
+    "tpfd":    TpfdProxy(),
+}
+
+
 serv = imaplib.IMAP4(conf["imap"]["host"])
 serv.login(conf["imap"]["user"], conf["imap"]["pass"])
 
@@ -61,7 +87,13 @@ for dirname, feeds in conf["feeds"].items():
     if "-q" not in sys.argv:
         print "Processing %s feeds..." % dirname
     serv.select(dirname)
-    for feedname, feedurl in feeds.items():
+    for feedname, feedinfo in feeds.items():
+        if isinstance(feedinfo, dict):
+            feedurl   = feedinfo["url"]
+            feedproxy = proxies[feedinfo["proxy"]]
+        else:
+            feedurl   = feedinfo
+            feedproxy = None
         if "-q" not in sys.argv:
             print "-> %s" % feedname
         feed = feedparser.parse(feedurl)
@@ -87,13 +119,17 @@ for dirname, feeds in conf["feeds"].items():
                 mp["X-RSS2IMAP-ID"] = entid
                 mp.attach(alt)
 
-                if "content" in entry:
-                    soup = BeautifulSoup(entry.content[0].value)
+                if feedproxy is not None:
+                    content = feedproxy.get_content(entry)
+                elif "content" in entry:
+                    content = entry.content[0].value
                 else:
-                    soup = BeautifulSoup(entry.summary)
+                    content = entry.summary
+
+                soup = BeautifulSoup(content)
 
                 for soupimg in soup.findAll("img"):
-                    req = requests.get(soupimg["src"])
+                    req = requests.get(soupimg["src"], headers={"User-Agent": USER_AGENT})
                     if req.status_code == 200:
                         cid = hashlib.md5(soupimg["src"]).hexdigest()
                         soupimg["src"] = "cid:%s" % cid
