@@ -9,6 +9,6 @@ setup(name='fluxd',
       author="Michael Ziegler",
       author_email='diese-addy@funzt-halt.net',
       url='http://www.fluxmon.de',
-      py_modules=['fluxd'],
+      py_modules=['fluxd', 'runsensor'],
       packages=["sensors", "wolfgang"]
      )
