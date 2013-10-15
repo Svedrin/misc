@@ -61,8 +61,11 @@ def profile(request):
 def search(request):
     results = None
 
-    if request.method == 'POST':
-        searchform = SearchForm(request.POST)
+    if request.method == 'POST' or "query" in request.GET:
+        if request.method == "POST":
+            searchform = SearchForm(request.POST)
+        else:
+            searchform = SearchForm(request.GET)
         if searchform.is_valid():
             host_kwds  = []
             check_kwds = []
