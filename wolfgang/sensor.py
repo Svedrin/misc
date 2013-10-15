@@ -9,11 +9,14 @@ class Sensor(WolfObject):
 
     def __init__(self, conf, name, args, params):
         WolfObject.__init__(self, conf, name, args, params)
+        self._sensor = None
 
     @property
     def sensor(self):
-        SensorType = SensorMeta.sensortypes[self.name]
-        return SensorType(self._conf)
+        if self._sensor is None:
+            SensorType = SensorMeta.sensortypes[self.name]
+            self._sensor = SensorType(self._conf)
+        return self._sensor
 
     def discover(self):
         return self.sensor.discover()
