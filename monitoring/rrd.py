@@ -121,7 +121,7 @@ class RRD(object):
                 mkrra( res, "MIN",     intsecs(days=1),     intsecs(days=450) ),
                 mkrra( res, "MAX",     intsecs(days=1),     intsecs(days=450) ),
                 #           RRA type,     prediction time,  season length,    alpha,   beta
-                mkpred(res, "HWPREDICT",  intsecs(days=5),  intsecs(days=1),  0.5,     0.5 ),
+                mkpred(res, "HWPREDICT",  intsecs(days=14), intsecs(days=1),  0.1,     0.0035 ),
                 ])
             rrdtool = subprocess.Popen(args)
             rrdtool.communicate()
