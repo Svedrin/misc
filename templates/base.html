@@ -41,6 +41,9 @@
                 });
                 $("#searchlink").on("shown.bs.popover", function(){
                   $("#searchinput").focus();
+                  $("#searchinput").blur(function(){
+                    $("#searchlink").popover('hide');
+                  });
                 });
                 $("#searchlink").click(function(ev){
                   ev.preventDefault();
