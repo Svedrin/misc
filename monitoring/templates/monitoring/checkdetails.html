@@ -20,7 +20,7 @@
   </thead>
   <tbody>
   {% for variable, alerts in vars %}
-    <tr onclick="window.location='{% url monitoring.views.render_check_page check.uuid variable.name %}';" class="{% if alerts %}warning{% else %}success{% endif %}">
+    <tr targetlink="{% url monitoring.views.render_check_page check.uuid variable.name %}" class="checktr {% if alerts %}warning{% else %}success{% endif %}">
       <td>
         {{ variable|display }}
       </td>
@@ -29,4 +29,16 @@
   {% endfor %}
   </tbody>
 </table>
+<script type="text/javascript">
+$(".checktr").click(function(ev){
+  ev.preventDefault();
+  ev.stopPropagation();
+  if(ev.ctrlKey){
+    window.open(this.attributes.targetlink.value);
+  }
+  else{
+    window.location = this.attributes.targetlink.value;
+  }
+});
+</script>
 {% endblock %}

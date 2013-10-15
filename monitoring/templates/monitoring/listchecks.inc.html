@@ -13,7 +13,7 @@
   </thead>
   <tbody>
   {% for check in list_checks %}
-    <tr onclick="window.location='{% url monitoring.views.check_details check.uuid %}';" class="{% if check.current_alert %}warning{% else %}success{% endif %}">
+    <tr targetlink="{% url monitoring.views.check_details check.uuid %}" class="checktr {% if check.current_alert %}warning{% else %}success{% endif %}">
       <td>
         {{ check.target_host }}
         {% if check.target_host != check.exec_host %}(as seen by {{ check.exec_host }}){% endif %}
@@ -26,6 +26,18 @@
   {% endfor %}
   </tbody>
 </table>
+<script type="text/javascript">
+$(".checktr").click(function(ev){
+  ev.preventDefault();
+  ev.stopPropagation();
+  if(ev.ctrlKey){
+    window.open(this.attributes.targetlink.value);
+  }
+  else{
+    window.location = this.attributes.targetlink.value;
+  }
+});
+</script>
 {% else %}
 <p>No checks found.</p>
 {% endif %}
