@@ -163,6 +163,11 @@ class Check(models.Model):
                     curralert.endtime = make_aware(datetime.now(), get_default_timezone())
                     curralert.save()
 
+def __check_pre_delete(instance, **kwargs):
+    instance.rrd.delete()
+
+models.signals.pre_delete.connect(__check_pre_delete, sender=Check)
+
 
 class CheckParameter(models.Model):
     check       = models.ForeignKey(Check)

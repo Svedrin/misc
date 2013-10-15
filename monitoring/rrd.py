@@ -62,6 +62,9 @@ class RRD(object):
         self.service_description = "Need sum srs service descripshun"
         self._info = None
 
+    def delete(self):
+        os.remove(self.rrdpath)
+
     def get_source(self, srcname):
         from graphpredict import PredictingSource
         return PredictingSource( self, srcname )
