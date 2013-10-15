@@ -8,7 +8,9 @@ from pyudev import Context, Device
 from sensors.sensor import AbstractSensor
 
 class AcpiTempSensor(AbstractSensor):
-    def discover(self):
+    def discover(self, target):
+        if target.name != self.conf.environ["fqdn"]:
+            return []
         return [{"zone": name.replace("thermal_zone", "")}
             for name in os.listdir('/sys/devices/virtual/thermal')
             if name.startswith("thermal_zone")]

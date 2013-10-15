@@ -6,7 +6,9 @@ import os
 from sensors.sensor import AbstractSensor
 
 class CoreTempSensor(AbstractSensor):
-    def discover(self):
+    def discover(self, target):
+        if target.name != self.conf.environ["fqdn"]:
+            return []
         return [ {"zone": name.split('.', 1)[1], "tsensor": field.split('_')[0][4:]}
             for name in os.listdir('/sys/devices/platform')
             if name.startswith("coretemp.")

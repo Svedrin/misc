@@ -11,7 +11,9 @@ from sensors.sensor import AbstractSensor
 from sensors.values import ValueDict
 
 class NetstatsSensor(AbstractSensor):
-    def discover(self):
+    def discover(self, target):
+        if target.name != self.conf.environ["fqdn"]:
+            return []
         ctx = Context()
         return [ {"interface": dev["INTERFACE"]}
             for dev in ctx.list_devices()

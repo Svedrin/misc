@@ -12,7 +12,7 @@ class CablemodemMotorolaSensor(AbstractSensor):
     username = "admin"
     password = "motorola"
 
-    def discover(self):
+    def discover(self, target):
         return []
 
     def check(self, checkinst):

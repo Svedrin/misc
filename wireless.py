@@ -14,7 +14,9 @@ class WirelessSensor(AbstractSensor):
                   "disc_crypt", "disc_frag", "disc_retry", "disc_misc", "missed_beacon"]
         return [ dict(zip(fields, line.strip().replace(":", "").split())) for line in open("/proc/net/wireless", "rb").read().split("\n")[2:] if line ]
 
-    def discover(self):
+    def discover(self, target):
+        if target.name != self.conf.environ["fqdn"]:
+            return []
         return [ {"interface": iface["iface"]} for iface in self._read_proc() ]
 
     def check(self, checkinst):

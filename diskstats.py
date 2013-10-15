@@ -11,7 +11,10 @@ from sensors.sensor import AbstractSensor
 from sensors.values import ValueDict
 
 class DiskstatsSensor(AbstractSensor):
-    def discover(self):
+    def discover(self, target):
+        if target.name != self.conf.environ["fqdn"]:
+            return []
+
         ctx = Context()
 
         def _check_lv(device):
