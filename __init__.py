@@ -7,6 +7,9 @@ def __import_sensors():
     import os
     for module in os.listdir(os.path.dirname(__file__)):
         if module.endswith(".py") and module != "__init__.py":
-            __import__("sensors." + module.replace(".py", ""))
+            try:
+                __import__("sensors." + module.replace(".py", ""))
+            except ImportError, err:
+                pass
 
 __import_sensors()
