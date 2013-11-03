@@ -17,6 +17,7 @@ PROCURVE_OIDS = {
     "system-info": "1.3.6.1.2.1.1",
     "system-mac":  "1.3.6.1.2.1.17.1.1.0",
     "cdp-neigh":   "1.3.6.1.4.1.9.9.23.1.2.1.1",
+    "cdp-desc":    "1.3.6.1.4.1.9.9.23.1.3.4.0",
 }
 
 class SnmpError(Exception):
