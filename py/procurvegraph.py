@@ -80,7 +80,11 @@ def switchgraph(switchaddrs, outfile):
 
     for addr in switchaddrs:
         print >> sys.stderr, "Querying %s..." % addr
-        sysmac = switchquery(addr, PROCURVE_OIDS["system-mac"])
+        try:
+            sysmac = switchquery(addr, PROCURVE_OIDS["system-mac"])
+        except SnmpError, err:
+            print >> sys.stderr, unicode(err)
+            continue
         nodes[sysmac] = addr
 
         cdpneigh = switchquery(addr, PROCURVE_OIDS["cdp-neigh"])
@@ -104,7 +108,6 @@ def switchgraph(switchaddrs, outfile):
             ) )
 
     for edgemacs, edgeports in edges.items():
-        #gr.add_edge( edgemacs[0], edgemacs[1] )
         gr.add_edge( (edgemacs[0], edgemacs[1]), attrs=(
             ( "taillabel", edgeports[0] ),
             ( "headlabel", edgeports[1] ),
@@ -118,6 +121,7 @@ def switchgraph(switchaddrs, outfile):
         fd = open(outfile, "wb")
         fd.write(dot)
         fd.close()
+        print "Wrote output to %s." % outfile
     else:
         outfmt = outfile.rsplit(".", 1)
         gvv = gv.readstring(dot)
