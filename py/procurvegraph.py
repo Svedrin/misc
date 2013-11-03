@@ -97,7 +97,7 @@ def switchgraph(switchaddrs, outfile):
             else:
                 continue
             if othermac not in nodes:
-                nodes[othermac] = "%s\n%s" % (othermac[2:], cdpneigh[8][port][1][0][:20])
+                nodes[othermac] = "%s\n%s" % (othermac, cdpneigh[8][port][1][0][:20])
             if (sysmac, othermac) not in edges and (othermac, sysmac) not in edges:
                 edges[(sysmac, othermac)] = (port, cdpneigh[7][port][1][0])
 
