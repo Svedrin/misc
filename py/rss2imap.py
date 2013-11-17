@@ -62,8 +62,9 @@ class DilbertProxy(object):
         req = requests.get(entry.link, headers={"User-Agent": USER_AGENT})
         soup = BeautifulSoup(req.content)
         for soupimg in soup.findAll("img"):
-            if soupimg["src"].startswith("/dyn/str_strip/") and soupimg["src"].endswith(".strip.gif"):
+            if soupimg["src"].startswith("/dyn/str_strip/") and (soupimg["src"].endswith(".strip.gif") or soupimg["src"].endswith(".strip.sunday.gif")):
                 return '<img src="http://www.dilbert.com%s">' % soupimg["src"]
+	raise KeyError("Comic strip image not found!")
 
 class TpfdProxy(object):
     def get_content(self, entry):
@@ -73,6 +74,7 @@ class TpfdProxy(object):
         for soupimg in soup.findAll("img"):
             if soupimg["src"].startswith("http://www.toothpastefordinner.com/%s/" % entdate):
                 return '<img src="%s">' % soupimg["src"]
+	raise KeyError("Comic strip image not found!")
 
 proxies = {
     "dilbert": DilbertProxy(),
