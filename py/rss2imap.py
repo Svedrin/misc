@@ -138,9 +138,10 @@ for dirname, feeds in conf["feeds"].items():
                     req = requests.get(soupimg["src"], headers={"User-Agent": USER_AGENT})
                     if req.status_code == 200:
                         cid = hashlib.md5(soupimg["src"]).hexdigest()
-                        soupimg["src"] = "cid:%s" % cid
                         img = email.mime.Image.MIMEImage(req.content)
                         img.add_header("Content-ID", "<%s>" % cid)
+                        img.add_header("X-IMG-SRC", soupimg["src"])
+                        soupimg["src"] = "cid:%s" % cid
                         mp.attach(img)
                     else:
                         if "-q" not in sys.argv:
