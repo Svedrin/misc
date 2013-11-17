@@ -129,6 +129,12 @@ for dirname, feeds in conf["feeds"].items():
                 soup = BeautifulSoup(content)
 
                 for soupimg in soup.findAll("img"):
+                    if "doubleclick" in soupimg["src"] or "feedsportal.com" in soupimg["src"]:
+                        # you know, if ads wouldn't contain a fucking HUGE gif that
+                        # completely freezes my thunderbird for a couple of seconds while
+                        # it tries to display the stupid ad, this wouldn't be necessary.
+                        #soupimg.replace("(ad)")
+                        continue
                     req = requests.get(soupimg["src"], headers={"User-Agent": USER_AGENT})
                     if req.status_code == 200:
                         cid = hashlib.md5(soupimg["src"]).hexdigest()
