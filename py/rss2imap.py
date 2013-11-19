@@ -68,7 +68,7 @@ class DilbertProxy(object):
 
 class TpfdProxy(object):
     def get_content(self, entry):
-        entdate = datetime.fromtimestamp(mktime(feed.entries[0].published_parsed)).strftime("%m%d%y")
+        entdate = datetime.fromtimestamp(mktime(entry.published_parsed)).strftime("%m%d%y")
         req = requests.get(entry.link, headers={"User-Agent": USER_AGENT})
         soup = BeautifulSoup(req.content)
         for soupimg in soup.findAll("img"):
