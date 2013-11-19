@@ -150,9 +150,18 @@ def imapmaster():
 
 go(imapmaster)
 
-def process_feed(dirname, feedname, feed, feedproxy):
+def process_feed(dirname, feedname, feedinfo):
     if "-q" not in sys.argv:
         outq.put("[%s] Started processing" % feedname)
+
+    if isinstance(feedinfo, dict):
+        feedurl   = feedinfo["url"]
+        feedproxy = proxies[feedinfo["proxy"]]
+    else:
+        feedurl   = feedinfo
+        feedproxy = None
+
+    feed = feedparser.parse(feedurl)
 
     pending = Queue()
     outstanding = 0
@@ -242,14 +251,11 @@ def process_feed(dirname, feedname, feed, feedproxy):
         outq.put("[%s] Done!" % feedname)
 
 
+# try to work around some serious GIL Multicore fuckup.
+# see http://www.youtube.com/watch?v=ph374fJqFPE
+# the 10k we use here is purely guessed and worked pretty well on a 4-core VM.
+sys.setcheckinterval(10000)
+
 for dirname, feeds in conf["feeds"].items():
     for feedname, feedinfo in feeds.items():
-        if isinstance(feedinfo, dict):
-            feedurl   = feedinfo["url"]
-            feedproxy = proxies[feedinfo["proxy"]]
-        else:
-            feedurl   = feedinfo
-            feedproxy = None
-
-        feed = feedparser.parse(feedurl)
-        go_nodaemon(process_feed, dirname, feedname, feed, feedproxy)
+        go_nodaemon(process_feed, dirname, feedname, feedinfo)
