@@ -151,7 +151,8 @@ def imapmaster():
 go(imapmaster)
 
 def process_feed(dirname, feedname, feed, feedproxy):
-    outq.put("[%s] Started processing" % feedname)
+    if "-q" not in sys.argv:
+        outq.put("[%s] Started processing" % feedname)
 
     pending = Queue()
     outstanding = 0
@@ -164,7 +165,8 @@ def process_feed(dirname, feedname, feed, feedproxy):
         checkq.put((pending, dirname, entid, entry))
         outstanding += 1
 
-    outq.put("[%s] Waiting for %d replies" % (feedname, outstanding))
+    if "-q" not in sys.argv:
+        outq.put("[%s] Waiting for %d replies" % (feedname, outstanding))
     while outstanding:
         entid, entry, found = pending.get()
         outstanding -= 1
@@ -224,7 +226,8 @@ def process_feed(dirname, feedname, feed, feedproxy):
         if "-q" not in sys.argv:
             uploadq.put((dirname, mp))
 
-    outq.put("[%s] Done!" % feedname)
+    if "-q" not in sys.argv:
+        outq.put("[%s] Done!" % feedname)
 
 
 for dirname, feeds in conf["feeds"].items():
