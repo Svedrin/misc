@@ -178,6 +178,18 @@ def process_feed(dirname, feedname, feed, feedproxy):
         if "-q" not in sys.argv:
             outq.put("[%s] Found new article '%s'" % (feedname, entry.title))
 
+        # MIME Structure:
+        #
+        #  multipart/related
+        #  + multipart/alternative
+        #  | + text/html
+        #  + image/png
+        #  + image/jpg
+        #  + ...
+        #
+        # The multipart/alternative seems superfluous, but (at least)
+        # Thunderbird doesn't render the email correctly without it.
+
         mp = email.mime.Multipart.MIMEMultipart("related")
         mp["From"] = entry.get("author", feedname)
         mp["Subject"] = entry.title
