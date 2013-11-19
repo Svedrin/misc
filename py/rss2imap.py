@@ -10,7 +10,9 @@ import sys
 import hashlib
 import json
 import os.path
+import threading
 
+from Queue import Queue
 from BeautifulSoup import BeautifulSoup
 from time     import time, mktime
 from datetime import datetime
@@ -64,7 +66,7 @@ class DilbertProxy(object):
         for soupimg in soup.findAll("img"):
             if soupimg["src"].startswith("/dyn/str_strip/") and (soupimg["src"].endswith(".strip.gif") or soupimg["src"].endswith(".strip.sunday.gif")):
                 return '<img src="http://www.dilbert.com%s">' % soupimg["src"]
-	raise KeyError("Comic strip image not found!")
+        raise KeyError("Comic strip image not found!")
 
 class TpfdProxy(object):
     def get_content(self, entry):
@@ -74,21 +76,158 @@ class TpfdProxy(object):
         for soupimg in soup.findAll("img"):
             if soupimg["src"].startswith("http://www.toothpastefordinner.com/%s/" % entdate):
                 return '<img src="%s">' % soupimg["src"]
-	raise KeyError("Comic strip image not found!")
+        raise KeyError("Comic strip image not found!")
 
 proxies = {
     "dilbert": DilbertProxy(),
     "tpfd":    TpfdProxy(),
 }
 
-
 serv = imaplib.IMAP4(conf["imap"]["host"])
 serv.login(conf["imap"]["user"], conf["imap"]["pass"])
 
+
+def go(func, *args, **kwargs):
+    thr = threading.Thread(target=func, args=args, kwargs=kwargs)
+    thr.daemon = True
+    thr.start()
+
+def go_nodaemon(func, *args, **kwargs):
+    thr = threading.Thread(target=func, args=args, kwargs=kwargs)
+    thr.daemon = False
+    thr.start()
+
+
+outq    = Queue()
+checkq  = Queue()
+uploadq = Queue()
+
+def printer():
+    while True:
+        msg = outq.get()
+        print "[%s] %s" % (datetime.now(), msg)
+
+go(printer)
+
+
+# http://stackoverflow.com/questions/19130986/python-equivalent-of-golangs-select-on-channels
+def select(*queues):
+    combined = Queue()
+    def listen_and_forward(queue):
+        while True:
+            combined.put((queue, queue.get()))
+    for queue in queues:
+        go(listen_and_forward, queue)
+    while True:
+        yield combined.get()
+
+
+def imapmaster():
+    currmbox = None
+    for whichq, command in select(checkq, uploadq):
+        if whichq is checkq:
+            returnq, mailbox, entid, entry = command
+            if mailbox != currmbox:
+                currmbox = mailbox
+                serv.select(mailbox)
+
+            typ, data = serv.search(None, '(HEADER X-RSS2IMAP-ID "%s")' % entid)
+
+            if typ != "OK":
+                outq.put("Querying the IMAP server failed")
+                continue
+
+            returnq.put((entid, entry, bool(data[0])))
+
+        elif whichq is uploadq:
+            mailbox, mp = command
+            if mailbox != currmbox:
+                currmbox = mailbox
+                serv.select(mailbox)
+            if "-q" not in sys.argv:
+                outq.put("putting new message to " + mailbox)
+            serv.append(mailbox, "", imaplib.Time2Internaldate(time()), str(mp))
+
+go(imapmaster)
+
+def process_feed(dirname, feedname, feed, feedproxy):
+    outq.put("[%s] Started processing" % feedname)
+
+    pending = Queue()
+    outstanding = 0
+
+    for entry in feed.entries:
+        if "id" not in entry or "title" not in entry:
+            continue
+
+        entid = hashlib.sha1(entry.id).hexdigest()
+        checkq.put((pending, dirname, entid, entry))
+        outstanding += 1
+
+    outq.put("[%s] Waiting for %d replies" % (feedname, outstanding))
+    while outstanding:
+        entid, entry, found = pending.get()
+        outstanding -= 1
+        if found:
+            if "-q" not in sys.argv and "-v" in sys.argv:
+                outq.put("[%s] Found known article '%s'" % (feedname, entry.title))
+            continue
+
+        if "-q" not in sys.argv:
+            outq.put("[%s] Found new article '%s'" % (feedname, entry.title))
+
+        mp = email.mime.Multipart.MIMEMultipart("related")
+        mp["From"] = entry.get("author", feedname)
+        mp["Subject"] = entry.title
+        mp["X-RSS2IMAP-ID"] = entid
+
+        alt  = email.mime.Multipart.MIMEMultipart("alternative")
+        mp.attach(alt)
+
+        if feedproxy is not None:
+            content = feedproxy.get_content(entry)
+        elif "content" in entry:
+            content = entry.content[0].value
+        else:
+            content = entry.summary
+
+        soup = BeautifulSoup(content)
+
+        for soupimg in soup.findAll("img"):
+            if "doubleclick" in soupimg["src"] or "feedsportal.com" in soupimg["src"]:
+                # you know, if ads wouldn't contain a fucking HUGE gif that
+                # completely freezes my thunderbird for a couple of seconds while
+                # it tries to display the stupid ad, this wouldn't be necessary.
+                #soupimg.replace("(ad)")
+                continue
+            req = requests.get(soupimg["src"], headers={"User-Agent": USER_AGENT})
+            if req.status_code == 200:
+                cid = hashlib.md5(soupimg["src"]).hexdigest()
+                img = email.mime.Image.MIMEImage(req.content)
+                img.add_header("Content-ID", "<%s>" % cid)
+                img.add_header("X-IMG-SRC", soupimg["src"])
+                soupimg["src"] = "cid:%s" % cid
+                mp.attach(img)
+            else:
+                if "-q" not in sys.argv:
+                    outq.put('[%s] Failed getting "%s": %d' % (feedname, soupimg["src"], req.status_code))
+
+        body = content_template % {
+            "feed":    feedname,
+            "title":   entry.title,
+            "link":    entry.get("link", ""),
+            "content": unicode(soup)
+        }
+
+        alt.attach(email.mime.Text.MIMEText(body, "html", "utf-8"))
+
+        if "-q" not in sys.argv:
+            uploadq.put((dirname, mp))
+
+    outq.put("[%s] Done!" % feedname)
+
+
 for dirname, feeds in conf["feeds"].items():
-    if "-q" not in sys.argv:
-        print "Processing %s feeds..." % dirname
-    serv.select(dirname)
     for feedname, feedinfo in feeds.items():
         if isinstance(feedinfo, dict):
             feedurl   = feedinfo["url"]
@@ -96,71 +235,6 @@ for dirname, feeds in conf["feeds"].items():
         else:
             feedurl   = feedinfo
             feedproxy = None
-        if "-q" not in sys.argv:
-            print "-> %s" % feedname
+
         feed = feedparser.parse(feedurl)
-        for entry in feed.entries:
-            if "id" not in entry or "title" not in entry:
-                print >> sys.stderr, "Skipping entry without title or ID."
-                continue
-
-            entid = hashlib.sha1(entry.id).hexdigest()
-            typ, data = serv.search(None, '(HEADER X-RSS2IMAP-ID "%s")' % entid)
-
-            if typ != "OK":
-                print >> sys.stderr, "Querying the server failed"
-                break
-
-            if not data[0]:
-                alt  = email.mime.Multipart.MIMEMultipart("alternative")
-
-                mp = email.mime.Multipart.MIMEMultipart("related")
-                mp["From"] = entry.get("author", feedname)
-                mp["Subject"] = entry.title
-                mp["X-RSS2IMAP-ID"] = entid
-                mp.attach(alt)
-
-                if feedproxy is not None:
-                    content = feedproxy.get_content(entry)
-                elif "content" in entry:
-                    content = entry.content[0].value
-                else:
-                    content = entry.summary
-
-                soup = BeautifulSoup(content)
-
-                for soupimg in soup.findAll("img"):
-                    if "doubleclick" in soupimg["src"] or "feedsportal.com" in soupimg["src"]:
-                        # you know, if ads wouldn't contain a fucking HUGE gif that
-                        # completely freezes my thunderbird for a couple of seconds while
-                        # it tries to display the stupid ad, this wouldn't be necessary.
-                        #soupimg.replace("(ad)")
-                        continue
-                    req = requests.get(soupimg["src"], headers={"User-Agent": USER_AGENT})
-                    if req.status_code == 200:
-                        cid = hashlib.md5(soupimg["src"]).hexdigest()
-                        img = email.mime.Image.MIMEImage(req.content)
-                        img.add_header("Content-ID", "<%s>" % cid)
-                        img.add_header("X-IMG-SRC", soupimg["src"])
-                        soupimg["src"] = "cid:%s" % cid
-                        mp.attach(img)
-                    else:
-                        if "-q" not in sys.argv:
-                            print '   Failed getting "%s": %d' % (soupimg["src"], req.status_code)
-
-                body = content_template % {
-                    "feed":    feedname,
-                    "title":   entry.title,
-                    "link":    entry.get("link", ""),
-                    "content": unicode(soup)
-                }
-
-                alt.attach(email.mime.Text.MIMEText(body, "html", "utf-8"))
-
-                if "-q" not in sys.argv:
-                    print "   New article:", entry.title
-                serv.append(dirname, "", imaplib.Time2Internaldate(time()), str(mp))
-
-            else:
-                if "-q" not in sys.argv:
-                    print "   Article already known:", entry.title
+        go_nodaemon(process_feed, dirname, feedname, feed, feedproxy)
