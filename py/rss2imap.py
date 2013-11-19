@@ -115,8 +115,7 @@ for dirname, feeds in conf["feeds"].items():
                 alt  = email.mime.Multipart.MIMEMultipart("alternative")
 
                 mp = email.mime.Multipart.MIMEMultipart("related")
-                mp["From"] = "%s <rss2imap@svedr.in>" % entry.get("author", feedname)
-                mp["To"]   = "ich@svedr.in"
+                mp["From"] = entry.get("author", feedname)
                 mp["Subject"] = entry.title
                 mp["X-RSS2IMAP-ID"] = entid
                 mp.attach(alt)
