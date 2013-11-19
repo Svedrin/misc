@@ -140,13 +140,14 @@ def imapmaster():
             returnq.put((entid, entry, bool(data[0])))
 
         elif whichq is uploadq:
-            mailbox, mp = command
+            returnq, mailbox, mp = command
             if mailbox != currmbox:
                 currmbox = mailbox
                 serv.select(mailbox)
             if "-q" not in sys.argv:
                 outq.put("putting new message to " + mailbox)
             serv.append(mailbox, "", imaplib.Time2Internaldate(time()), str(mp))
+            returnq.put(True)
 
 go(imapmaster)
 
@@ -164,7 +165,9 @@ def process_feed(dirname, feedname, feedinfo):
     feed = feedparser.parse(feedurl)
 
     pending = Queue()
+    pendingupload = Queue()
     outstanding = 0
+    outstandingupload = 0
 
     for entry in feed.entries:
         if "id" not in entry or "title" not in entry:
@@ -176,6 +179,7 @@ def process_feed(dirname, feedname, feedinfo):
 
     if "-q" not in sys.argv:
         outq.put("[%s] Waiting for %d replies" % (feedname, outstanding))
+
     while outstanding:
         entid, entry, found = pending.get()
         outstanding -= 1
@@ -244,8 +248,15 @@ def process_feed(dirname, feedname, feedinfo):
 
         alt.attach(email.mime.Text.MIMEText(body, "html", "utf-8"))
 
-        if "-q" not in sys.argv:
-            uploadq.put((dirname, mp))
+        uploadq.put((pendingupload, dirname, mp))
+        outstandingupload += 1
+
+    if "-q" not in sys.argv:
+        outq.put("[%s] Waiting for %d uploads" % (feedname, outstandingupload))
+
+    while outstandingupload:
+        pendingupload.get()
+        outstandingupload -= 1
 
     if "-q" not in sys.argv:
         outq.put("[%s] Done!" % feedname)
