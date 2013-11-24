@@ -91,23 +91,25 @@ def go(func, *args, **kwargs):
     thr = threading.Thread(target=func, args=args, kwargs=kwargs)
     thr.daemon = True
     thr.start()
+    return thr
 
 def go_nodaemon(func, *args, **kwargs):
     thr = threading.Thread(target=func, args=args, kwargs=kwargs)
     thr.daemon = False
     thr.start()
+    return thr
 
 
 outq    = Queue()
 checkq  = Queue()
 uploadq = Queue()
 
+@go
 def printer():
     while True:
         msg = outq.get()
         print "[%s] %s" % (datetime.now(), msg)
 
-go(printer)
 
 
 # http://stackoverflow.com/questions/19130986/python-equivalent-of-golangs-select-on-channels
@@ -122,6 +124,7 @@ def select(*queues):
         yield combined.get()
 
 
+@go
 def imapmaster():
     currmbox = None
     for whichq, command in select(checkq, uploadq):
@@ -149,7 +152,6 @@ def imapmaster():
             serv.append(mailbox, "", imaplib.Time2Internaldate(time()), str(mp))
             returnq.put(True)
 
-go(imapmaster)
 
 def process_feed(dirname, feedname, feedinfo):
     if "-q" not in sys.argv:
