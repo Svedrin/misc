@@ -267,7 +267,8 @@ def process_feed(dirname, feedname, feedinfo):
 # try to work around some serious GIL Multicore fuckup.
 # see http://www.youtube.com/watch?v=ph374fJqFPE
 # the 10k we use here is purely guessed and worked pretty well on a 4-core VM.
-sys.setcheckinterval(10000)
+if hasattr(sys, "setcheckinterval"):
+    sys.setcheckinterval(10000)
 
 for dirname, feeds in conf["feeds"].items():
     for feedname, feedinfo in feeds.items():
