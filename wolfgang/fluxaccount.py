@@ -22,8 +22,7 @@ class FluxAccount(WolfObject):
         self.exchange   = rabbiturl.path[1:]
 
     def _request(self, data):
-        data = json.dumps(data, indent=2)
-        #print "POST", data
+        data = json.dumps(data)
         self.channel.basic_publish(exchange=self.exchange, routing_key='fluxmon', body=data)
 
     def submit(self, data):
