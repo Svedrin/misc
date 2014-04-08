@@ -25,6 +25,7 @@ def add_check(params, user):
         sensor      = Sensor.objects.get(name=params["sensor"])
         check = Check(uuid=params["uuid"], sensor=sensor, exec_host=exec_host, target_host=target_host)
         check.save()
+        logging.info("Check %s created" % params["uuid"])
         for sensorparam in check.sensor.sensorparameter_set.all():
             if sensorparam.name in params:
                 check.checkparameter_set.create(parameter=sensorparam, value=params[sensorparam.name])
@@ -37,13 +38,13 @@ def process(result, user):
     try:
         check = Check.objects.get(uuid=result["check"])
     except Check.DoesNotExist, err:
-        logging.warning("Check %s does not exist" % result["uuid"])
+        logging.warning("Check %s does not exist" % result["check"])
     else:
         if True: #check.user_allowed(user):
             check.process_result(result)
-            logging.info("Check %s updated" % result["uuid"])
+            logging.info("Check %s updated" % result["check"])
         else:
-            logging.warning("Check %s denied update permission to user %s" % (result["uuid"], user))
+            logging.warning("Check %s denied update permission to user %s" % (result["check"], user))
 
 
 
