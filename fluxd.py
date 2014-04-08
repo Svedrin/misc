@@ -22,8 +22,6 @@ def main():
     parser.add_option("-i", "--interval", default=300, type="int")
     parser.add_option("-f", "--fqdn",     default=socket.getfqdn(), type="string", help=("FQDN to use (defaults to %s)" % socket.getfqdn()))
     parser.add_option("-n", "--noop",     default=False, action="store_true", help="Only detect checks and exit, don't commit or run them")
-    parser.add_option("-u", "--rabbiturl",default="amqp://guest:guest@127.0.0.1/fluxmon",
-        help="RabbitMQ URL. Default: amqp://guest:guest@127.0.0.1/fluxmon")
 
     options, posargs = parser.parse_args()
     if posargs:
