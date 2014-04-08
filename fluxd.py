@@ -19,7 +19,6 @@ def main():
 
     parser.add_option("-c", "--config",   default="fluxd.conf")
     parser.add_option("-d", "--datadir",  default="/var/lib/fluxmon")
-    parser.add_option("-s", "--spooldir", default="/var/spool/fluxmon")
     parser.add_option("-i", "--interval", default=300, type="int")
     parser.add_option("-f", "--fqdn",     default=socket.getfqdn(), type="string", help=("FQDN to use (defaults to %s)" % socket.getfqdn()))
     parser.add_option("-n", "--noop",     default=False, action="store_true", help="Only detect checks and exit, don't commit or run them")
@@ -36,9 +35,6 @@ def main():
         options.fqdn += '.'
 
     wc.environ.update(options.__dict__)
-
-    if not os.path.exists(options.spooldir):
-        return "The spool directory (%s) does not exist, please create it." % options.spooldir
 
     if not os.path.exists(options.datadir):
         return "The data directory (%s) does not exist, please create it." % options.datadir

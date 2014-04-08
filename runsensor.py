@@ -26,7 +26,6 @@ def main():
 
     parser.add_option("-u", "--uuid",     default="11111111-1111-1111-1111-111111111111")
     parser.add_option("-d", "--datadir",  default="/tmp")
-    parser.add_option("-s", "--spooldir", default="/tmp")
     parser.add_option("-i", "--interval", default=300, type="int")
     parser.add_option("-f", "--fqdn",     default=socket.getfqdn(), type="string", help=("FQDN to use (defaults to %s)" % socket.getfqdn()))
     parser.add_option("-t", "--target",   default=None, help="Target Host FQDN (defaults to --fqdn)")
