@@ -2,72 +2,36 @@
 # kate: space-indent on; indent-width 4; replace-tabs on;
 
 import json
+import pika
 
 from urlparse import urljoin, urlparse
 
 from wolfobject import WolfObject
 
-try:
-    import requests
-except ImportError:
-    import os
-    import httplib
-    import base64
-    if "http_proxy" in os.environ:
-        raise
-
-    from wolfgang.prettyprint import colorprint, Colors
-    colorprint(Colors.red, "The requests module is not available. You don't seem to require a proxy, so I'm gonna work around this. If you do, you need to install requests.")
-
-    class ReqResponse(object):
-        def __init__(self, status_code, text):
-            self.status_code = status_code
-            self.text = text
-
-    class requests(object):
-        @classmethod
-        def post(cls, url, data, auth, headers):
-            purl = urlparse( url )
-            conn = {
-                "http":  httplib.HTTPConnection,
-                "https": httplib.HTTPSConnection
-                }[purl.scheme.lower()]( purl.netloc )
-            conn.putrequest( "POST", purl.path )
-            for key, val in headers.items():
-                conn.putheader( key, val )
-            auth = base64.encodestring(':'.join(auth)).replace('\n', '')
-            conn.putheader( "Authorization", "Basic %s" % auth )
-            conn.endheaders()
-            conn.send(data)
-            resp = conn.getresponse()
-            return ReqResponse(resp.status, resp.read())
-
-
 class FluxAccount(WolfObject):
     objtype = "fluxaccount"
 
-    def _request(self, url, data):
+    def __init__(self, conf, name, args, params):
+        WolfObject.__init__(self, conf, name, args, params)
+        rabbiturl   = urlparse(params["rabbiturl"])
+        credentials = pika.PlainCredentials(rabbiturl.username, rabbiturl.password)
+        parameters  = pika.ConnectionParameters(rabbiturl.hostname, credentials=credentials)
+        self.connection = pika.BlockingConnection(parameters)
+        self.channel    = self.connection.channel()
+        self.channel.queue_declare(queue="fluxmon", durable=True)
+        self.exchange   = rabbiturl.path[1:]
+
+    def _request(self, data):
         data = json.dumps(data, indent=2)
         #print "POST", data
-
-        resp = requests.post(url, data=data, auth=(self.name, self["apikey"]), headers={
-            "Content-Type": "application/json",
-            "Content-Length": str(len(data)),
-        })
-
-        if resp.status_code != 200:
-            print "Got some error, writing /tmp/lasterr."
-            fd = open("/tmp/lasterr", "wb")
-            print >> fd, resp.text.encode("utf-8")
-            fd.close()
-            return
-
-        respdata = json.loads( resp.text )
-        #print respdata
-        return respdata
+        self.channel.basic_publish(exchange=self.exchange, routing_key='fluxmon', body=data)
 
     def submit(self, data):
-        return self._request("http://fluxmon.de/submit/results/", data)
+        for thing in data:
+            thing["type"] = "result"
+        return self._request(data)
 
     def add_checks(self, data):
-        return self._request("http://fluxmon.de/submit/checks/", data)
+        for thing in data:
+            thing["type"] = "add_check"
+        return self._request(data)
