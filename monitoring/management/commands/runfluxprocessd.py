@@ -109,10 +109,6 @@ class Command( BaseCommand ):
             help="RabbitMQ URL. Default: amqp://guest:guest@127.0.0.1/fluxmon",
             default="amqp://guest:guest@127.0.0.1/fluxmon"
             ),
-        make_option( "-x", "--exchange",
-            help="Exchange to declare. Default: fluxmon",
-            default="fluxmon"
-            ),
     )
 
     def handle(self, **options):
@@ -153,10 +149,10 @@ class Command( BaseCommand ):
         connection  = pika.BlockingConnection(parameters)
 
         channel = connection.channel()
-        channel.exchange_declare(options["exchange"], exchange_type="direct", passive=False,
+        channel.exchange_declare(rabbiturl.path[1:], exchange_type="direct", passive=False,
                                  durable=True, auto_delete=False)
-        channel.queue_declare(queue=rabbiturl.path[1:], auto_delete=False, durable=True)
-        channel.queue_bind(queue=rabbiturl.path[1:], exchange=options["exchange"], routing_key="fluxmon")
+        channel.queue_declare(queue="fluxmon", auto_delete=False, durable=True)
+        channel.queue_bind(queue="fluxmon", exchange=rabbiturl.path[1:], routing_key="fluxmon")
         channel.basic_qos(prefetch_count=1)
 
         try:
