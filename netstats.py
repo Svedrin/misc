@@ -5,7 +5,7 @@ import os
 from time import time, mktime
 from datetime import datetime, timedelta
 
-from pyudev import Context, Device
+from pyudev import Context, Device, DeviceNotFoundByNameError
 
 from sensors.sensor import AbstractSensor
 from sensors.values import ValueDict
@@ -19,6 +19,14 @@ class NetstatsSensor(AbstractSensor):
             for dev in ctx.list_devices()
             if dev["SUBSYSTEM"] == "net"
         ]
+
+    def can_activate(self, checkinst):
+        try:
+            ctx = Context()
+            dev = Device.from_name(ctx, "net", checkinst["interface"])
+        except DeviceNotFoundByNameError:
+            return False
+        return True
 
     def check(self, checkinst):
         # Read the state file (if possible).

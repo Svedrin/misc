@@ -5,7 +5,7 @@ import os
 from time import time, mktime
 from datetime import datetime, timedelta
 
-from pyudev import Context, Device
+from pyudev import Context, Device, DeviceNotFoundByNameError
 
 from sensors.sensor import AbstractSensor
 from sensors.values import ValueDict
@@ -72,6 +72,15 @@ class DiskstatsSensor(AbstractSensor):
                 dev["DEVTYPE"] in ("disk", "partition") and
                 not dev["DEVNAME"].startswith("/dev/loop"))
         ]
+
+    def can_activate(self, checkinst):
+        try:
+            disk = os.path.realpath(checkinst["disk"]).replace("/dev/", "")
+            ctx = Context()
+            dev = Device.from_name(ctx, "block", disk)
+        except DeviceNotFoundByNameError:
+            return False
+        return True
 
     def check(self, checkinst):
         # Resolve the real device path, dereferencing symlinks as necessary.
