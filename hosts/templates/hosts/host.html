@@ -10,5 +10,5 @@
   <dt>Host:</dt>
   <dd>{{ host.fqdn }}</dd>
 </dl>
-{% include "monitoring/listchecks.inc.html" with list_checks=host.check_target_set.all %}
+{% include "monitoring/listchecks.inc.html" with list_checks=checks %}
 {% endblock %}

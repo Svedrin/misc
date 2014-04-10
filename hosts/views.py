@@ -9,7 +9,9 @@ from hosts.models import Host
 
 @login_required
 def host(request, fqdn):
+    thehost = get_object_or_404(Host, fqdn=fqdn)
     return render_to_response("hosts/host.html", {
-        'host': get_object_or_404(Host, fqdn=fqdn)
+        'host':   thehost,
+        'checks': thehost.check_target_set.filter(is_active=True)
         }, context_instance=RequestContext(request))
 
