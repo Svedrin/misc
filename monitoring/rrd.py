@@ -6,6 +6,7 @@ import os.path
 import re
 import subprocess
 import datetime
+import logging
 
 from time import time
 
@@ -99,7 +100,7 @@ class RRD(object):
 
         if not os.path.exists(self.rrdpath):
             if result["errmessage"] is not None:
-                print "Not *creating* new RRD from bogus data."
+                logging.warning("Not *creating* new RRD from bogus data.")
                 return
             res = intsecs(seconds=300)
             args = [ "rrdtool", "create", self.rrdpath, "-s", str(res) ]
@@ -137,7 +138,7 @@ class RRD(object):
         rrdtool = subprocess.Popen(args, env={"TZ": "UTC"})
         rrdtool.communicate()
         if rrdtool.returncode != 0:
-            print "RRDtool update failed for %s" % self.rrdpath
+            logging.warning("RRDtool update failed for %s" % self.rrdpath)
 
     @property
     def info(self):

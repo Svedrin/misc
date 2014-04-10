@@ -2,6 +2,7 @@
 # kate: space-indent on; indent-width 4; replace-tabs on;
 
 import os
+import logging
 
 from uuid import uuid4
 from time import time
@@ -48,7 +49,7 @@ class Check(WolfObject):
             res["errmessage"] = unicode(type(err)) + ": " + unicode(err),
         else:
             if res["data"] is None:
-                print "Sensor for %s didn't return any data..." % self["uuid"]
+                logging.warning("Sensor for %s didn't return any data..." % self["uuid"])
 
         return res
 
