@@ -25,6 +25,9 @@ class FluxAccount(WolfObject):
         data = json.dumps(data)
         self.channel.basic_publish(exchange=self.exchange, routing_key='fluxmon', body=data)
 
+    def sleep(self, time):
+        self.connection.sleep(time)
+
     def submit(self, data):
         for thing in data:
             thing["type"] = "result"

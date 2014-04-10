@@ -108,7 +108,7 @@ def main():
             dura = max( nextdue - time(), 5 )
             colorprint(Colors.gray, "Sleeping for %d seconds (next due %s), good night." % (dura,
                 datetime.fromtimestamp(nextdue).strftime("%H:%M:%S")))
-            sleep(dura)
+            account.sleep(dura)
 
     except KeyboardInterrupt:
         print "\nCaught ^c, shutting down."
