@@ -46,6 +46,9 @@ class AbstractSensor(object):
             fd.close()
         os.rename(fpath + ".new", fpath)
 
+    def can_activate(self, check):
+        return True
+
     def discover(self, target):
         raise NotImplementedError("discover() is abstract")
 
