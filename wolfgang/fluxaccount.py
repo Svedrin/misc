@@ -30,7 +30,7 @@ class FluxAccount(WolfObject):
         if hasattr(self.connection, "sleep"):
             self.connection.sleep(dura)
         else:
-            time.sleep(dura)
+            sleep(dura)
 
     def submit(self, data):
         for thing in data:
