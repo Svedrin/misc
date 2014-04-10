@@ -67,6 +67,7 @@ def search(request):
         else:
             searchform = SearchForm(request.GET)
         if searchform.is_valid():
+            results = Check.objects.filter(is_active=True)
             host_kwds  = []
             check_kwds = []
             var_kwds   = []
@@ -81,9 +82,7 @@ def search(request):
                     check_kwds.append(Q(checkparameter__value__icontains=keyword))
                     check_kwds.append(Q(sensor__name__icontains=keyword))
             if check_kwds:
-                results = Check.objects.filter(reduce(operator.or_, check_kwds))
-            else:
-                results = Check.objects.all()
+                results = results.filter(reduce(operator.or_, check_kwds))
             if var_kwds:
                 results = results.filter(reduce(operator.or_, [
                     Q(sensor__sensorvariable__name__istartswith=kw) for kw in var_kwds
