@@ -62,7 +62,7 @@ def main():
     logging.info("Using account %s." % account.name)
 
     # Discover checkable objects
-    new_checks = []
+    all_checks = []
     for sensortype in SensorMeta.sensortypes:
         if sensortype not in wc.objects:
             logging.warning("Sensor type '%s' is installed but unknown to the config, skipped." % sensortype)
@@ -85,15 +85,16 @@ def main():
                     logging.warning( "Found new target on %s: %s" % (confobj.name, target_params) )
                     check = wc.add_object("check", confobj.name + ",".join(target_params.values()), [], params)
                     params["uuid"] = check["uuid"]
-                    new_checks.append(params)
                 else:
                     logging.info( "Found known target on %s: %s" % (confobj.name, target_params) )
+                    params["uuid"] = checks[0]["uuid"]
+                all_checks.append(params)
 
     if options.noop:
         return "Check discovery finished but no-op is active, exiting."
 
-    if new_checks:
-        account.add_checks(new_checks)
+    if all_checks:
+        account.add_checks(all_checks)
 
     for chk in myhost.checks:
         if not chk.is_active:
