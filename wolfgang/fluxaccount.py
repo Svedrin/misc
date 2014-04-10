@@ -5,6 +5,7 @@ import json
 import pika
 
 from urlparse import urljoin, urlparse
+from time import sleep
 
 from wolfobject import WolfObject
 
@@ -25,8 +26,11 @@ class FluxAccount(WolfObject):
         data = json.dumps(data)
         self.channel.basic_publish(exchange=self.exchange, routing_key='fluxmon', body=data)
 
-    def sleep(self, time):
-        self.connection.sleep(time)
+    def sleep(self, dura):
+        if hasattr(self.connection, "sleep"):
+            self.connection.sleep(dura)
+        else:
+            time.sleep(dura)
 
     def submit(self, data):
         for thing in data:
