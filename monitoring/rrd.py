@@ -197,5 +197,6 @@ class RRD(object):
                 if field in ("upper", "lower"):
                     values[src][field] = float(val)
                 elif field == "fail":
-                    values[src][field] = bool(int(val))
+                    if "nan" not in val:
+                        values[src][field] = bool(int(val))
         return values
