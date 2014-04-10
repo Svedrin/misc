@@ -85,6 +85,7 @@ class Check(models.Model):
     exec_host   = models.ForeignKey(hosts.Host, verbose_name="The host that executes the check", related_name="check_exec_set")
     target_host = models.ForeignKey(hosts.Host, verbose_name="The host that is being checked",   related_name="check_target_set")
     display     = models.CharField("Human-readable name", max_length=255, default='', blank=True)
+    is_active   = models.BooleanField(default=True, blank=True)
 
     objects     = CheckManager()
 
@@ -138,8 +139,19 @@ class Check(models.Model):
             domain = domain.parent
         return False
 
+    def activate(self):
+        if not self.is_active:
+            self.is_active = True
+            self.save()
+
+    def deactivate(self):
+        if self.is_active:
+            self.is_active = False
+            self.save()
+
     def process_result(self, result):
         if result["data"] is not None:
+            self.activate()
             self.rrd.update(result)
             confintervals = self.rrd.get_confidence_intervals(result["data"].keys())
             curralert = self.current_alert

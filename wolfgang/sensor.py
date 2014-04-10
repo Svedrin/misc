@@ -18,6 +18,9 @@ class Sensor(WolfObject):
             self._sensor = SensorType(self._conf)
         return self._sensor
 
+    def can_activate(self, checkinst):
+        return self.sensor.can_activate(checkinst)
+
     def discover(self):
         return self.sensor.discover()
 

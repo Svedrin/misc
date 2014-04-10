@@ -31,6 +31,16 @@ def add_check(params, user):
                 check.checkparameter_set.create(parameter=sensorparam, value=params[sensorparam.name])
 
 
+def deactivate(params, user):
+    try:
+        check = Check.objects.get(uuid=params["uuid"])
+    except Check.DoesNotExist:
+        logging.warning("Check %s does not exist, cannot deactivate" % params["uuid"])
+    else:
+        check.deactivate()
+        logging.info("Check %s deactivated" % params["uuid"])
+
+
 def process(result, user):
     if "check" not in result:
         logging.warning("Check uuid missing")
@@ -38,7 +48,7 @@ def process(result, user):
     try:
         check = Check.objects.get(uuid=result["check"])
     except Check.DoesNotExist, err:
-        logging.warning("Check %s does not exist" % result["check"])
+        logging.warning("Check %s does not exist, cannot update" % result["check"])
     else:
         if True: #check.user_allowed(user):
             check.process_result(result)
@@ -70,6 +80,8 @@ def on_message(channel, method_frame, header_frame, body):
                 process(packet, None)
             elif packet["type"] == "add_check":
                 add_check(packet, None)
+            elif packet["type"] == "deactivate":
+                deactivate(packet, None)
             else:
                 logging.warning("Unknown packet type:" + packet["type"])
         except Exception, err:

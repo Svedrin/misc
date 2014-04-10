@@ -33,6 +33,12 @@ class FluxAccount(WolfObject):
             thing["type"] = "result"
         return self._request(data)
 
+    def deactivate(self, check):
+        return self._request({
+            "type": "deactivate",
+            "uuid": check["uuid"]
+        })
+
     def add_checks(self, data):
         for thing in data:
             thing["type"] = "add_check"

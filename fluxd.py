@@ -95,13 +95,18 @@ def main():
     if new_checks:
         account.add_checks(new_checks)
 
+    for chk in myhost.checks:
+        if not chk.is_active:
+            account.deactivate(chk)
+
     try:
         while True:
             nextdue = time() + options.interval
             results = []
             for chk in myhost.checks:
-                checkresult = chk()
-                results.append(checkresult)
+                if chk.is_active:
+                    checkresult = chk()
+                    results.append(checkresult)
 
             account.submit(results)
 

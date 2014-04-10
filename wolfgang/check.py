@@ -23,6 +23,13 @@ class Check(WolfObject):
         self.event = Dispatcher()
         self.event["updated"] = False
 
+        self.is_active = (params.get("is_active", "true") == "true")
+        if self.is_active:
+            self.activate()
+
+    def activate(self):
+        self.is_active = self.sensor.can_activate(self)
+
     def __call__(self):
         res = {
             "uuid":         str(uuid4()),
