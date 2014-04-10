@@ -29,6 +29,8 @@ def add_check(params, user):
         for sensorparam in check.sensor.sensorparameter_set.all():
             if sensorparam.name in params:
                 check.checkparameter_set.create(parameter=sensorparam, value=params[sensorparam.name])
+    else:
+        logging.info("Check %s already known" % params["uuid"])
 
 
 def deactivate(params, user):
