@@ -35,3 +35,8 @@
   {% endif %}
   {% endif %}
 </dl>
+{% if not check.is_active %}
+<p style="padding: 15px; background-color: #FCF8E3; text-align: center; border: 1px solid #F2DEDE;">
+  This check is not currently active.
+</p>
+{% endif %}
