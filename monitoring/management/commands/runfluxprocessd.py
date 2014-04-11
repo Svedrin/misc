@@ -171,7 +171,7 @@ class Command( BaseCommand ):
         channel.basic_qos(prefetch_count=1)
 
         try:
-            channel.basic_consume(on_message, rabbiturl.path[1:])
+            channel.basic_consume(on_message, "fluxmon")
             channel.start_consuming()
         except KeyboardInterrupt:
             channel.stop_consuming()
