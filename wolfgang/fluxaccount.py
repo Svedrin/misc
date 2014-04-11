@@ -19,7 +19,6 @@ class FluxAccount(WolfObject):
         parameters  = pika.ConnectionParameters(rabbiturl.hostname, credentials=credentials)
         self.connection = pika.BlockingConnection(parameters)
         self.channel    = self.connection.channel()
-        self.channel.queue_declare(queue="fluxmon", durable=True)
         self.exchange   = rabbiturl.path[1:]
 
     def _request(self, data):
