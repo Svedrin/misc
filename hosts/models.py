@@ -4,16 +4,23 @@
 from django.db import models
 from django.contrib.auth import models as auth
 
-class Domain(models.Model):
+from mptt.models import MPTTModel, TreeForeignKey
+
+class Domain(MPTTModel):
     name        = models.CharField(max_length=64)
-    parent      = models.ForeignKey('self', null=True, blank=True)
+    parent      = TreeForeignKey('self', null=True, blank=True, related_name='children')
     ownergroups = models.ManyToManyField(auth.Group, blank=True)
     subscribers = models.ManyToManyField(auth.User,  blank=True)
 
     class Meta:
         unique_together=( ('name', 'parent'), )
 
+    class MPTTMeta:
+        order_insertion_by = ['name']
+
     def __unicode__(self):
+        if not self.name:
+            return ''
         return "%s.%s" % (self.name, unicode(self.parent) if self.parent is not None else '')
 
 class Host(models.Model):
