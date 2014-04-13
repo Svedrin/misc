@@ -54,7 +54,7 @@ def process(result, user):
     else:
         if True: #check.user_allowed(user):
             check.process_result(result)
-            logging.info("Check %s updated" % result["check"])
+            logging.info("Check %s (%s) updated" % (result["check"], check.target_host.fqdn))
         else:
             logging.warning("Check %s denied update permission to user %s" % (result["check"], user))
 
