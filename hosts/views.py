@@ -5,7 +5,13 @@ from django.shortcuts               import render_to_response, get_object_or_404
 from django.template                import RequestContext
 from django.contrib.auth.decorators import login_required
 
-from hosts.models import Host
+from hosts.models import Domain, Host
+
+@login_required
+def domains(request):
+    return render_to_response("hosts/domains.html", {
+        'nodes': Domain.objects.all()
+        }, context_instance=RequestContext(request))
 
 @login_required
 def host(request, fqdn):
