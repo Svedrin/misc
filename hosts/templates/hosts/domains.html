@@ -8,6 +8,11 @@
   {% recursetree nodes %}
     <li>
       {{ node }} ({{ node.host_set.count }} Hosts)
+      <ul>
+        {% for host in node.host_set.all %}
+          <li><a href="{% url hosts.views.host host.fqdn %}">{{ host }}</a></li>
+        {% endfor %}
+      </ul>
       {% if not node.is_leaf_node %}
         <ul class="children">
           {{ children }}
