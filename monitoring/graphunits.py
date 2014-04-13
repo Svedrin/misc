@@ -8,7 +8,7 @@ import tokenize
 
 from StringIO import StringIO
 
-from graphbuilder import Symbol, Infix, Literal, Parser, Node, LiteralNode, Source
+from graphbuilder import Symbol, Infix, Literal, Parser, Node, LiteralNode, Source, UpsideDownNode
 
 # SYNTAX ELEMENTS
 
@@ -150,6 +150,8 @@ def extract_units(node):
         return node.unit
     if isinstance(node, LiteralWithUnitNode):
         return node._unit
+    if isinstance(node, UpsideDownNode):
+        return extract_units(node.lft)
     if node.op == '+':
         return extract_units(node.lft) + extract_units(node.rgt)
     if node.op == '-':
@@ -158,6 +160,7 @@ def extract_units(node):
         return extract_units(node.lft) * extract_units(node.rgt)
     if node.op == '/':
         return extract_units(node.lft) / extract_units(node.rgt)
+    raise TypeError("don't know how to extract units from %s" % unicode(node))
 
 
 # PARSER
