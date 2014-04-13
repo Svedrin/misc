@@ -23,7 +23,13 @@ class FluxAccount(WolfObject):
 
     def _request(self, data):
         data = json.dumps(data)
-        self.channel.basic_publish(exchange=self.exchange, routing_key='fluxmon', body=data)
+        self.channel.basic_publish(exchange=self.exchange,
+            routing_key='fluxmon',
+            body=data,
+            properties=pika.BasicProperties(
+                delivery_mode = 2  # make message persistent
+            )
+        )
 
     def sleep(self, dura):
         if hasattr(self.connection, "sleep"):
