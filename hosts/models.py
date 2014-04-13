@@ -25,7 +25,7 @@ class Domain(MPTTModel):
 
 class Host(models.Model):
     fqdn        = models.CharField(max_length=255, unique=True)
-    domain      = models.ForeignKey(Domain)
+    domain      = TreeForeignKey(Domain)
     subscribers = models.ManyToManyField(auth.User, blank=True)
 
     @property
