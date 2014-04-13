@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{# kate: space-indent on; indent-width 2; replace-tabs on; hl Django HTML Template; #}
+{% load mptt_tags %}
+{% load display_extras %}
+{% block title %}Fluxmon &mdash; Domains{% endblock %}
+{% block content %}
+<ul>
+  {% recursetree nodes %}
+    <li>
+      {{ node }} ({{ node.host_set.count }} Hosts)
+      {% if not node.is_leaf_node %}
+        <ul class="children">
+          {{ children }}
+        </ul>
+      {% endif %}
+    </li>
+  {% endrecursetree %}
+</ul>
+{% endblock %}
