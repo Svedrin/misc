@@ -168,7 +168,7 @@ class Command( BaseCommand ):
                                  durable=True, auto_delete=False)
         channel.queue_declare(queue="fluxmon", auto_delete=False, durable=True)
         channel.queue_bind(queue="fluxmon", exchange=rabbiturl.path[1:], routing_key="fluxmon")
-        channel.basic_qos(prefetch_count=1)
+        channel.basic_qos(prefetch_count=1) # dispatch to first idle consumer
 
         try:
             channel.basic_consume(on_message, "fluxmon")
