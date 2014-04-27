@@ -21,6 +21,8 @@ class DiskstatsSensor(AbstractSensor):
             if "DM_VG_NAME" in dev and "DM_LV_NAME" in dev:
                 return "/dev/%s/%s" % (dev["DM_VG_NAME"], dev["DM_LV_NAME"])
             for link in os.listdir("/dev/mapper"):
+                if "-" not in link:
+                    continue
                 linkdev = os.path.realpath(os.path.join("/dev/mapper", link))
                 if linkdev == device.device_node:
                     vg, lv = link.split("-", 1)
