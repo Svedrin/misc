@@ -19,17 +19,30 @@ class FluxAccount(WolfObject):
         parameters  = pika.ConnectionParameters(rabbiturl.hostname, credentials=credentials)
         self.connection = pika.BlockingConnection(parameters)
         self.channel    = self.connection.channel()
-        self.exchange   = rabbiturl.path[1:]
+        self.exchange   = str(rabbiturl.path[1:])
 
-        self.channel.exchange_declare(self.exchange,
-            exchange_type = "direct",
-            passive       = False,
-            durable       = True,
-            auto_delete   = False)
-        self.channel.queue_declare(queue="fluxmon",
+        try:
+            self.channel.exchange_declare(
+                exchange      = self.exchange,
+                exchange_type = "direct",
+                passive       = False,
+                durable       = True,
+                auto_delete   = False)
+        except TypeError:
+            self.channel.exchange_declare(
+                exchange      = self.exchange,
+                type          = "direct",
+                passive       = False,
+                durable       = True,
+                auto_delete   = False)
+        self.channel.queue_declare(
+            queue         = "fluxmon",
             auto_delete   = False,
             durable       = True)
-        self.channel.queue_bind(queue="fluxmon", exchange=self.exchange, routing_key="fluxmon")
+        self.channel.queue_bind(
+            queue         = "fluxmon",
+            exchange      = self.exchange,
+            routing_key   = "fluxmon")
 
     def _request(self, data):
         data = json.dumps(data)
