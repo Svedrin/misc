@@ -21,6 +21,16 @@ class FluxAccount(WolfObject):
         self.channel    = self.connection.channel()
         self.exchange   = rabbiturl.path[1:]
 
+        channel.exchange_declare(self.exchange,
+            exchange_type = "direct",
+            passive       = False,
+            durable       = True,
+            auto_delete   = False)
+        channel.queue_declare(queue="fluxmon",
+            auto_delete   = False,
+            durable       = True)
+        channel.queue_bind(queue="fluxmon", exchange=self.exchange, routing_key="fluxmon")
+
     def _request(self, data):
         data = json.dumps(data)
         self.channel.basic_publish(exchange=self.exchange,
