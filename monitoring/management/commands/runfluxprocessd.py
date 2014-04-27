@@ -164,6 +164,20 @@ class Command( BaseCommand ):
         connection  = pika.BlockingConnection(parameters)
 
         channel = connection.channel()
+        channel.exchange_declare(
+            exchange      = str(rabbiturl.path[1:]),
+            exchange_type = "direct",
+            passive       = False,
+            durable       = True,
+            auto_delete   = False)
+        channel.queue_declare(
+            queue         = "fluxmon",
+            auto_delete   = False,
+            durable       = True)
+        channel.queue_bind(
+            queue         = "fluxmon",
+            exchange      = str(rabbiturl.path[1:]),
+            routing_key   = "fluxmon")
         channel.basic_qos(prefetch_count=1) # dispatch to first idle consumer
 
         try:
