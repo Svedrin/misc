@@ -86,6 +86,9 @@ def on_message(channel, method_frame, header_frame, body):
                 deactivate(packet, None)
             else:
                 logging.warning("Unknown packet type:" + packet["type"])
+        except OSError:
+            # we want to crash on those
+            raise
         except Exception, err:
             import traceback
             logging.error(traceback.format_exc())
@@ -164,12 +167,20 @@ class Command( BaseCommand ):
         connection  = pika.BlockingConnection(parameters)
 
         channel = connection.channel()
-        channel.exchange_declare(
-            exchange      = str(rabbiturl.path[1:]),
-            exchange_type = "direct",
-            passive       = False,
-            durable       = True,
-            auto_delete   = False)
+        try:
+            channel.exchange_declare(
+                exchange      = str(rabbiturl.path[1:]),
+                exchange_type = "direct",
+                passive       = False,
+                durable       = True,
+                auto_delete   = False)
+        except TypeError:
+            channel.exchange_declare(
+                exchange      = str(rabbiturl.path[1:]),
+                type          = "direct",
+                passive       = False,
+                durable       = True,
+                auto_delete   = False)
         channel.queue_declare(
             queue         = "fluxmon",
             auto_delete   = False,
