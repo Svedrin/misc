@@ -83,7 +83,8 @@ def main():
                 checks = wc.find_objects_by_params("check", **params)
                 if not checks:
                     logging.warning( "Found new target on %s: %s" % (confobj.name, target_params) )
-                    check = wc.add_object("check", confobj.name + ",".join(target_params.values()), [], params)
+                    checkname = ",".join([confobj.name, sensor.name] + target_params.values())
+                    check = wc.add_object("check", checkname, [], params)
                     params["uuid"] = check["uuid"]
                 else:
                     logging.info( "Found known target on %s: %s" % (confobj.name, target_params) )
