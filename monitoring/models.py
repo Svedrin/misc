@@ -90,8 +90,11 @@ class Check(models.Model):
     objects     = CheckManager()
 
     def __unicode__(self):
-        return "%s(%s) @ %s" % (self.sensor.name,
-            self.paramstring,
+        paramstring = self.paramstring
+        if paramstring:
+            paramstring = "(%s)" % paramstring
+        return "%s%s @ %s" % (self.sensor.name,
+            paramstring,
             self.target_host.fqdn[:-1])
 
     def save(self, *args, **kwargs):
