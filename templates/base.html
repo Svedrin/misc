@@ -32,22 +32,24 @@
               <li><a href="{% url monitoring.views.search %}" id="searchlink">Search</a></li>
               <li><a href="{% url django.contrib.auth.views.logout %}">Logout</a></li>
               <script type="text/javascript">
-                $("#searchlink").popover({
-                  trigger: "manual",
-                  title: "Search",
-                  content: '<form action="{% url monitoring.views.search %}"><input type="text" class="form-control" id="searchinput" name="query" placeholder="Query" style="width: 250px" /></form>',
-                  placement: "bottom",
-                  html: true
-                });
-                $("#searchlink").on("shown.bs.popover", function(){
-                  $("#searchinput").focus();
-                  $("#searchinput").blur(function(){
-                    $("#searchlink").popover('hide');
+                $(function(){
+                  $("#searchlink").popover({
+                    trigger: "manual",
+                    title: "Search",
+                    content: '<form action="{% url monitoring.views.search %}"><input type="text" class="form-control" id="searchinput" name="query" placeholder="Query" style="width: 250px" /></form>',
+                    placement: "bottom",
+                    html: true
                   });
-                });
-                $("#searchlink").click(function(ev){
-                  ev.preventDefault();
-                  $(this).popover('toggle');
+                  $("#searchlink").on("shown.bs.popover", function(){
+                    $("#searchinput").focus();
+                    $("#searchinput").blur(function(){
+                      $("#searchlink").popover('hide');
+                    });
+                  });
+                  $("#searchlink").click(function(ev){
+                    ev.preventDefault();
+                    $(this).popover('toggle');
+                  });
                 });
               </script>
               {% else %}

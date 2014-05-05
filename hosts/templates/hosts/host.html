@@ -7,6 +7,18 @@
   <li><a href="{% url hosts.views.domains %}">Hosts</a></li>
   <li class="active">{{ host|display:"fqdn" }}</li>
 </ol>
+<div class="btn-group" style="float: right">
+  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+    <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu" role="menu">
+    <li><a href="#">Action</a></li>
+    <li><a href="#">Another action</a></li>
+    <li><a href="#">Something else here</a></li>
+    <li class="divider"></li>
+    <li><a href="#">Separated link</a></li>
+  </ul>
+</div>
 <dl class="dl-horizontal">
   <dt>Host:</dt>
   <dd>{{ host.fqdn }}</dd>
