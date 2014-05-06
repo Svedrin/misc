@@ -7,6 +7,9 @@ from sensors.sensor import AbstractSensor
 
 class UptimeSensor(AbstractSensor):
     def discover(self, target):
+        if target.name != self.conf.environ["fqdn"]:
+            return []
+
         return [{}]
 
     def check(self, checkinst):

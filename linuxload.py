@@ -7,6 +7,9 @@ from sensors.sensor import AbstractSensor
 
 class LinuxLoadSensor(AbstractSensor):
     def discover(self, target):
+        if target.name != self.conf.environ["fqdn"]:
+            return []
+
         return [{}]
 
     def check(self, checkinst):
