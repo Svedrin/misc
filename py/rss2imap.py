@@ -11,6 +11,7 @@ import hashlib
 import json
 import os.path
 import threading
+import traceback
 
 from Queue import Queue
 from BeautifulSoup import BeautifulSoup
@@ -143,13 +144,13 @@ def imapmaster():
             returnq.put((entid, entry, bool(data[0])))
 
         elif whichq is uploadq:
-            returnq, mailbox, mp = command
+            returnq, mailbox, mp, timestamp = command
             if mailbox != currmbox:
                 currmbox = mailbox
                 serv.select(mailbox)
             if "-q" not in sys.argv:
                 outq.put("putting new message to " + mailbox)
-            serv.append(mailbox, "", imaplib.Time2Internaldate(time()), str(mp))
+            serv.append(mailbox, "", imaplib.Time2Internaldate(timestamp), str(mp))
             returnq.put(True)
 
 
@@ -185,73 +186,84 @@ def process_feed(dirname, feedname, feedinfo):
     while outstanding:
         entid, entry, found = pending.get()
         outstanding -= 1
-        if found:
-            if "-q" not in sys.argv and "-v" in sys.argv:
-                outq.put("[%s] Found known article '%s'" % (feedname, entry.title))
-            continue
-
-        if "-q" not in sys.argv:
-            outq.put("[%s] Found new article '%s'" % (feedname, entry.title))
-
-        # MIME Structure:
-        #
-        #  multipart/related
-        #  + multipart/alternative
-        #  | + text/html
-        #  + image/png
-        #  + image/jpg
-        #  + ...
-        #
-        # The multipart/alternative seems superfluous, but (at least)
-        # Thunderbird doesn't render the email correctly without it.
-
-        mp = email.mime.Multipart.MIMEMultipart("related")
-        mp["From"] = entry.get("author", feedname)
-        mp["Subject"] = entry.title
-        mp["X-RSS2IMAP-ID"] = entid
-
-        alt  = email.mime.Multipart.MIMEMultipart("alternative")
-        mp.attach(alt)
-
-        if feedproxy is not None:
-            content = feedproxy.get_content(entry)
-        elif "content" in entry:
-            content = entry.content[0].value
-        else:
-            content = entry.summary
-
-        soup = BeautifulSoup(content)
-
-        for soupimg in soup.findAll("img"):
-            if "doubleclick" in soupimg["src"] or "feedsportal.com" in soupimg["src"]:
-                # you know, if ads wouldn't contain a fucking HUGE gif that
-                # completely freezes my thunderbird for a couple of seconds while
-                # it tries to display the stupid ad, this wouldn't be necessary.
-                #soupimg.replace("(ad)")
+        try:
+            if found:
+                if "-q" not in sys.argv and "-v" in sys.argv:
+                    outq.put("[%s] Found known article '%s'" % (feedname, entry.title))
                 continue
-            req = requests.get(soupimg["src"], headers={"User-Agent": USER_AGENT})
-            if req.status_code == 200:
-                cid = hashlib.md5(soupimg["src"]).hexdigest()
-                img = email.mime.Image.MIMEImage(req.content)
-                img.add_header("Content-ID", "<%s>" % cid)
-                img.add_header("X-IMG-SRC", soupimg["src"])
-                soupimg["src"] = "cid:%s" % cid
-                mp.attach(img)
+
+            if "-q" not in sys.argv:
+                outq.put("[%s] Found new article '%s'" % (feedname, entry.title))
+
+            # MIME Structure:
+            #
+            #  multipart/related
+            #  + multipart/alternative
+            #  | + text/html
+            #  + image/png
+            #  + image/jpg
+            #  + ...
+            #
+            # The multipart/alternative seems superfluous, but (at least)
+            # Thunderbird doesn't render the email correctly without it.
+
+            mp = email.mime.Multipart.MIMEMultipart("related")
+            mp["From"] = entry.get("author", feedname)
+            mp["Subject"] = entry.title
+            mp["X-RSS2IMAP-ID"] = entid
+
+            alt  = email.mime.Multipart.MIMEMultipart("alternative")
+            mp.attach(alt)
+
+            if feedproxy is not None:
+                content = feedproxy.get_content(entry)
+            elif "content" in entry:
+                content = entry.content[0].value
             else:
-                if "-q" not in sys.argv:
-                    outq.put('[%s] Failed getting "%s": %d' % (feedname, soupimg["src"], req.status_code))
+                content = entry.summary
 
-        body = content_template % {
-            "feed":    feedname,
-            "title":   entry.title,
-            "link":    entry.get("link", ""),
-            "content": unicode(soup)
-        }
+            soup = BeautifulSoup(content)
 
-        alt.attach(email.mime.Text.MIMEText(body, "html", "utf-8"))
+            for soupimg in soup.findAll("img"):
+                if "doubleclick" in soupimg["src"] or "feedsportal.com" in soupimg["src"]:
+                    # you know, if ads wouldn't contain a fucking HUGE gif that
+                    # completely freezes my thunderbird for a couple of seconds while
+                    # it tries to display the stupid ad, this wouldn't be necessary.
+                    #soupimg.replace("(ad)")
+                    continue
+                try:
+                    req = requests.get(soupimg["src"], headers={"User-Agent": USER_AGENT})
+                except requests.ConnectionError:
+                    continue
+                else:
+                    if req.status_code == 200:
+                        cid = hashlib.md5(soupimg["src"]).hexdigest()
+                        try:
+                            img = email.mime.Image.MIMEImage(req.content)
+                        except TypeError:
+                            continue
+                        else:
+                            img.add_header("Content-ID", "<%s>" % cid)
+                            img.add_header("X-IMG-SRC", soupimg["src"])
+                            soupimg["src"] = "cid:%s" % cid
+                            mp.attach(img)
+                    else:
+                        if "-q" not in sys.argv:
+                            outq.put('[%s] Failed getting "%s": %d' % (feedname, soupimg["src"], req.status_code))
 
-        uploadq.put((pendingupload, dirname, mp))
-        outstandingupload += 1
+            body = content_template % {
+                "feed":    feedname,
+                "title":   entry.title,
+                "link":    entry.get("link", ""),
+                "content": unicode(soup)
+            }
+
+            alt.attach(email.mime.Text.MIMEText(body, "html", "utf-8"))
+
+            uploadq.put((pendingupload, dirname, mp, entry.get("updated_parsed", time())))
+            outstandingupload += 1
+        except Exception:
+            traceback.print_exc()
 
     if "-q" not in sys.argv:
         outq.put("[%s] Waiting for %d uploads" % (feedname, outstandingupload))
