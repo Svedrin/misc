@@ -45,4 +45,7 @@ class SmaSpotSensor(AbstractSensor):
 
                 ret[field.lower() + phase] = float(valstr) * mult
 
+        if not ret:
+            ret = None
+
         return ret, {}
