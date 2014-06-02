@@ -69,9 +69,13 @@ def get_contacts():
 
     settings = json.loads(re.findall(r'settings = ({.*});', logon.content)[0])
 
-    contact_folders = settings["zarafa"]["v1"]["state"]["models"]["contact"]["last_used_folders"]
-    store_entryid   = contact_folders.keys()[0]
-    entryid         = contact_folders[store_entryid][0]
+    if not CONF.has_option("zarafa", "store_entryid") or not CONF.has_option("zarafa", "entryid"):
+        contact_folders = settings["zarafa"]["v1"]["state"]["models"]["contact"]["last_used_folders"]
+        store_entryid   = contact_folders.keys()[0]
+        entryid         = contact_folders[store_entryid][0]
+    else:
+        store_entryid   = CONF.get("zarafa", "store_entryid")
+        entryid         = CONF.get("zarafa", "entryid")
 
     start = 0
     while True:
