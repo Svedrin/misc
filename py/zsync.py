@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# kate: space-indent on; indent-width 4; replace-tabs on;
 
 """
 zsync -- synchronize Zarafa contacts to the local machine and search for CallerIDs.
