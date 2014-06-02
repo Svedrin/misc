@@ -48,7 +48,7 @@ function format_snom($callerid){
 }
 
 // error_log("Looking up callerid for {$_GET["cid"]}");
-$callerid = find_callerid($_GET["cid"]);
+$callerid = htmlspecialchars(find_callerid($_GET["cid"]));
 
 if( $_GET["phone"] == "aastra" ){
     $output = format_aastra($callerid);
