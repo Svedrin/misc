@@ -28,6 +28,10 @@ Setup:
    callerids from modifying the shell command.
 
 3. Create a cron job that regularly calls "zsync cacheupdate".
+
+4. Check out this PHP script that returns the callee's name for outgoing calls:
+
+    https://bitbucket.org/Svedrin/misc/src/tip/php/getrpid.php
 """
 
 import requests
