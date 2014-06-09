@@ -72,7 +72,8 @@ class DiskstatsSensor(AbstractSensor):
             for dev in ctx.list_devices()
             if (dev["SUBSYSTEM"] == "block" and
                 dev["DEVTYPE"] in ("disk", "partition") and
-                not dev["DEVNAME"].startswith("/dev/loop"))
+                not dev["DEVNAME"].startswith("/dev/loop") and
+                not dev["DEVNAME"].startswith("/dev/ram"))
         ]
 
     def can_activate(self, checkinst):
