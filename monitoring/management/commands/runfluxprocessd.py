@@ -12,8 +12,10 @@ from logging.handlers import SysLogHandler
 from optparse import make_option
 
 from django.core.management.base import BaseCommand
+from django.contrib.auth.models  import User
 
 from hosts.models import Host
+from msgsign.models import PublicKey
 from monitoring.models import Sensor, SensorVariable, Check, Alert
 
 def add_check(params, user):
@@ -67,6 +69,44 @@ def on_message(channel, method_frame, header_frame, body):
         data = json.loads( body )
     except ValueError, err:
         logging.error("Packet failed to decode:" + unicode(err))
+        channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+        return
+
+    if "data" not in data or "sig" not in data or "key" not in data:
+        logging.error("Packet is malformed, discarded")
+        channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+        return
+
+    try:
+        key = PublicKey.objects.get(uuid=data["key"])
+    except PublicKey.DoesNotExist:
+        logging.error("Packet is signed with an unknown public key, discarded")
+        channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+        return
+
+    try:
+        key.verify(data["data"], data["sig"])
+    except PublicKey.InvalidSignature:
+        logging.error("Packet signature is invalid, discarded")
+        channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+        return
+
+    try:
+        user = key.owner
+    except User.DoesNotExist:
+        logging.error("The key's owner does not exist, packet discarded")
+        channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+        return
+
+    if not key.active:
+        logging.error("The key is not active, packet discarded")
+        channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+        return
+
+    try:
+        data = json.loads( data["data"] )
+    except ValueError, err:
+        logging.error("Packet data failed to decode:" + unicode(err))
         channel.basic_ack(delivery_tag=method_frame.delivery_tag)
         return
 
