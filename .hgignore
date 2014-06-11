@@ -9,3 +9,4 @@ fluxd.conf
 MANIFEST
 dist/
 htdocs/
+.keys/
