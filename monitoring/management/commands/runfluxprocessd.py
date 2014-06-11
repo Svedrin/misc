@@ -54,7 +54,7 @@ def process(result, user):
     except Check.DoesNotExist, err:
         logging.warning("Check %s does not exist, cannot update" % result["check"])
     else:
-        if True: #check.user_allowed(user):
+        if check.user_allowed(user):
             logging.info("Updating check %s (%s)" % (result["check"], check.target_host.fqdn))
             check.process_result(result)
         else:
@@ -119,11 +119,11 @@ def on_message(channel, method_frame, header_frame, body):
             continue
         try:
             if packet["type"] == "result":
-                process(packet, None)
+                process(packet, user)
             elif packet["type"] == "add_check":
-                add_check(packet, None)
+                add_check(packet, user)
             elif packet["type"] == "deactivate":
-                deactivate(packet, None)
+                deactivate(packet, user)
             else:
                 logging.warning("Unknown packet type:" + packet["type"])
         except OSError:
