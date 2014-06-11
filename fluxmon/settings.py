@@ -150,6 +150,7 @@ INSTALLED_APPS = (
     'hosts',
     'monitoring',
     'display',
+    'msgsign',
 )
 
 # A sample logging configuration. The only tangible logging
