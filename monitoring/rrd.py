@@ -64,7 +64,8 @@ class RRD(object):
         self._info = None
 
     def delete(self):
-        os.remove(self.rrdpath)
+        if os.path.exists(self.rrdpath):
+            os.remove(self.rrdpath)
 
     def get_source(self, srcname):
         from graphpredict import PredictingSource
