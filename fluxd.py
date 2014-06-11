@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # kate: space-indent on; indent-width 4; replace-tabs on;
 
+import os
 import sys
 import socket
 import logging
@@ -10,6 +11,10 @@ import os.path
 from time     import time, sleep
 from datetime import datetime
 from optparse import OptionParser
+
+from Crypto.Hash        import SHA256
+from Crypto.PublicKey   import RSA
+from Crypto             import Random
 
 from wolfgang import WolfObjectMeta, WolfConfig
 from wolfgang.prettyprint import colorprint, Colors
@@ -21,6 +26,7 @@ def main():
     parser.add_option("-c", "--config",   default="fluxd.conf")
     parser.add_option("-d", "--datadir",  default="/var/lib/fluxmon")
     parser.add_option("-i", "--interval", default=300, type="int")
+    parser.add_option("-k", "--keygen",   default=False, action="store_true", help="Only generate private and public keys and then exit.")
     parser.add_option("-f", "--fqdn",     default=socket.getfqdn(), type="string", help=("FQDN to use (defaults to %s)" % socket.getfqdn()))
     parser.add_option("-n", "--noop",     default=False, action="store_true", help="Only detect checks and exit, don't commit or run them")
     parser.add_option("-v", "--verbose",  default=0, action="count", help="Increase verbosity")
@@ -39,6 +45,22 @@ def main():
         logch.setLevel({2: logging.DEBUG, 1: logging.INFO, 0: logging.WARNING}[int(options.verbose)])
         logch.setFormatter( logging.Formatter('%(asctime)s - %(levelname)s - %(message)s') )
         rootlogger.addHandler(logch)
+
+    keysdir = os.path.join( os.path.dirname(options.config), ".keys" )
+    if options.keygen or not os.path.exists(keysdir):
+        if not os.path.exists(keysdir):
+            os.mkdir(keysdir)
+        os.chmod(keysdir, 0700)
+        rng = Random.new().read
+        print "Generating keys. This may or may not take some time."
+        privkey = RSA.generate(4096, rng)
+        with open(os.path.join(keysdir, "id_rsa_4096"), "wb") as fp:
+            fp.write(privkey.exportKey())
+        with open(os.path.join(keysdir, "id_rsa_4096.pub"), "wb") as fp:
+            fp.write(privkey.publickey().exportKey())
+        print "Generation complete, keys have been saved in %s." % keysdir
+        print "Please register the key at fluxmon.de and configure the fluxaccount in fluxd.conf before proceeding."
+        return 255
 
     wc = WolfConfig(options.config)
     wc.parse()
