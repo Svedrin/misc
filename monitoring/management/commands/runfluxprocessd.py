@@ -23,9 +23,9 @@ def add_check(params, user):
         exec_host   = Host.objects.get(fqdn=params["node"])
         target_host = Host.objects.get(fqdn=params["target"])
         sensor      = Sensor.objects.get(name=params["sensor"])
+        logging.info("Creating check %s (%s)" % (params["uuid"], target_host.fqdn))
         check = Check(uuid=params["uuid"], sensor=sensor, exec_host=exec_host, target_host=target_host)
         check.save()
-        logging.info("Check %s created" % params["uuid"])
         for sensorparam in check.sensor.sensorparameter_set.all():
             if sensorparam.name in params:
                 check.checkparameter_set.create(parameter=sensorparam, value=params[sensorparam.name])
@@ -39,8 +39,8 @@ def deactivate(params, user):
     except Check.DoesNotExist:
         logging.warning("Check %s does not exist, cannot deactivate" % params["uuid"])
     else:
+        logging.info("Deactivating check %s (%s)" % (params["uuid"], check.target_host.fqdn))
         check.deactivate()
-        logging.info("Check %s deactivated" % params["uuid"])
 
 
 def process(result, user):
@@ -53,8 +53,8 @@ def process(result, user):
         logging.warning("Check %s does not exist, cannot update" % result["check"])
     else:
         if True: #check.user_allowed(user):
+            logging.info("Updating check %s (%s)" % (result["check"], check.target_host.fqdn))
             check.process_result(result)
-            logging.info("Check %s (%s) updated" % (result["check"], check.target_host.fqdn))
         else:
             logging.warning("Check %s denied update permission to user %s" % (result["check"], user))
 
