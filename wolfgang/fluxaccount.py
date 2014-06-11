@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 # kate: space-indent on; indent-width 4; replace-tabs on;
 
+import os.path
 import json
 import pika
+
+from Crypto.Hash        import SHA256
+from Crypto.PublicKey   import RSA
+from Crypto             import Random
 
 from urlparse import urljoin, urlparse
 from time import sleep
@@ -44,8 +49,30 @@ class FluxAccount(WolfObject):
             exchange      = self.exchange,
             routing_key   = "fluxmon")
 
+        self.privkey = None
+
+    def _load_key(self):
+        keysdir = os.path.join( os.path.dirname(self._conf.environ["config"]), ".keys" )
+        self.rng = Random.new().read
+
+        with open(os.path.join(keysdir, "id_rsa_4096"), "rb") as fp:
+            self.privkey = RSA.importKey(fp.read())
+
     def _request(self, data):
         data = json.dumps(data)
+
+        if self.privkey is None:
+            self._load_key()
+
+        msghash = SHA256.new(data).digest()
+        sig     = self.privkey.sign(msghash, self.rng)
+        sigstr  = str(sig[0])
+        data = json.dumps({
+            "data": data,
+            "sig":  sigstr,
+            "key":  self.params["key"]
+        })
+
         self.channel.basic_publish(exchange=self.exchange,
             routing_key='fluxmon',
             body=data,
