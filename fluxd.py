@@ -56,8 +56,10 @@ def main():
         privkey = RSA.generate(4096, rng)
         with open(os.path.join(keysdir, "id_rsa_4096"), "wb") as fp:
             fp.write(privkey.exportKey())
+            fp.write("\n")
         with open(os.path.join(keysdir, "id_rsa_4096.pub"), "wb") as fp:
             fp.write(privkey.publickey().exportKey())
+            fp.write("\n")
         print "Generation complete, keys have been saved in %s." % keysdir
         print "Please register the key at fluxmon.de and configure the fluxaccount in fluxd.conf before proceeding."
         return 255
