@@ -42,7 +42,8 @@ class Role(MPTTModel):
             return self.user
         elif self.token:
             anon = AnonymousUser()
-            anon.username = self.token
+            anon.username = self.name
+            anon.role_set = Role.objects.filter(token=self.token)
             return anon
         else:
             return ValueError("This role is not associated to a user")
