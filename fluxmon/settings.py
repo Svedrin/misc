@@ -146,7 +146,6 @@ INSTALLED_APPS = (
     'django.contrib.admindocs',
     'registration',
     'mptt',
-    'apiauth',
     'hosts',
     'monitoring',
     'display',
