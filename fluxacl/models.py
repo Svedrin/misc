@@ -102,7 +102,7 @@ class ACL(models.Model):
                     continue
                 else:
                     add = True
-                    print "Checking", permit
+                    #print "Checking", permit
                     for permitflag in permit.privileges:
                         if permitflag == " ":
                             continue
@@ -116,8 +116,7 @@ class ACL(models.Model):
                                     myperms += permitflag
                             else:
                                 myperms = myperms.replace(permitflag, "")
-
-                    print myperms
+                    #print myperms
 
             return "a" in myperms or flag in myperms
 
