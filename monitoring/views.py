@@ -10,9 +10,10 @@ from time import time
 
 from django.shortcuts               import render_to_response, get_object_or_404, get_list_or_404
 from django.template                import RequestContext
-from django.http                    import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, HttpResponseBadRequest
+from django.http                    import Http404, HttpResponse, HttpResponseRedirect
 from django.views.decorators.csrf   import csrf_exempt
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views      import redirect_to_login
 from django.db.models               import Q
 from django.core.urlresolvers       import reverse
 from django.utils.timezone          import make_aware, get_default_timezone
@@ -116,7 +117,7 @@ def search(request):
 def check_details(request, uuid):
     check = get_object_or_404(Check, uuid=uuid)
     if not check.has_perm(request.user, "r"):
-        return HttpResponseForbidden("Unauthorized")
+        return redirect_to_login(request.build_absolute_uri())
     if check.sensor.sensorvariable_set.count() == 1:
         var = check.sensor.sensorvariable_set.all()[0]
         return HttpResponseRedirect(reverse(render_check_page, args=(check.uuid, var.name)))
@@ -134,7 +135,7 @@ def check_details(request, uuid):
 def render_check_page(request, uuid, ds, profile="24h"):
     check = get_object_or_404(Check, uuid=uuid)
     if not check.has_perm(request.user, "r"):
-        return HttpResponseForbidden("Unauthorized")
+        return redirect_to_login(request.build_absolute_uri())
     profiles = (
         ( "4h",      6*60*60),
         ("24h",     24*60*60),
@@ -160,7 +161,7 @@ def render_check_page(request, uuid, ds, profile="24h"):
 def render_check(request, uuid, ds):
     check = Check.objects.get(uuid=uuid)
     if not check.has_perm(request.user, "r"):
-        return HttpResponseForbidden("Unauthorized")
+        return redirect_to_login(request.build_absolute_uri())
 
     builder = Graph()
     try:
