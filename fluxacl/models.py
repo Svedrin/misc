@@ -82,9 +82,10 @@ class ACL(models.Model):
             raise ValueError("invalid flag")
 
         if isinstance(user_or_role, (User, AnonymousUser)):
-            for role in user_or_role.role_set.all():
-                if self.has_perm(role, flag):
-                    return True
+            if hasattr(user_or_role, "role_set"):
+                for role in user_or_role.role_set.all():
+                    if self.has_perm(role, flag):
+                        return True
             return False
 
         elif isinstance(user_or_role, Role):
