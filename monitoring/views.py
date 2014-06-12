@@ -27,7 +27,7 @@ from monitoring.graphunits   import parse, extract_units
 @login_required
 def config(request, host_fqdn):
     hh = get_object_or_404(Host, fqdn=host_fqdn)
-    conf = [request.user.apikey_set.all()[0].config]
+    conf = [request.user.publickey_set.get(host=hh).config]
     conf.append("node %s\n" % hh.fqdn)
     for target in Host.objects.filter( id__in=hh.check_exec_set.values("target_host").distinct() ).exclude(id=hh.id):
         conf.append("target %s\n" % target.fqdn)

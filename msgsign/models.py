@@ -28,3 +28,7 @@ class PublicKey(models.Model):
         msghash = SHA256.new(message).digest()
         if not self.keyobj.verify(msghash, (int(sigstr),)):
             raise PublicKey.InvalidSignature()
+
+    @property
+    def config(self):
+        return 'fluxaccount %s key=%s rabbiturl="amqp://guest:guest@localhost/fluxmon"\n' % (self.owner.username, self.uuid)
