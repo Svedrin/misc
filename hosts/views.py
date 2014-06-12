@@ -2,7 +2,7 @@
 # kate: space-indent on; indent-width 4; replace-tabs on;
 
 from django.shortcuts               import render_to_response, get_object_or_404, get_list_or_404
-from django.http                    import Http404, HttpResponse, HttpResponseRedirect
+from django.http                    import Http404, HttpResponse, HttpResponseForbidden, HttpResponseRedirect
 from django.template                import RequestContext
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers       import reverse
@@ -16,17 +16,19 @@ def domains(request):
         'nodes': Domain.objects.all()
         }, context_instance=RequestContext(request))
 
-@login_required
 def host(request, fqdn):
     thehost = get_object_or_404(Host, fqdn=fqdn)
+    if not thehost.has_perm(request.user, "r"):
+        return HttpResponseForbidden("Unauthorized")
     return render_to_response("hosts/host.html", {
         'host':   thehost,
         'checks': thehost.check_target_set.filter(is_active=True)
         }, context_instance=RequestContext(request))
 
-@login_required
 def delete_host(request, fqdn):
     host = get_object_or_404(Host, fqdn=fqdn)
+    if not thehost.has_perm(request.user, "d"):
+        return HttpResponseForbidden("Unauthorized")
     if request.method == "POST":
         form = ConfirmHostDeleteForm( request.POST )
         if form.is_valid():
