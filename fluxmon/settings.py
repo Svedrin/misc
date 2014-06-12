@@ -147,6 +147,7 @@ INSTALLED_APPS = (
     'registration',
     'mptt',
     'hosts',
+    'fluxacl',
     'monitoring',
     'display',
     'msgsign',
