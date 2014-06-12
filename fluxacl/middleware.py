@@ -24,9 +24,16 @@ class TokenUserMiddleware(object):
             return
         # Check if we have a token in request.GET and see if we can resolve it
         # to a valid role.
-        if "token" in request.GET and request.GET["token"]:
+        if ("token" in request.GET and request.GET["token"]) or \
+           ("token" in request.session and request.session["token"]):
             try:
-                role = Role.objects.get(token=request.GET["token"])
+                if "token" in request.GET and request.GET["token"]:
+                    role = Role.objects.get(token=request.GET["token"])
+                    request.session["token"] = request.GET["token"]
+                elif "token" in request.session and request.session["token"]:
+                    role = Role.objects.get(token=request.session["token"])
+                else:
+                    return
             except Role.DoesNotExist:
                 return
             if not role.is_active or not role.is_anonymous():
