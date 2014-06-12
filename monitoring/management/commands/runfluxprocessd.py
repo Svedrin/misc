@@ -72,7 +72,8 @@ def on_message(channel, method_frame, header_frame, body):
         channel.basic_ack(delivery_tag=method_frame.delivery_tag)
         return
 
-    if "data" not in data or "sig" not in data or "key" not in data:
+    if not isinstance(data, dict) or \
+       "data" not in data or "sig" not in data or "key" not in data:
         logging.error("Packet is malformed, discarded")
         channel.basic_ack(delivery_tag=method_frame.delivery_tag)
         return
