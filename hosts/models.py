@@ -34,6 +34,8 @@ class Domain(MPTTModel):
         if self.acl is not None:
             if self.acl.has_perm(user_or_role, flag, target_model):
                 return True
+        if self.parent is not None:
+            return self.parent.has_perm(user_or_role, flag, target_model)
         return False
 
 class Host(models.Model):
