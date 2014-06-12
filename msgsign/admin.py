@@ -6,6 +6,6 @@ from django.contrib import admin
 from msgsign.models import PublicKey
 
 class PublicKeyAdmin(admin.ModelAdmin):
-    list_display = ['uuid', 'owner', 'description', 'active']
+    list_display = ['host', 'uuid', 'owner', 'description', 'active']
 
 admin.site.register( PublicKey, PublicKeyAdmin )

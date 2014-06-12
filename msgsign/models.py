@@ -7,10 +7,13 @@ from Crypto.PublicKey import RSA
 from django.db import models
 from django.contrib.auth.models import User
 
+from hosts.models import Host
+
 class PublicKey(models.Model):
     owner       = models.ForeignKey(User)
-    uuid        = models.CharField(max_length=37)
-    description = models.CharField(max_length=255)
+    host        = models.ForeignKey(Host, unique=True)
+    uuid        = models.CharField(max_length=37, unique=True)
+    description = models.CharField(max_length=255, blank=True)
     active      = models.BooleanField(default=True)
     publickey   = models.TextField()
 
