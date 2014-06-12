@@ -58,11 +58,9 @@ class Role(MPTTModel):
             return self.user.is_active
         return self.valid_until is None or self.valid_until >= datetime.now()
 
-    @property
     def is_authenticated(self):
         return True
 
-    @property
     def is_anonymous(self):
         return self.user is None
 
