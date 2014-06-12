@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+# kate: space-indent on; indent-width 4; replace-tabs on;
+
 from django.conf.urls import patterns, include, url
 
 # Uncomment the next two lines to enable the admin:
