@@ -30,7 +30,7 @@ class Role(MPTTModel):
         if self.user:
             myname = self.user.username
         elif self.token:
-            myname = "guest token %s" % token
+            myname = "guest token %s" % self.token
         elif self.name:
             myname = self.name
         else:
