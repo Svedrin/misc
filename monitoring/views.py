@@ -113,9 +113,10 @@ def search(request):
         }, context_instance=RequestContext(request))
 
 
-@login_required
 def check_details(request, uuid):
     check = get_object_or_404(Check, uuid=uuid)
+    if not check.has_perm(request.user, "r"):
+        return HttpResponseForbidden("Unauthorized")
     if check.sensor.sensorvariable_set.count() == 1:
         var = check.sensor.sensorvariable_set.all()[0]
         return HttpResponseRedirect(reverse(render_check_page, args=(check.uuid, var.name)))
@@ -130,9 +131,10 @@ def check_details(request, uuid):
         'vars':  svars
         }, context_instance=RequestContext(request))
 
-@login_required
 def render_check_page(request, uuid, ds, profile="24h"):
     check = get_object_or_404(Check, uuid=uuid)
+    if not check.has_perm(request.user, "r"):
+        return HttpResponseForbidden("Unauthorized")
     profiles = (
         ( "4h",      6*60*60),
         ("24h",     24*60*60),
@@ -155,9 +157,10 @@ def render_check_page(request, uuid, ds, profile="24h"):
         }, context_instance=RequestContext(request))
 
 
-@login_required
 def render_check(request, uuid, ds):
     check = Check.objects.get(uuid=uuid)
+    if not check.has_perm(request.user, "r"):
+        return HttpResponseForbidden("Unauthorized")
 
     builder = Graph()
     try:
