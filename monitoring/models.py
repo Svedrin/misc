@@ -10,6 +10,7 @@ from django.utils.timezone import make_aware, get_default_timezone
 
 from hosts import models as hosts
 from sensors.sensor import SensorMeta
+from fluxacl.models import ACL
 from monitoring.rrd import RRD
 
 class Sensor(models.Model):
@@ -86,6 +87,7 @@ class Check(models.Model):
     target_host = models.ForeignKey(hosts.Host, verbose_name="The host that is being checked",   related_name="check_target_set")
     display     = models.CharField("Human-readable name", max_length=255, default='', blank=True)
     is_active   = models.BooleanField(default=True, blank=True)
+    acl         = models.ForeignKey(ACL, null=True, blank=True)
 
     objects     = CheckManager()
 
@@ -131,16 +133,18 @@ class Check(models.Model):
         except Alert.DoesNotExist:
             return None
 
-    def user_allowed(self, user):
-        if user.is_superuser:
+    def has_perm(self, user_or_role, flag, target_model=None):
+        if user_or_role.is_superuser:
             return True
-        domain = self.target_host.domain
-        while domain is not None:
-            for group in domain.ownergroups:
-                if user in group.user_set.all():
-                    return True
-            domain = domain.parent
-        return False
+        if target_model is None:
+            target_model = Check
+        if self.acl is not None:
+            if self.acl.has_perm(user_or_role, flag, target_model):
+                return True
+        return self.target_host.has_perm(user_or_role, flag, target_model)
+
+    def user_allowed(self, user):
+        return self.has_perm(user, "u")
 
     def activate(self):
         if not self.is_active:
