@@ -83,7 +83,7 @@ class ACL(models.Model):
         if flag not in Permit.Flags:
             raise ValueError("invalid flag")
 
-        if isinstance(user_or_role, User):
+        if isinstance(user_or_role, (User, AnonymousUser)):
             for role in user_or_role.role_set.all():
                 if self.has_perm(role, flag):
                     return True
