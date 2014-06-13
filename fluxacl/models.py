@@ -116,7 +116,7 @@ class ACL(models.Model):
         if isinstance(user_or_role, (User, AnonymousUser)):
             if hasattr(user_or_role, "role_set"):
                 for role in user_or_role.role_set.all():
-                    if self.has_perm(role, flag):
+                    if self.has_perm(role, flag, target_model):
                         return True
             return False
 
