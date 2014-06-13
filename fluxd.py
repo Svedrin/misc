@@ -8,15 +8,14 @@ import socket
 import logging
 import os.path
 
-from time     import time, sleep
+from time     import time
 from datetime import datetime
 from optparse import OptionParser
 
-from Crypto.Hash        import SHA256
 from Crypto.PublicKey   import RSA
 from Crypto             import Random
 
-from wolfgang import WolfObjectMeta, WolfConfig
+from wolfgang import WolfConfig
 from wolfgang.prettyprint import colorprint, Colors
 from sensors.sensor import SensorMeta
 
@@ -26,9 +25,12 @@ def main():
     parser.add_option("-c", "--config",   default="fluxd.conf")
     parser.add_option("-d", "--datadir",  default="/var/lib/fluxmon")
     parser.add_option("-i", "--interval", default=300, type="int")
-    parser.add_option("-k", "--keygen",   default=False, action="store_true", help="Only generate private and public keys and then exit.")
-    parser.add_option("-f", "--fqdn",     default=socket.getfqdn(), type="string", help=("FQDN to use (defaults to %s)" % socket.getfqdn()))
-    parser.add_option("-n", "--noop",     default=False, action="store_true", help="Only detect checks and exit, don't commit or run them")
+    parser.add_option("-k", "--keygen",   default=False, action="store_true",
+                            help="Only generate private and public keys and then exit.")
+    parser.add_option("-f", "--fqdn",     default=socket.getfqdn(), type="string",
+                            help=("FQDN to use (defaults to %s)" % socket.getfqdn()))
+    parser.add_option("-n", "--noop",     default=False, action="store_true",
+                            help="Only detect checks and exit, don't commit or run them")
     parser.add_option("-v", "--verbose",  default=0, action="count", help="Increase verbosity")
 
     options, posargs = parser.parse_args()
@@ -83,13 +85,14 @@ def main():
     myhost = wc.objects[myhostname]
 
     account = wc.find_objects_by_type("fluxaccount")[0]
-    logging.info("Using account %s." % account.name)
+    logging.info("Using account %s.", account.name)
 
     # Discover checkable objects
     all_checks = []
     for sensortype in SensorMeta.sensortypes:
         if sensortype not in wc.objects:
-            logging.warning("Sensor type '%s' is installed but unknown to the config, skipped." % sensortype)
+            logging.warning("Sensor type '%s' is installed but unknown to the config, skipped.",
+                sensortype)
             continue
 
         sensor = SensorMeta.sensortypes[sensortype](wc)
@@ -106,12 +109,12 @@ def main():
                 params.update(target_params)
                 checks = wc.find_objects_by_params("check", **params)
                 if not checks:
-                    logging.warning( "Found new target on %s: %s" % (confobj.name, target_params) )
+                    logging.warning("Found new target on %s: %s", confobj.name, target_params)
                     checkname = ",".join([confobj.name, sensortype] + target_params.values())
                     check = wc.add_object("check", checkname, [], params)
                     params["uuid"] = check["uuid"]
                 else:
-                    logging.info( "Found known target on %s: %s" % (confobj.name, target_params) )
+                    logging.info("Found known target on %s: %s", confobj.name, target_params)
                     params["uuid"] = checks[0]["uuid"]
                 all_checks.append(params)
 

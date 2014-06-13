@@ -16,7 +16,7 @@ from django.contrib.auth.models  import User
 
 from hosts.models import Host
 from msgsign.models import PublicKey
-from monitoring.models import Sensor, SensorVariable, Check, Alert
+from monitoring.models import Sensor, Check
 
 def add_check(params, user):
     try:
@@ -25,23 +25,23 @@ def add_check(params, user):
         exec_host   = Host.objects.get(fqdn=params["node"])
         target_host = Host.objects.get(fqdn=params["target"])
         sensor      = Sensor.objects.get(name=params["sensor"])
-        logging.info("Creating check %s (%s)" % (params["uuid"], target_host.fqdn))
+        logging.info("Creating check %s (%s)", params["uuid"], target_host.fqdn)
         check = Check(uuid=params["uuid"], sensor=sensor, exec_host=exec_host, target_host=target_host)
         check.save()
         for sensorparam in check.sensor.sensorparameter_set.all():
             if sensorparam.name in params:
                 check.checkparameter_set.create(parameter=sensorparam, value=params[sensorparam.name])
     else:
-        logging.info("Check %s already known" % params["uuid"])
+        logging.info("Check %s already known", params["uuid"])
 
 
 def deactivate(params, user):
     try:
         check = Check.objects.get(uuid=params["uuid"])
     except Check.DoesNotExist:
-        logging.warning("Check %s does not exist, cannot deactivate" % params["uuid"])
+        logging.warning("Check %s does not exist, cannot deactivate", params["uuid"])
     else:
-        logging.info("Deactivating check %s (%s)" % (params["uuid"], check.target_host.fqdn))
+        logging.info("Deactivating check %s (%s)", params["uuid"], check.target_host.fqdn)
         check.deactivate()
 
 
@@ -51,19 +51,19 @@ def process(result, user):
         return
     try:
         check = Check.objects.get(uuid=result["check"])
-    except Check.DoesNotExist, err:
-        logging.warning("Check %s does not exist, cannot update" % result["check"])
+    except Check.DoesNotExist:
+        logging.warning("Check %s does not exist, cannot update", result["check"])
     else:
         if check.user_allowed(user):
-            logging.info("Updating check %s (%s)" % (result["check"], check.target_host.fqdn))
+            logging.info("Updating check %s (%s)", result["check"], check.target_host.fqdn)
             check.process_result(result)
         else:
-            logging.warning("Check %s denied update permission to user %s" % (result["check"], user))
+            logging.warning("Check %s denied update permission to user %s", result["check"], user)
 
 
 
 def on_message(channel, method_frame, header_frame, body):
-    logging.debug("Message received:", body)
+    logging.debug("Message received: %s", body)
 
     try:
         data = json.loads( body )
