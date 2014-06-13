@@ -66,10 +66,6 @@ class RoleTest(TestCase):
         self.assertFalse(role.is_active)
         self.assertFalse(role.get_user().is_active)
 
-        self.assertFalse(role.is_staff)
-        self.assertFalse(role.is_superuser)
-        self.assertTrue(role.is_anonymous())
-
         self.assertEquals(unicode(role), "/guest token %s" % token)
 
     def test_root_role(self):
