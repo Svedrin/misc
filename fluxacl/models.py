@@ -79,7 +79,7 @@ class Role(MPTTModel):
 
 class ACL(models.Model):
     def get_perms(self, role, target_model=None):
-        myperms = ""
+        myperms = []
         for node in list(role.get_ancestors()) + [role]:
             for permit in self.permit_set.filter(role=node):
                 if permit.target_type is not None:
@@ -98,9 +98,10 @@ class ACL(models.Model):
                     else:
                         if add:
                             if permitflag not in myperms:
-                                myperms += permitflag
+                                myperms.append(permitflag)
                         else:
-                            myperms = myperms.replace(permitflag, "")
+                            if permitflag in myperms:
+                                myperms.remove(permitflag)
                 #print myperms
         return myperms
 
