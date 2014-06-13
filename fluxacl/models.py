@@ -59,7 +59,7 @@ class Role(MPTTModel):
             anon.role_set  = Role.objects.filter(token=self.token)
             return anon
         else:
-            return ValueError("This role is not associated to a user")
+            raise ValueError("This role is not associated to a user")
 
     @property
     def is_user(self):

@@ -71,6 +71,8 @@ class RoleTest(TestCase):
         self.assertEquals(role.user,  None)
         self.assertEquals(role.token, "")
         self.assertFalse(role.is_user)
+        with self.assertRaises(ValueError):
+            role.get_user()
         self.assertFalse(role.is_staff)
         self.assertFalse(role.is_superuser)
         self.assertEquals(unicode(role), "/root")
