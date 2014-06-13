@@ -47,7 +47,7 @@ def ifperm(parser, token):
     """
     bits = list(token.split_contents())
     if len(bits) != 4 or bits[2] != 'on':
-        raise TemplateSyntaxError("%r needs <permission> on <object> as args" % bits[0])
+        raise TemplateSyntaxError("Usage: %s <permission> on <object>" % bits[0])
     end_tag = 'end' + bits[0]
     nodelist_true = parser.parse(('else', end_tag))
     token = parser.next_token()
