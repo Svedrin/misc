@@ -4,6 +4,7 @@
 from datetime import datetime
 
 from django.db import models
+from django.utils.timezone import is_naive, make_aware, get_current_timezone
 from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.contenttypes.models import ContentType
 
@@ -71,7 +72,12 @@ class Role(MPTTModel):
         """ True if this is an active role. """
         if self.user is not None:
             return self.user.is_active
-        return self.valid_until is None or self.valid_until >= datetime.now()
+        if self.valid_until is None:
+            return True
+        expires = self.valid_until
+        if is_naive(expires):
+            expires = make_aware(expires, get_current_timezone())
+        return expires >= make_aware(datetime.now(), get_current_timezone())
 
     def is_authenticated(self):
         """ For compatibility with Django's User model. Always returns True. """
