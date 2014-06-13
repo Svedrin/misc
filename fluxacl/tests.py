@@ -46,23 +46,23 @@ class RoleTest(TestCase):
 
         self.assertEquals(role.valid_until, None)
         self.assertTrue(role.is_active)
-        self.assertTrue(role.get_user().is_active)
-
-        role.valid_until = datetime.now() - timedelta(minutes=10)
-        self.assertFalse(role.is_active)
-
-        self.assertFalse(role.is_staff)
-        self.assertFalse(role.is_superuser)
-        self.assertTrue(role.is_anonymous())
 
         user = role.get_user()
         self.assertIsInstance(user, AnonymousUser)
         self.assertEquals(user.username, "tokenrole")
-        self.assertFalse(role.is_active)
+        self.assertTrue(role.is_active)
         self.assertFalse(role.is_staff)
         self.assertFalse(role.is_superuser)
         self.assertTrue(role.is_anonymous())
         self.assertTrue(role.is_authenticated())
+
+        role.valid_until = datetime.now() - timedelta(minutes=10)
+        self.assertFalse(role.is_active)
+        self.assertFalse(role.get_user().is_active)
+
+        self.assertFalse(role.is_staff)
+        self.assertFalse(role.is_superuser)
+        self.assertTrue(role.is_anonymous())
 
         self.assertEquals(unicode(role), "/guest token %s" % token)
 
