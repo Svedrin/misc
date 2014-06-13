@@ -164,6 +164,31 @@ class ACL(models.Model):
         else:
             raise ValueError("need instance of user or role, got %s instead" % type(user_or_role))
 
+    def add_perm(self, user_or_role, privileges, target_model=None):
+        """ Add a permit for the given user or role, granting or revoking the
+            given privileges, optionally taking the target_model into account.
+
+            If passing a user, that user cannot be Anonymous and has to be
+            associated to *exactly* one role. In other cases, pass a role.
+        """
+        for char in privileges:
+            if char not in ["+", "-", " "] + Permit.Flags.keys():
+                raise ValueError("invalid flag: %s" % char)
+
+        if isinstance(user_or_role, User):
+            roles = user_or_role.role_set.all()
+            if len(roles) != 1:
+                raise ValueError("if passing a user, that user needs to be associated to exactly one role")
+            self.add_perm(roles[0], privileges, target_model)
+
+        elif isinstance(user_or_role, Role):
+            target_type = None
+            if target_model is not None:
+                target_type = ContentType.objects.get_for_model(target_model)
+            self.permit_set.create(role=user_or_role, privileges=privileges, target_type=target_type)
+
+        else:
+            raise ValueError("need instance of user or role, got %s instead" % type(user_or_role))
 
 class Permit(models.Model):
     """ An Access Control List entry, either granting or revoking a certain

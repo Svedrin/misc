@@ -121,13 +121,13 @@ class ACLTest(TestCase):
             self.acl.has_perm(self.user, " ")
 
     def test_simple_permission(self):
-        self.acl.permit_set.create(role=self.role, privileges="+r")
+        self.acl.add_perm(self.role, "+r")
         self.assertTrue( self.acl.has_perm(self.user, "r"))
         self.assertFalse(self.acl.has_perm(self.user, "c"))
         self.assertFalse(self.acl.has_perm(self.user, "a"))
 
     def test_multi_permission(self):
-        self.acl.permit_set.create(role=self.role, privileges="+cruds")
+        self.acl.add_perm(self.role, "+cruds")
         self.assertTrue( self.acl.has_perm(self.user, "c"))
         self.assertTrue( self.acl.has_perm(self.user, "r"))
         self.assertTrue( self.acl.has_perm(self.user, "u"))
@@ -136,7 +136,7 @@ class ACLTest(TestCase):
         self.assertFalse(self.acl.has_perm(self.user, "a"))
 
     def test_admin_permission(self):
-        self.acl.permit_set.create(role=self.role, privileges="+a")
+        self.acl.add_perm(self.role, "+a")
         self.assertTrue(self.acl.has_perm(self.user, "c"))
         self.assertTrue(self.acl.has_perm(self.user, "r"))
         self.assertTrue(self.acl.has_perm(self.user, "u"))
@@ -145,22 +145,22 @@ class ACLTest(TestCase):
         self.assertTrue(self.acl.has_perm(self.user, "a"))
 
     def test_inherited_permission(self):
-        self.acl.permit_set.create(role=self.team, privileges="+c")
+        self.acl.add_perm(self.team, "+c")
         self.assertFalse(self.acl.has_perm(self.team, "r"))
         self.assertTrue( self.acl.has_perm(self.team, "c"))
         self.assertFalse(self.acl.has_perm(self.user, "r"))
         self.assertTrue( self.acl.has_perm(self.user, "c"))
 
     def test_simple_permission_negation(self):
-        self.acl.permit_set.create(role=self.role, privileges="+rs -r")
+        self.acl.add_perm(self.role, "+rs -r")
         self.assertTrue( self.acl.has_perm(self.user, "s"))
         self.assertFalse(self.acl.has_perm(self.user, "r"))
         self.assertFalse(self.acl.has_perm(self.user, "c"))
         self.assertFalse(self.acl.has_perm(self.user, "a"))
 
     def test_inherited_permission_negation(self):
-        self.acl.permit_set.create(role=self.team, privileges="+cruds")
-        self.acl.permit_set.create(role=self.role, privileges="-cud")
+        self.acl.add_perm(self.team, "+cruds")
+        self.acl.add_perm(self.role, "-cud")
         self.assertTrue( self.acl.has_perm(self.user, "s"))
         self.assertTrue( self.acl.has_perm(self.user, "r"))
         self.assertFalse(self.acl.has_perm(self.user, "c"))
@@ -168,9 +168,8 @@ class ACLTest(TestCase):
         self.assertFalse(self.acl.has_perm(self.user, "d"))
 
     def test_simple_permission_with_target_type(self):
-        self.acl.permit_set.create(role=self.role, privileges="+r")
-        self.acl.permit_set.create(role=self.role, privileges="+c",
-                            target_type=ContentType.objects.get_for_model(User))
+        self.acl.add_perm(self.role, "+r")
+        self.acl.add_perm(self.role, "+c", target_model=User)
         self.assertTrue( self.acl.has_perm(self.user, "r"))
         self.assertTrue( self.acl.has_perm(self.user, "r", target_model=User))
         self.assertTrue( self.acl.has_perm(self.user, "r", target_model=ACL))
@@ -179,9 +178,8 @@ class ACLTest(TestCase):
         self.assertFalse(self.acl.has_perm(self.user, "c", target_model=ACL))
 
     def test_inherited_permission_with_target_type(self):
-        self.acl.permit_set.create(role=self.team, privileges="+r")
-        self.acl.permit_set.create(role=self.team, privileges="+c",
-                            target_type=ContentType.objects.get_for_model(User))
+        self.acl.add_perm(self.team, "+r")
+        self.acl.add_perm(self.team, "+c", target_model=User)
         self.assertTrue( self.acl.has_perm(self.user, "r"))
         self.assertTrue( self.acl.has_perm(self.user, "r", target_model=User))
         self.assertTrue( self.acl.has_perm(self.user, "r", target_model=ACL))
@@ -190,11 +188,9 @@ class ACLTest(TestCase):
         self.assertFalse(self.acl.has_perm(self.user, "c", target_model=ACL))
 
     def test_negated_permission_with_target_type(self):
-        self.acl.permit_set.create(role=self.team, privileges="+crud")
-        self.acl.permit_set.create(role=self.role, privileges="+s",
-                            target_type=ContentType.objects.get_for_model(User))
-        self.acl.permit_set.create(role=self.role, privileges="-c",
-                            target_type=ContentType.objects.get_for_model(User))
+        self.acl.add_perm(self.team, "+crud")
+        self.acl.add_perm(self.role, "+s", target_model=User)
+        self.acl.add_perm(self.role, "-c", target_model=User)
         self.assertTrue( self.acl.has_perm(self.user, "r"))
         self.assertTrue( self.acl.has_perm(self.user, "r", target_model=User))
         self.assertTrue( self.acl.has_perm(self.user, "r", target_model=ACL))
