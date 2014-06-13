@@ -81,16 +81,11 @@ class ACL(models.Model):
     def get_perms(self, role, target_model=None):
         myperms = ""
         for node in list(role.get_ancestors()) + [role]:
-            try:
-                if target_model is None:
-                    permit = self.permit_set.get(role=node, target_type=None)
-                else:
-                    permit = self.permit_set.get(role=node, target_type__in=(None,
-                        ContentType.objects.get_for_model(target_model)
-                        ))
-            except Permit.DoesNotExist:
-                continue
-            else:
+            for permit in self.permit_set.filter(role=node):
+                if permit.target_type is not None:
+                    if target_model is None or \
+                       permit.target_type != ContentType.objects.get_for_model(target_model):
+                        continue
                 add = True
                 #print "Checking", permit
                 for permitflag in permit.privileges:
