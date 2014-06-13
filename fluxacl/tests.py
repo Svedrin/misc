@@ -238,6 +238,24 @@ class ACLTest(TestCase):
         self.assertTrue( self.acl.has_perm(self.user, "c", target_model=User))
         self.assertFalse(self.acl.has_perm(self.user, "c", target_model=ACL))
 
+    def test_simple_permission_revocation_with_target_type(self):
+        """ Check that target_models are honoured correctly, even if one ACL
+            contains two permits that grant a privilege to all except one
+            certain target_model.
+            For this test, it is critical that permits with target_model=None
+            are evaluated before those with a target_model set, no matter
+            the order in which they were inserted into the ACL.
+        """
+        self.acl.add_perm(self.user, "+r")
+        self.acl.add_perm(self.user, "-r", target_model=User)
+        self.assertTrue( self.acl.has_perm(self.user, "r", target_model=ACL))
+        self.assertFalse(self.acl.has_perm(self.user, "r", target_model=User))
+
+        self.acl.add_perm(self.user, "-c", target_model=User)
+        self.acl.add_perm(self.user, "+c")
+        self.assertTrue( self.acl.has_perm(self.user, "c", target_model=ACL))
+        self.assertFalse(self.acl.has_perm(self.user, "c", target_model=User))
+
     def test_inherited_permission_with_target_type(self):
         """ Same thing as test_simple_permission_with_target_type, but this time
             we've inherited the permissions from our team.

@@ -119,7 +119,7 @@ class ACL(models.Model):
         """
         myperms = []
         for node in list(role.get_ancestors()) + [role]:
-            for permit in self.permit_set.filter(role=node):
+            for permit in self.permit_set.filter(role=node).order_by("-target_type"):
                 if permit.target_type is not None:
                     if target_model is None or \
                        permit.target_type != ContentType.objects.get_for_model(target_model):
@@ -192,6 +192,7 @@ class ACL(models.Model):
 
         else:
             raise ValueError("need instance of user or role, got %s instead" % type(user_or_role))
+
 
 class Permit(models.Model):
     """ An Access Control List entry, either granting or revoking a certain
