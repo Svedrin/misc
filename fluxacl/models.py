@@ -181,7 +181,7 @@ class ACL(models.Model):
         if isinstance(user_or_role, User):
             roles = user_or_role.role_set.all()
             if len(roles) != 1:
-                raise ValueError("if passing a user, that user needs to be associated to exactly one role")
+                raise Role.MultipleObjectsReturned("if passing a user, that user needs to be associated to exactly one role (got %d)" % len(roles))
             self.add_perm(roles[0], privileges, target_model)
 
         elif isinstance(user_or_role, Role):
