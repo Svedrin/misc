@@ -4,7 +4,6 @@
 from datetime import datetime, timedelta
 
 from django.test import TestCase
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User, AnonymousUser
 
 from fluxacl.models import ACL, Role, Permit, TokenUser
