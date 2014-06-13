@@ -46,6 +46,10 @@ class Role(MPTTModel):
         return "%s/%s" % (unicode(self.parent) if self.parent is not None else '', myname)
 
     def get_user(self):
+        """ Return the user this role is associated to (if any).
+
+            Raises ValueError if this is not a user role. (See is_user.)
+        """
         if self.user is not None:
             return self.user
         elif self.token:
@@ -59,34 +63,60 @@ class Role(MPTTModel):
 
     @property
     def is_user(self):
+        """ True if this is a user role. """
         return self.user is not None or self.token != ''
 
     @property
     def is_active(self):
+        """ True if this is an active role. """
         if self.user is not None:
             return self.user.is_active
         return self.valid_until is None or self.valid_until >= datetime.now()
 
     def is_authenticated(self):
+        """ For compatibility with Django's User model. Always returns True. """
         return True
 
     def is_anonymous(self):
+        """ For compatibility with Django's User model. True if this role is
+            associated to a Django database user, False for groups and tokens.
+        """
         return self.user is None
 
     @property
     def is_staff(self):
-        if self.user is not None:
-            return self.user.is_staff
-        return False
+        """ For compatibility with Django's User model. True if this role is
+            associated to a Django database user who is a staff member, False
+            otherwise.
+        """
+        return self.user is not None and self.user.is_staff
 
     @property
     def is_superuser(self):
-        if self.user is not None:
-            return self.user.is_superuser
-        return False
+        """ For compatibility with Django's User model. True if this role is
+            associated to a Django database user who is a superuser, False
+            otherwise.
+        """
+        return self.user is not None and self.user.is_superuser
+
 
 class ACL(models.Model):
+    """ An Access Control List.
+
+        Features methods for building, managing and querying ACLs.
+    """
+
     def get_perms(self, role, target_model=None):
+        """ Get a list of effective permissions for a role and, optionally,
+            a target_model.
+
+            If target_model is given, permits concerning this certain model
+            are also evaluated, resulting in more fine-grained access control.
+
+            This method traverses the role's ancestors, evaluating the permits
+            for each of them, lastly evaluates the role's very own permits,
+            and returns the result.
+        """
         myperms = []
         for node in list(role.get_ancestors()) + [role]:
             for permit in self.permit_set.filter(role=node):
@@ -114,6 +144,9 @@ class ACL(models.Model):
         return myperms
 
     def has_perm(self, user_or_role, flag, target_model=None):
+        """ Check whether or not the given user or role has the given
+            permission, optionally taking the target_model into account.
+        """
         if flag not in Permit.Flags:
             raise ValueError("invalid flag")
 
@@ -133,6 +166,18 @@ class ACL(models.Model):
 
 
 class Permit(models.Model):
+    """ An Access Control List entry, either granting or revoking a certain
+        privilege, optionally for certain models only.
+
+        If target_type is omitted, this permit will be valid for all models.
+
+        Privileges is a string that adheres the following format:
+
+            [+<flags>] [-<flags>]
+
+        Flags preceded by + are granted, those preceded by - are revoked.
+        Whitespace is ignored, so feel free to keep this readable.
+    """
     acl         = models.ForeignKey(ACL)
     role        = models.ForeignKey(Role)
     target_type = models.ForeignKey(ContentType, blank=True, null=True)
