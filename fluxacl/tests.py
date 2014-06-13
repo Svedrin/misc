@@ -120,6 +120,33 @@ class ACLTest(TestCase):
         with self.assertRaises(ValueError):
             self.acl.has_perm(self.user, " ")
 
+        with self.assertRaises(ValueError):
+            self.acl.add_perm(self.user, "+acr -r #")
+        with self.assertRaises(ValueError):
+            self.acl.add_perm(self.user, "")
+        with self.assertRaises(ValueError):
+            self.acl.add_perm(self.user, " ")
+        with self.assertRaises(ValueError):
+            self.acl.add_perm(self.user, "  + - ")
+
+    def test_add_with_user_and_multiple_roles(self):
+        role2 = Role(user=self.user, name="duplicate")
+        role2.save()
+        role3 = Role(user=self.user, name="triplicate")
+        role3.save()
+        try:
+            with self.assertRaises(Role.MultipleObjectsReturned):
+                self.acl.add_perm(self.user, "+a")
+        finally:
+            role2.delete()
+            role3.delete()
+
+    def test_add_with_non_user(self):
+        with self.assertRaises(ValueError):
+            self.acl.add_perm("gummybear", "+a")
+        with self.assertRaises(ValueError):
+            self.acl.has_perm("gummybear", "a")
+
     def test_simple_permission(self):
         self.acl.add_perm(self.user, "+r")
         self.assertTrue( self.acl.has_perm(self.user, "r"))
