@@ -78,6 +78,37 @@ class Role(MPTTModel):
         return False
 
 class ACL(models.Model):
+    def get_perms(self, role, target_model=None):
+        myperms = ""
+        for node in list(role.get_ancestors()) + [role]:
+            try:
+                if target_model is None:
+                    permit = self.permit_set.get(role=node, target_type=None)
+                else:
+                    permit = self.permit_set.get(role=node, target_type__in=(None,
+                        ContentType.objects.get_for_model(target_model)
+                        ))
+            except Permit.DoesNotExist:
+                continue
+            else:
+                add = True
+                #print "Checking", permit
+                for permitflag in permit.privileges:
+                    if permitflag == " ":
+                        continue
+                    elif permitflag == "+":
+                        add = True
+                    elif permitflag == "-":
+                        add = False
+                    else:
+                        if add:
+                            if permitflag not in myperms:
+                                myperms += permitflag
+                        else:
+                            myperms = myperms.replace(permitflag, "")
+                #print myperms
+        return myperms
+
     def has_perm(self, user_or_role, flag, target_model=None):
         if flag not in Permit.Flags:
             raise ValueError("invalid flag")
@@ -90,35 +121,7 @@ class ACL(models.Model):
             return False
 
         elif isinstance(user_or_role, Role):
-            myperms = ""
-            for node in list(user_or_role.get_ancestors()) + [user_or_role]:
-                try:
-                    if target_model is None:
-                        permit = self.permit_set.get(role=node, target_type=None)
-                    else:
-                        permit = self.permit_set.get(role=node, target_type__in=(None,
-                            ContentType.objects.get_for_model(target_model)
-                            ))
-                except Permit.DoesNotExist:
-                    continue
-                else:
-                    add = True
-                    #print "Checking", permit
-                    for permitflag in permit.privileges:
-                        if permitflag == " ":
-                            continue
-                        elif permitflag == "+":
-                            add = True
-                        elif permitflag == "-":
-                            add = False
-                        else:
-                            if add:
-                                if permitflag not in myperms:
-                                    myperms += permitflag
-                            else:
-                                myperms = myperms.replace(permitflag, "")
-                    #print myperms
-
+            myperms = self.get_perms(user_or_role, target_model)
             return "a" in myperms or flag in myperms
 
         else:
