@@ -133,6 +133,13 @@ class Check(models.Model):
         except Alert.DoesNotExist:
             return None
 
+    @property
+    def all_acls(self):
+        inh = self.target_host.all_acls
+        if self.acl:
+            return inh + [(self, self.acl)]
+        return inh
+
     def has_perm(self, user_or_role, flag, target_model=None):
         if user_or_role.is_superuser:
             return True

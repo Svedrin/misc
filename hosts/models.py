@@ -38,6 +38,16 @@ class Domain(MPTTModel):
             return self.parent.has_perm(user_or_role, flag, target_model)
         return False
 
+    @property
+    def all_acls(self):
+        if self.is_root_node():
+            inh = []
+        else:
+            inh = self.parent.all_acls
+        if self.acl:
+            return inh + [(self, self.acl)]
+        return inh
+
 class Host(models.Model):
     fqdn        = models.CharField(max_length=255, unique=True)
     domain      = TreeForeignKey(Domain)
@@ -50,6 +60,13 @@ class Host(models.Model):
 
     def __unicode__(self):
         return self.fqdn
+
+    @property
+    def all_acls(self):
+        inh = self.domain.all_acls
+        if self.acl:
+            return inh + [(self, self.acl)]
+        return inh
 
     def has_perm(self, user_or_role, flag, target_model=None):
         if user_or_role.is_superuser:
