@@ -112,6 +112,14 @@ class ACLTest(TestCase):
     def test_empty_acl(self):
         self.assertFalse(self.acl.has_perm(self.user, "r"))
 
+    def test_invalid_chars(self):
+        with self.assertRaises(ValueError):
+            self.acl.has_perm(self.user, "+")
+        with self.assertRaises(ValueError):
+            self.acl.has_perm(self.user, "-")
+        with self.assertRaises(ValueError):
+            self.acl.has_perm(self.user, " ")
+
     def test_simple_permission(self):
         self.acl.permit_set.create(role=self.role, privileges="+r")
         self.assertTrue( self.acl.has_perm(self.user, "r"))
