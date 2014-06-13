@@ -171,6 +171,9 @@ class ACL(models.Model):
             If passing a user, that user cannot be Anonymous and has to be
             associated to *exactly* one role. In other cases, pass a role.
         """
+        if not privileges.replace("+", "").replace("-", "").strip():
+            raise ValueError("privilege string doesn't modify any privileges: " + privileges)
+
         for char in privileges:
             if char not in ["+", "-", " "] + Permit.Flags.keys():
                 raise ValueError("invalid flag: %s" % char)
