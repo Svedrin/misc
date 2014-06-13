@@ -26,7 +26,7 @@
           <div class="collapse navbar-collapse">
             <ul class="nav navbar-nav">
               <li><a href="/">Home</a></li>
-              {% if user.is_authenticated %}
+              {% if not user.is_anonymous %}
               <li><a href="{% url monitoring.views.profile %}">{{ user }}</a></li>
               <li><a href="{% url hosts.views.domains %}">Hosts</a></li>
               <li><a href="{% url monitoring.views.search %}" id="searchlink">Search</a></li>
