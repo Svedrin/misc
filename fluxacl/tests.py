@@ -9,7 +9,7 @@ from django.test import TestCase
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User, AnonymousUser
 
-from fluxacl.models import ACL, Role, Permit
+from fluxacl.models import ACL, Role, Permit, TokenUser
 
 class RoleTest(TestCase):
     def test_role_with_user(self):
@@ -47,14 +47,20 @@ class RoleTest(TestCase):
         self.assertEquals(role.valid_until, None)
         self.assertTrue(role.is_active)
 
-        user = role.get_user()
-        self.assertIsInstance(user, AnonymousUser)
-        self.assertEquals(user.username, "tokenrole")
-        self.assertTrue(role.is_active)
         self.assertFalse(role.is_staff)
         self.assertFalse(role.is_superuser)
         self.assertTrue(role.is_anonymous())
         self.assertTrue(role.is_authenticated())
+
+        user = role.get_user()
+        self.assertIsInstance(user, AnonymousUser)
+        self.assertIsInstance(user, TokenUser)
+        self.assertEquals(user.username, "tokenrole")
+        self.assertTrue(user.is_active)
+        self.assertFalse(user.is_staff)
+        self.assertFalse(user.is_superuser)
+        self.assertTrue(user.is_anonymous())
+        self.assertTrue(user.is_authenticated())
 
         role.valid_until = datetime.now() - timedelta(minutes=10)
         self.assertFalse(role.is_active)

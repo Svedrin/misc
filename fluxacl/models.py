@@ -10,6 +10,14 @@ from django.contrib.contenttypes.models import ContentType
 from mptt.models import MPTTModel, TreeForeignKey
 
 
+class TokenUser(AnonymousUser):
+    """ Subclass of d.c.auth.models.AnonymousUser that returns True for
+        is_authenticated.
+    """
+    def is_authenticated(self):
+        return True
+
+
 class Role(MPTTModel):
     """ Some kind of group or user, either a logged-in Django user, or a Guest granted
         access via a sharing token.
@@ -41,7 +49,7 @@ class Role(MPTTModel):
         if self.user is not None:
             return self.user
         elif self.token:
-            anon = AnonymousUser()
+            anon = TokenUser()
             anon.username  = self.name
             anon.is_active = self.is_active
             anon.role_set  = Role.objects.filter(token=self.token)
