@@ -35,12 +35,14 @@
         </td>
         <td>{{ permit.privileges }}</td>
         <td>
-          {% if not permit.role.is_active %}
-            Expired
-          {% elif permit.role.valid_until %}
-            Valid until {{ permit.role.valid_until }} ({{ permit.role.valid_until|timeuntil }})
-          {% else %}
-            Unlimited
+          {% if permit.role.token %}
+            {% if not permit.role.is_active %}
+              Expired
+            {% elif permit.role.valid_until %}
+              Valid until {{ permit.role.valid_until }} ({{ permit.role.valid_until|timeuntil }})
+            {% else %}
+              Unlimited
+            {% endif %}
           {% endif %}
         </td>
         <td><a href="#" title="View details" style="text-decoration: none">→</a></td>
