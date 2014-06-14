@@ -1,0 +1,53 @@
+{# kate: space-indent on; indent-width 2; replace-tabs on; hl Django HTML Template; #}
+{% load monitoring_extras %}
+{% ifperm "a" on object %}
+<div class="tab-pane" id="{{ tabid }}">
+  <div class="panel panel-default">
+    <div class="panel-body">
+      <table class="table">
+        {% for origin, acl in object.all_acls %}
+          <tr>
+            <td rowspan="{{ acl.permit_set.count|add:1 }}">
+              {% if origin != object %}
+                Inherited from {{ origin }}
+              {% else %}
+                Defined here
+              {% endif %}
+            </td>
+            <th>Role</th>
+            <th>Permissions</th>
+            <th>Validity</th>
+            <th> </th>
+          </tr>
+          {% for permit in acl.permit_set.all %}
+            <tr>
+              <td>
+                {% if permit.role.token %}
+                  <a href="?token={{ permit.role.token }}">
+                    {{ permit.role }}
+                  </a>
+                {% else %}
+                  {{ permit.role }}
+                {% endif %}
+              </td>
+              <td>{{ permit.privileges }}</td>
+              <td>
+                {% if not permit.role.is_active %}
+                  Expired
+                {% elif permit.role.valid_until %}
+                  Valid until {{ permit.role.valid_until }} ({{ permit.role.valid_until|timeuntil }})
+                {% else %}
+                  Unlimited
+                {% endif %}
+              </td>
+              <td><a href="#" title="View details" style="text-decoration: none">→</a></td>
+            </tr>
+          {% endfor %}
+        {% empty %}
+          No ACLs are defined.
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+</div>
+{% endifperm %}

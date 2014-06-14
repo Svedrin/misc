@@ -39,24 +39,44 @@
     </table>
   </div>
 
-  {% ifperm "a" on check %}
-  <div class="tab-pane" id="acls">
-    {% for origin, acl in check.all_acls %}
-      {% if origin != check %}
-        <b>Inherited from {{ origin }}</b>
-      {% else %}
-        <b>Defined here</b>
-      {% endif %}
-      {% include "fluxacl/acl.html" %}
-    {% empty %}
-      No ACLs are defined for this check.
-    {% endfor %}
-  </div>
-  {% endifperm %}
+  {% include "monitoring/aclstab.inc.html" with object=check tabid="acls" %}
 
-  {% ifperm "a" on check %}
+  {% ifperm "s" on check %}
   <div class="tab-pane" id="share">
-    If it were implemented, you could share stuffz nao.
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <div class="panel-heading">
+          <h3 class="panel-title">Create a sharing key</h3>
+        </div>
+        <form class="form-horizontal" role="form">
+          <div class="form-group">
+            <label for="inputName" class="col-sm-2 control-label">Name</label>
+            <div class="col-sm-10">
+              <input class="form-control" id="inputName" placeholder="Name">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="inputDuration" class="col-sm-2 control-label">Duration</label>
+            <div class="col-sm-10">
+              <select class="form-control">
+                <option value="    600">10 minutes</option>
+                <option value="   3600">1 hour</option>
+                <option value="  86400" selected="selected">1 day</option>
+                <option value=" 604800">1 week</option>
+                <option value="1209600">2 weeks</option>
+                <option value="2592000">1 month</option>
+                <option value="      0">unlimited</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+              <button type="submit" class="btn btn-default">Create key</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
   {% endifperm %}
 </div>
