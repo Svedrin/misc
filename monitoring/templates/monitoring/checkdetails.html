@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load display_extras %}
+{% load monitoring_extras %}
 {# kate: space-indent on; indent-width 2; replace-tabs on; hl Django HTML Template; #}
 {% block title %}Fluxmon &mdash; {{ check.target_host|display:"fqdn" }} &mdash; {% for checkparam in check.checkparameter_set.all %}{{ checkparam.parameter|display }}: {{ checkparam.value }}{% endfor %}{% endblock %}
 {% block content %}
@@ -12,24 +13,53 @@
   <li class="active">{{ check|display:"uuid" }}</li>
 </ol>
 {% include "monitoring/checkinfo.inc.html" %}
-<table class="table table-hover">
-  <thead>
-    <tr>
-      <th>Variable</th>
-      <th> </th>
-    </tr>
-  </thead>
-  <tbody>
-  {% for variable, alerts in vars %}
-    <tr targetlink="{% url monitoring.views.render_check_page check.uuid variable.name %}" class="checktr {% if alerts %}warning{% else %}success{% endif %}">
-      <td>
-        {{ variable|display }}
-      </td>
-      <td><a href="{% url monitoring.views.render_check_page check.uuid variable.name %}" title="View graph" style="text-decoration: none">→</a></td>
-    </tr>
-  {% endfor %}
-  </tbody>
-</table>
+<ul class="nav nav-tabs">
+  <li><a href="#variables" data-toggle="tab">Variables</a></li>
+  {% ifperm "a" on check %}
+  <li><a href="#acls"      data-toggle="tab">ACLs</a></li>
+  {% endifperm %}
+  {% ifperm "s" on check %}
+  <li><a href="#share"     data-toggle="tab">Share</a></li>
+  {% endifperm %}
+</ul>
+
+<div class="tab-content">
+  <div class="tab-pane active" id="variables">
+    <table class="table table-hover">
+      <tbody>
+      {% for variable, alerts in vars %}
+        <tr targetlink="{% url monitoring.views.render_check_page check.uuid variable.name %}" class="checktr {% if alerts %}warning{% else %}success{% endif %}">
+          <td>
+            {{ variable|display }}
+          </td>
+          <td><a href="{% url monitoring.views.render_check_page check.uuid variable.name %}" title="View graph" style="text-decoration: none">→</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% ifperm "a" on check %}
+  <div class="tab-pane" id="acls">
+    {% for origin, acl in check.all_acls %}
+      {% if origin != check %}
+        <b>Inherited from {{ origin }}</b>
+      {% else %}
+        <b>Defined here</b>
+      {% endif %}
+      {% include "fluxacl/acl.html" %}
+    {% empty %}
+      No ACLs are defined for this check.
+    {% endfor %}
+  </div>
+  {% endifperm %}
+
+  {% ifperm "a" on check %}
+  <div class="tab-pane" id="share">
+    If it were implemented, you could share stuffz nao.
+  </div>
+  {% endifperm %}
+</div>
 <script type="text/javascript">
 $(".checktr").click(function(ev){
   ev.preventDefault();
