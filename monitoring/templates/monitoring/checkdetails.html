@@ -13,38 +13,40 @@
   <li class="active">{{ check|display:"uuid" }}</li>
 </ol>
 {% include "monitoring/checkinfo.inc.html" %}
-<ul class="nav nav-tabs">
-  <li><a href="#variables" data-toggle="tab">Variables</a></li>
-  {% ifperm "a" on check %}
-  <li><a href="#acls"      data-toggle="tab">ACLs</a></li>
-  {% endifperm %}
-  {% ifperm "s" on check %}
-  <li><a href="#share"     data-toggle="tab">Share</a></li>
-  {% endifperm %}
-</ul>
+<div class="panel panel-default">
+  <div class="panel-body">
+    <ul class="nav nav-tabs">
+      <li><a href="#variables" data-toggle="tab">Variables</a></li>
+      {% ifperm "a" on check %}
+      <li><a href="#acls"      data-toggle="tab">ACLs</a></li>
+      {% endifperm %}
+      {% ifperm "s" on check %}
+      <li><a href="#share"     data-toggle="tab">Share</a></li>
+      {% endifperm %}
+    </ul>
 
-<div class="tab-content">
-  <div class="tab-pane active" id="variables">
-    <table class="table table-hover">
-      <tbody>
-      {% for variable, alerts in vars %}
-        <tr targetlink="{% url monitoring.views.render_check_page check.uuid variable.name %}" class="checktr {% if alerts %}warning{% else %}success{% endif %}">
-          <td>
-            {{ variable|display }}
-          </td>
-          <td><a href="{% url monitoring.views.render_check_page check.uuid variable.name %}" title="View graph" style="text-decoration: none">→</a></td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-  </div>
+    <div class="tab-content">
+      <div class="tab-pane active" id="variables">
+        <table class="table table-hover">
+          <tbody>
+          {% for variable, alerts in vars %}
+            <tr targetlink="{% url monitoring.views.render_check_page check.uuid variable.name %}" class="checktr {% if alerts %}warning{% else %}success{% endif %}">
+              <td>
+                {{ variable|display }}
+              </td>
+              <td><a href="{% url monitoring.views.render_check_page check.uuid variable.name %}" title="View graph" style="text-decoration: none">→</a></td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
 
-  {% include "monitoring/aclstab.inc.html" with object=check tabid="acls" %}
+      <div class="tab-pane" id="acls">
+        {% include "monitoring/aclstab.inc.html" with object=check %}
+      </div>
 
-  {% ifperm "s" on check %}
-  <div class="tab-pane" id="share">
-    <div class="panel panel-default">
-      <div class="panel-body">
+      {% ifperm "s" on check %}
+      <div class="tab-pane" id="share">
         <div class="panel-heading">
           <h3 class="panel-title">Create a sharing key</h3>
         </div>
@@ -76,9 +78,9 @@
           </div>
         </form>
       </div>
+      {% endifperm %}
     </div>
   </div>
-  {% endifperm %}
 </div>
 <script type="text/javascript">
 $(".checktr").click(function(ev){
