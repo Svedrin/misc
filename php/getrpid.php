@@ -11,6 +11,7 @@
 error_reporting(E_ALL);
 
 function unify_number($number){
+    $number = str_replace(" ", "", $number); // Android likes to put those in
     if( strpos($number, "00") === 0 )
         return "+".substr($number, 2);
     if( strpos($number, "0") === 0 )
