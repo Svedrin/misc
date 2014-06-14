@@ -47,7 +47,8 @@ CONF = ConfigParser()
 CONF.read(os.path.expanduser("~/.zsync/zsyncrc"))
 
 def unify_number(number):
-    """ Turns any number given into +49123456, be it 0123456, 0049123456 or +49123456 already. """
+    """ Turns any number given into +49123456, be it 0123456, 0049 12 3456 or +49123456 already. """
+    number = number.replace(" ", "") # Android likes to put those in
     if number.startswith("00"):
         return "+" + number[2:]
     if number.startswith("0"):
