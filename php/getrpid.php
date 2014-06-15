@@ -16,7 +16,10 @@ function unify_number($number){
         return "+".substr($number, 2);
     if( strpos($number, "0") === 0 )
         return "+49".substr($number, 1);
-    return $number;
+    if( strpos($number, "+") === 0 ){
+        return $number;
+    }
+    return "+496659".$number;
 }
 
 function find_callerid($number){
