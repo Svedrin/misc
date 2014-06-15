@@ -16,7 +16,7 @@
     {% for permit in acl.permit_set.all %}
       <tr>
         {% if forloop.first %}
-          <td rowspan="{{ acl.permit_set.count|add:1 }}">
+          <td rowspan="{{ acl.permit_set.count }}">
             {% if origin != object %}
               Inherited from {{ origin }}
             {% else %}
