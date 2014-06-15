@@ -1,25 +1,53 @@
 {% extends "base.html" %}
 {# kate: space-indent on; indent-width 2; replace-tabs on; hl Django HTML Template; #}
 {% load display_extras %}
+{% load gravatar_extras %}
 {% block content %}
-  <h2>Hi {{ user }}</h2>
-
-  {% include "monitoring/searchform.inc.html" %}
-
-  <!--<div class="alert alert-success">This is what a success message looks like.</div>
-  <div class="alert alert-info">Alerts could look like this...</div>
-  <div class="alert alert-warning">...or this...</div>
-  <div class="alert alert-danger">...or this.</div>-->
-
+<h2>Hi {{ user.username }}!</h2>
+<div class="panel panel-default">
+  <div class="panel-body">
   <ul class="nav nav-tabs">
+    <li class="active"><a href="#profile" data-toggle="tab">Profile</a></li>
     <li><a href="#alerts" data-toggle="tab">Alerts</a></li>
-    <li><a href="#timeline" data-toggle="tab">Timeline</a></li>
     <li><a href="#outdated" data-toggle="tab">Outdated</a></li>
   </ul>
 
   <div class="tab-content">
-    <div class="tab-pane active" id="alerts">
-      <h2>Alerts</h2>
+    <div class="tab-pane active" id="profile">
+      <div class="panel panel-default">
+        <div class="panel-body">
+          <div class="row">
+            <div class="col-md-2">{% gravatar user %}</div>
+            <div class="col-md-8">
+              {% if user.first_name and user.last_name %}
+                <h1 class="panel-title">{{ user.first_name }} {{ user.last_name }}</h1>
+              {% endif %}
+              <dl class="dl-horizontal">
+                <dt>Joined:</dt>
+                <dd>{{ user.date_joined }}</dd>
+                <dt>Last login:</dt>
+                <dd>{{ user.last_login }}</dd>
+                {% if user.is_staff or user.is_superuser %}
+                  <dt>Special privileges:</dt>
+                  <dd>
+                    {% if user.is_staff %}Staff{% endif %}
+                    {% if user.is_superuser %}Superuser{% endif %}
+                  </dd>
+                {% endif %}
+              </dl>
+              <h1 class="panel-title">Roles:</h1>
+              <ul>
+                {% for role in user.role_set.all %}
+                  <li>{{ role }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-pane" id="alerts">
       {% if currentalerts.count %}
       <div class="alert alert-warning">
         <strong>The following checks are currently in a bad mood:</strong>
@@ -58,48 +86,8 @@
       {% endif %}
     </div>
 
-    <div class="tab-pane" id="timeline">
-      <h2>Alert Timeline</h2>
-      <div>
-        <strong>This is what happened in the last 24 hours:</strong>
-        <table class="table table-hover">
-          <thead>
-            <tr>
-              <th>Time</th>
-              <th>Host</th>
-              <th>Check Label</th>
-              <th>Sensor</th>
-              <th>Parameters</th>
-              <th>State change</th>
-              <th> </th>
-            </tr>
-          </thead>
-          <tbody>
-          {% for timestamp, alert, statechange in timeline %}
-            <tr onclick="window.location='{% url monitoring.views.check_details alert.check.uuid %}';" class="{% if statechange == 'start' %}warning{% else %}success{% endif %}">
-              <td>{{ timestamp|time }}</td>
-              <td>
-                {{ alert.check.target_host }}
-                {% if alert.check.target_host != alert.check.exec_host %}(as seen by {{ alert.check.exec_host }}){% endif %}
-              </td>
-              <td>{{ alert.check|displayonly }}</td>
-              <td>{{ alert.check.sensor }}</td>
-              <td>{{ alert.check.paramstring }}</td>
-              <td>{% if statechange == "start" %}OK → Warning{% else %}Warning → OK{% endif %}</td>
-              <td><a href="{% url monitoring.views.check_details alert.check.uuid %}" title="View details" style="text-decoration: none">→</a></td>
-            </tr>
-          {% endfor %}
-          {% if timeline_truncated %}
-            <tr><td colspan="7">{{ timeline_truncated }} events truncated</td></tr>
-          {% endif %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-
     <div class="tab-pane" id="outdated">
       {% if outdatedchecks.count %}
-      <h2>Outdated Checks</h2>
       <div class="alert alert-info">
         <strong>We haven't heard about these checks for a while:</strong>
         {% include "monitoring/listchecks.inc.html" with list_checks=outdatedchecks %}
@@ -107,5 +95,7 @@
       {% endif %}
     </div>
   </div>
+  </div>
+</div>
 
 {% endblock %}
