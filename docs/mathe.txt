@@ -1,0 +1,193 @@
+Plan: Schwellwerte-Confen stinkt, also wollen wir das nicht mehr tun.
+
+	Und zwar GARNICHT.
+
+Problem:
+
+Was will ich überhaupt mit einem Messwert tun?
+	Beurteilen, ob anhand der Historie des Messwertes plausibel erscheint, dass wir grade diesen Wert messen. Historie im Sinne von:
+	* Generell
+	* Zu dieser Tageszeit (siehe SEASONAL/DEVSEASONAL in man rrdcreate)
+	halt abhängig von der Menge der vorhandenen Daten.
+
+Automatisch anlernen wie? Wann ist ein Datensatz ausreichend groß?
+	Siehe Bosch S. 151 Bemerkungen: ca 1000 Datensätze für 99%, also 3.5Tage Datensammeln. 80% geht schon ab 5h, 90% ab 8h, 95% ab 15h.
+	Achtung: Oben die Zahlenbeispiele gelten nur für UNGEFILTERT -- wenn das eingegrenzt wird nach "nur tagsüber" dauerts entsprechend länger!
+	Siehe auch Seite 178
+
+Bei 'ner volllaufenden Disk wär das eher scheiße, da will ich harte Grenzen. Aber wer gibt die vor?
+	oVirt-VMs: Da sind >60% schon schiss
+	oVirt-Iso: Da sind mir 95% noch egal
+	-> Hängt also letztlich von der Art der Nutzung ab...
+	-> Solche Werte verarbeiten wir nicht, nimm Nagios
+	
+	Andererseits: Sowas lässt sich durch die erste Ableitung in 'nen Counter überführen, allerdings mit dem Zusatz einer zeitlichen Begrenzung: Speicherplatz einer Disk ist nicht unendlich, Bandbreite in 'nem Netzwerk schon - heißt, eine Disk läuft irgendwann voll wenn die erste Ableitung ihrer Belegung immer positiv ist; bei der Schreibrate muss das nicht zwingend so sein, Daten können ja überschrieben werden
+	-> siehe ovirt_vms01: Schreibrate immer positiv, erste Ableitung der Belegung immer 0, also haben wir kein Problem
+	-> blöd daran: erste Ableitung eines %satzes kann negativ werden, Übertragungsrate oder sowas nicht
+	-> andererseits: Ermittlung eines Pakete-pro-Sekunde-Wertes geht letztlich auch über erste Ableitung, also doch wieder das gleiche?
+	
+	Heißt: letztlich auch eine Prognose-Funktion
+
+Sind Messwerte eigentlich immer unsigned?
+	Was könnte denn negativ sein?
+	Übertragung in zwei Richtungen = Ein Messwert pro Richtung, nichts negativ.
+	Füllstände sowieso, leerer als leer (0) geht nicht
+	Durchgeführte Operationen pro Sekunde sowieso, fauler als stinkfaul geht nicht
+
+Was genau bekomme ich vom Sensor-Modul?
+	Aktueller Zählerstand und Timestamp: Was tun mit Counter-Resets (reboot) bzw Wraps? Woher soll ich wissen ob die Karre rebootet wurde? (Muss ich das vielleicht garnicht wissen?)
+	Rate pro Sekunde: Blöd halt, das erste Intervall fliegt dann immer weg und die Sensoren müssen selber rechnen.
+	Beim Start des Daemons wird erstmal alles initialisiert, und dann beim ersten 5-Minuten-Intervall wird direkt gemessen. Beim Start gibts dann halt noch keine Werte.
+	Wertebereich ist abhängig von der Art dessen, was wir messen:
+	-> Minimum ist eigtl immer 0 (siehe unsigned weiter oben -- gilt nicht für erste Ableitung!)
+	-> Einheit: kanns haben, muss nicht
+	-> Maximum: abhängig von der Hardware etc, vielleicht \infty. Prognose wanns erreicht ist ist genau dann sinnvoll, wenn nicht \infty.
+	Wichtig: Keine Idle-Werte, nur Last! Idle würde komplett falsch interpretiert werden.
+	Was ist mit Werten, die genauere Auflösung des gleichen Parameters ermöglichen (Traffic über HTTP/FTP/SSH, CPU-Time system/user/iowait)?
+	-> Engine muss wissen dass es nicht nur um die einzelnen Werte geht, sondern Betrachtung der Summe auch sinnvoll ist
+
+2/3-Sigma-Regel:
+	Bosch s. 148/149
+
+Was tun bei unbekannt:
+	Genau das was tableau macht
+
+Poisson-Verteilung:
+	Häufigkeitsverteilung seltener ereignisse
+	Tageszeitabhängig ändert sich das Lambda der Verteilung (wie Lambda in scipy?)
+	Wikipedia dazu:
+	* http://de.wikipedia.org/wiki/Poisson-Verteilung#Z.C3.A4hlexperiment          → need über 10k Werte, dann wirds genau
+	* http://de.wikipedia.org/wiki/Poisson-Verteilung#Grenzwert.C3.BCberschreitung → Berechnung der Grenzen, innerhalb derer mit 95% Wahrscheinlichkeit Werte liegen müssen
+
+Need:
+	Programm/Engine/Guizmo welches P(X == k) effizient bestimmen kann, aber trotzdem genau ist
+	Was heißt effizient? O(was)?
+	Was heißt genau? Welche Granularität?
+	Vielleicht: Intervall = Sigma? Sigma/2?
+	Effizient bestimmen ist einfach: P(X == k) ist 0 für alle k (Bosch S. 145)
+	
+	Moment: P(X = k) besagt, dass das Ereignis X in n Versuchen k-mal aufgetreten ist -- nicht dass die Variable jetzt grade = k ist... oder? :/
+	Vielleicht Counter anders interpretieren? Counter erhöht um 250 = Bei \infty durchgeführten Versuchen ist das Ereignis "Write-IO ausgeführt" 250mal eingetreten? Ändert das was?
+	Ja, aber: P(X == k) ist null für alle k, aber 1 für das Integral über den Definitionsbereich. Heißt:
+	* Jede Stelle einzeln hat die Wahrscheinlichkeit 0
+	* Alle Stellen zusammen haben die Wahrscheinlichkeit 1
+	
+	Funktionen der Verteilungen:
+	* CDF: Cumulative Distribution Function, Wahrscheinlichkeit y dass die gegebene Verteilung einen Wert kleiner x annimmt
+	* PDF: Probability Density Function, Wahrscheinlichkeit y dass die Verteilung einen Wert x annimmt (nur stetige Verteilungen)
+	   ->  wenn man übers Ergebnis integriert kriegt man die Wahrscheinlichkeit dass die Verteilung einen Wert x aus dem Integrationsintervall annimmt (nur stetige Verteilungen)
+	* PMF: Probability Mass Function, Wahrscheinlichkeit y dass die Verteilung einen Wert x annimmt (nur diskrete Verteilungen)
+	* PPF: Percent point function, für eine gegebene Wahrscheinlichkeit x wird die Verteilung höchstens Wert y annehmen
+	* SF:  Survivor function = (1 - CDF), Wahrscheinlichkeit y dass Wert der Verteilung ≥ x?
+	
+	Also Konfidenzintervall berechnen, und dann prüfen ob Wert \in Intervall.
+	* http://stackoverflow.com/questions/15033511/compute-a-confidence-interval-from-sample-data
+	
+	In [168]: scipy.stats.norm.interval(.3, loc=54522.1729343424, scale=9877.44931268325)
+	Out[168]: (50716.18955826218, 58328.156310422622)
+	
+	Der erste Parameter ist die Wahrscheinlichkeit, mit der die Zufallsvariable im Intervall liegt.
+	Je kleiner, umso enger liegt das Intervall am Erwartungswert.
+	Je größer, umso größer wird das Intervall; bei 1 ists der Definitionsbereich der Verteilung -- logisch, es muss ja *jeder* Wert im Intervall sein
+	2-Sigma entspricht ca. 95%, 3-Sigma 99.74% bei Normalverteilung
+	
+	Andersrum: Bosch gibt Formel für Berechnung der Wahrscheinlichkeit eines gegebenen Intervalls an. Betrachte Wahrscheinlichkeit des Intervalls [ø - x, ø + x]?
+	-> CDF(Obergrenze) - CDF(Untergrenze)
+	In [197]: scipy.stats.norm.cdf(55000, loc=54522.1729343424, scale=9877.44931268325) - scipy.stats.norm.cdf(54000, loc=54522.1729343424, scale=9877.44931268325)
+	Out[197]: 0.040371856443919496
+	In [198]: scipy.stats.norm.cdf((55000 - 54522.1729343424) / 9877.44931268325) - scipy.stats.norm.cdf((54000 - 54522.1729343424) / 9877.44931268325)
+	Out[198]: 0.040371856443919496
+	In [199]: scipy.stats.norm.cdf((80000 - 54522.1729343424) / 9877.44931268325) - scipy.stats.norm.cdf((30000 - 54522.1729343424) / 9877.44931268325)
+	Out[199]: 0.98853069980568109
+	
+	Aber: Je größer diese Wahrscheinlichkeit, umso *ungenauer* ist mein Messwert.
+	Andersrum gedacht: Damit der Wert das Intervall aus _197 annimmt müssen wir schon *verdammt* viel Glück haben...
+	
+	Lustig: Das 2sigma-Intervall bei Poisson ist größer als das 3sigma-Intervall bei Norm, wenn wir mal über die Wahrscheinlichkeit gehen:
+	
+	In [216]: scipy.stats.poisson.interval(.95, 75.896961)   <- Konfidenzintervall für 2sigma
+	Out[216]: (59.0, 93.0)
+	
+	In [217]: scipy.stats.poisson.interval(.9974, 75.896961) <- Konfidenzintervall für 3sigma
+	Out[217]: (51.0, 103.0)
+	
+	In [215]: scipy.stats.norm.cdf(103, loc=75.896961, scale=5.152395) - scipy.stats.norm.cdf(51, loc=75.896961, scale=5.152395) <- 3sigma-Grenzen
+	Out[215]: 0.99999925262815215 <- 0.9974 wäre 3sigma
+	
+	In [218]: scipy.stats.norm.cdf(93, loc=75.896961, scale=5.152395) - scipy.stats.norm.cdf(59, loc=75.896961, scale=5.152395)  <- 2sigma-Grenzen
+	Out[218]: 0.99902893065088139 <- 0.9974 wäre 3sigma
+	
+	
+
+
+Problem also anders definieren. Nicht Plugin fragen "ist alles OK", sondern Plugin nur als Sensor begreifen, und dann über die gelieferten Daten immer die gleiche Entscheidung treffen, nämlich:
+	1. Habe ich genug Daten, um eine brauchbare Aussage treffen zu können?
+	2. Gibt es anhand der bereits gesammelten Daten eine Rechtfertigung dafür, dass das gezeigte Verhalten OK ist?
+		Ja: OK
+		Sonst: Blöd
+
+Problem: Wie unterscheide ich zwischen einem Mittelwert, der nicht aussagekräftig ist, und einem aussagekräftigen, von dem der Messwert grade nur zu weit abweicht?
+	Vermutung: 2-Sigma/3-Sigma-Intervalle werden bei nicht aussagekräftigen Werten einfach riesig und damit nie gerissen.Schrott
+		* Ist das so?
+			Augenscheinlich erstmal ja...
+		* Was heißt riesig?
+			Relation zwischen Sigmakram und Konfidenzintervall?
+			Letzteres ist halt bei Riesensigmas auch einfach nur größer, weil größere Stddev.
+			-> Blöd bei Poisson: Var(X) := Erw(X), da funzt das nicht. Wollen wir also kein Poisson?
+		* Wann altern Datensätze?
+			Zusammenspiel mit der ≥x%-Regel von oben? Wenn ich genug hab, werd ich zu RRD?
+			-> Zumindest kann ich mit meinem tableau-Ansatz Datensätze nicht in Vergessenheit geraten lassen. Der Einfluss einzelner Datensätze wird zwar geringer, aber es haben immer alle Datensätze den gleichen Einfluss, unabhängig von ihrem Alter.
+			-> RRDtool:
+			   rrdtool graph --imgformat=PNG /tmp/img.png
+				DEF:v42=/home/svedrin/tmp/ketos.funzt-halt.net-diskstats_iops-vda-rdio-g.rrd:42:AVERAGE
+				VDEF:avg=v42,AVERAGE   PRINT:avg:'AVG=%lf'
+				VDEF:stddev=v42,STDEV  PRINT:stddev:'STDEV=%lf'
+
+Google bildet auf Punktmenge ab, um Zusammenspiel darzustellen. Heißt: Jeder Sensorwert eines Checks = eine Dimension und es gibt eine Funktion, die ansagt, ob ein Punkt jetzt cool ist oder nicht.
+	Ist das für mich 'ne coole Idee?
+	Wie die Funktion implementieren?
+	Hätte zumindest den Vorteil dass Beurteilungen wie "wenn Schreibrate aufm Volume hoch willst du keine Util% von >70% haben" möglich werden
+
+Kann RRDTool rechentechnisch was ich brauche oder brauche ich ein eigenes Ding?
+	* Aufteilen und dann Berechnungen über alles machen geht zumindest wenn ein Graph pro RRD. Wie das ist wenn der gleiche Graph in mehreren RRDs vorkommt keine Ahnung
+	* Anzahl vorhandener Werte innerhalb der RRD? Gibts ein SELECT COUNT(*)?
+	  Scheinbar nicht... müsst ich dann in eigenen Metadaten mitführen :|
+
+
+Behandlung von Einheiten in Ausgabe der Check-Plugins:
+	GARNICHT. Checkplugins geben keine Metadaten aus, dafür haben wir 'ne DB in dem Django das die Graphen anzeigen muss. Für alles andere sind Einheiten irrelevant.
+
+Übertragung von Informationen:
+	Revisionsnummer oder so ähnlich AD zum Nachsyncen, eindeutig nur auf dem Kommunikationskanal; Check-UUID; Timestamp; Feld; Wert
+	mehr braucht's nicht -- dass das Check-Ergebnis aus mehreren Werten bestehen kann ist irrelevant, sie werden eh einzeln bewertet
+
+Was ist wenn mein Messwert nicht im Konfidenzintervall liegt?
+	1. Möglichkeit: Konfidenzintervall ist zu klein
+	2. Möglichkeit: Datenbestand ist nicht ausreichend, Konfidenzintervall ist Quatsch
+	3. Möglichkeit: Änderung der Rahmenbedingungen (z.B. erhöhte Schreibrate auf VM-Volume)
+	   -> temporär  (Benchmark)
+	   -> dauerhaft (neue VMs dazu gekommen)
+	4. Möglichkeit: Sum Ting Wong, z.B. ausrastender Zarafa erzeugt massiv CPU-Last
+	
+	Wie schließen wir 1 und 2 aus bzw. minimieren deren Wahrscheinlichkeit?
+	-> Berechnung der Wahrscheinlichkeit siehe Bosch S. 194ff
+	Wie unterscheiden wir 3 und 4? (Geht das überhaupt?)
+	Fließen Messwerte in diesem Fall mit in die erhobenen Daten ein?
+	-> RRDtool kann komische Werte flaggen (siehe man rrdcreate, /aberrant)
+
+
+Fazit:
+
+* RRDtool implementiert das alles, wtf
+* Alle Messwerte sind ≥ 0. Davon abgeleitete Werte nicht zwangsläufig.
+* Messreihe-gut-oder-schlecht-Kriterium: Berechne Durchschnitt und Standardabweichung mittels RRDtool, schaue ob Stddev = [0.1 .. 10] * Avg. Wenn nicht: Schrott, nicht aussagekräftig.
+* Messwert-gut-oder-schlecht-Kriterium:  Berechne Konfidenzintervall der Poisson-Verteilung für 2sigma, schaue ob Wert drin oder nicht.
+* *Alle* Messwerte gehen in den Durchschnitt und die Standardabweichung ein, es wird nichts verworfen sonst sind die nicht aussagekräftig.
+* Erst wenn drei Messwerte hintereinander kacke sind, alerten.
+* Großes Überwachungsintervall (5 Minuten) benutzen, sonst wird die Standardabweichung zu groß.
+* Messungen relativ weit oben ansetzen (z.b. Diskstats auf LVs statt Disks).
+  -> Alerts ausschaltbar machen?
+
+
+"Bosch" meint das Buch "Statistik für Nicht-Statistiker" von Karl Bosch, 6. Auflage
+
