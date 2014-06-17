@@ -1,43 +1,142 @@
 {% extends "base.html" %}
 {# kate: space-indent on; indent-width 2; replace-tabs on; hl Django HTML Template; #}
 {% block content %}
-  <h1>Fluxmon</h1>
+<div class="row">
+  <div class="col-md-9">
+    <h1>Flux Performance Monitor</h1>
+    <h3>System performance analysis tool</h3>
+  </div>
+</div>
 
-  <p>
-    Fluxmon is an attempt to build a monitoring system that does not require the configuration of thresholds.
-  </p>
+<div class="row" style="height: 40px"></div>
 
-  <p>
-    Most monitoring systems these days operate using check plugins that measure a given set of values, compare
-    them to configured thresholds, and return a status code accordingly. This approach is problematic, because
-    everything relies on the configured thresholds to be sensible. Let's face it: Us admins are lazy, and more
-    often than not, they aren't.
-  </p>
+<div class="row">
+  <div class="col-md-1">
+  </div>
+  <div class="col-md-7">
+    <div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
+      <!-- Indicators -->
+      <ol class="carousel-indicators">
+        <li data-target="#carousel-example-generic" data-slide-to="0" class="active"></li>
+        <li data-target="#carousel-example-generic" data-slide-to="1"></li>
+        <li data-target="#carousel-example-generic" data-slide-to="2"></li>
+      </ol>
 
-  <p>
-    Fluxmon tries to get rid of configured thresholds by using statistical methods to analyze the measured data,
-    see where regularities emerge, and use those for predictions.
-  </p>
+      <!-- Wrapper for slides -->
+      <div class="carousel-inner">
+        <div class="item active" style="background: rgba(0, 0, 0, 0.5); min-height: 385px">
+          <img src="http://fluxmon.de/render/76b4d61b-53c8-41df-b490-cf9f41f302c3/pac.png?token=a9aabfe9-7f92-4946-8ad1-25b5be8a064d&amp;width=553" alt="AC Power" />
+          <div class="carousel-caption">
+            A simple measurement
+          </div>
+        </div>
 
-  <p>See also <a href="http://svedr.in/essays/en/why_fluxmon.html">Why I started working on Fluxmon</a>.</p>
+        <div class="item" style="background: rgba(0, 0, 0, 0.5); min-height: 385px">
+          <img src="http://fluxmon.de/render/76b4d61b-53c8-41df-b490-cf9f41f302c3/etoday.png?token=a9aabfe9-7f92-4946-8ad1-25b5be8a064d&amp;width=553" alt="Energy production" />
+          <div class="carousel-caption">
+            repetitions are accounted for
+          </div>
+        </div>
 
-  <div>
-    <h2>Some features</h2>
-    <ul>
-      <li>OK/Critical thresholds emerge from measured data instead of being configured</li>
-      <li>Multiple hosts can submit measurements for a single target host</li>
-      <li>Measurements can be correlated</li>
-      <li>Configuration is kept on the measuring nodes and synced automatically</li>
-      <li>Checks are discovered and configured automatically</li>
-    </ul>
+        <div class="item" style="background: rgba(0, 0, 0, 0.5); min-height: 385px">
+          <img src="http://fluxmon.de/render/205847de-05ff-4f89-8c58-617899ef3300/tx_packetsize.png?token=a9aabfe9-7f92-4946-8ad1-25b5be8a064d&amp;width=553" alt="AC Power" />
+          <div class="carousel-caption">
+            doing calculations
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <a class="left carousel-control" href="#carousel-example-generic" data-slide="prev">
+        <span class="glyphicon glyphicon-chevron-left"></span>
+      </a>
+      <a class="right carousel-control" href="#carousel-example-generic" data-slide="next">
+        <span class="glyphicon glyphicon-chevron-right"></span>
+      </a>
+    </div>
+  </div>
+  <div class="col-md-1">
+  </div>
+</div>
+
+<div class="row" style="height: 40px"></div>
+
+<div class="row">
+  <div class="col-md-3">
+    <h2>Auto discovery</h2>
+    <p>
+      Flux configures sensors and checks automatically so your systems are completely monitored. Stop worrying about
+      configuring checks by hand!
+    </p>
   </div>
 
-  <div>
-    <h2>Some principles</h2>
+  <div class="col-md-3">
+    <h2>Auto sync</h2>
+    <p>
+      Flux uses RabbitMQ to deliver results reliably and in real time. In case a connection breaks, you're covered by
+      RabbitMQ storing and syncing results when the connection is re-established.
+    </p>
+  </div>
+
+  <div class="col-md-3">
+    <h2>Auto analysis</h2>
+    <p>
+      Flux determines what behaviour is to be expected and what is likely to be a failure mathematically using
+      statistical methods.
+    </p>
+  </div>
+</div>
+
+<div class="row" style="height: 40px"></div>
+
+<div class="row">
+  <div class="col-md-9">
+    <img src="/static/architecture.png" alt="architecture" />
+  </div>
+</div>
+
+<div class="row" style="height: 40px"></div>
+
+<div class="row">
+  <div class="col-md-3">
+    <h2>Collaborate</h2>
+    <p>
+      Share data and graphs with others to discuss results. ACLs give you full control over who can see what, and
+      sharing does not require registration.
+    </p>
+  </div>
+
+  <div class="col-md-3">
+    <h2>Do maths</h2>
+    <p>Add formulas to calculate further graphs from the data you collected using the Flux sensors.</p>
+  </div>
+
+  <div class="col-md-3">
+    <h2>Learn</h2>
+    <p>See what you can learn from the data you gathered to find room for improvements.</p>
+  </div>
+</div>
+
+<div class="row" style="height: 40px"></div>
+
+<div class="row">
+  <div class="col-md-9">
+    <h2>Flux is not...</h2>
     <ul>
-      <li>Sensors deliver measurements <i>only</i>, they never evaluate anything</li>
-      <li>Deduced values are handled by the master</li>
-      <li>Meta data (e.g. existing parameters, their ranges and their units) are stored on the master, they are not reported by the sensor modules</li>
+      <li>a status monitor like Nagios, i. e. it does not detect outages or send notifications.</li>
+      <li>proactive, i.e. it does not warn you that things might take an ugly turn soon.</li>
+      <li>a replacement for an educated sysadmin.</li>
     </ul>
   </div>
+</div>
+
+<div class="row" style="height: 40px"></div>
+
+<div class="row">
+  <div class="col-md-9" style="border-top: 1px solid gray; padding-top: 40px">
+    <p>Development is still under way, so unfortunately, there is not much to be seen here yet.</p>
+    <p>Contact Svedrin in the Freenode IRC network if you'd like to get in touch.</p>
+  </div>
+</div>
+
 {% endblock %}
