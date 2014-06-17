@@ -225,7 +225,7 @@ def process_feed(dirname, feedname, feedinfo):
             soup = BeautifulSoup(content)
 
             for soupimg in soup.findAll("img"):
-                if "doubleclick" in soupimg["src"] or "feedsportal.com" in soupimg["src"]:
+                if not soupimg.has_key("src") or "doubleclick" in soupimg["src"] or "feedsportal.com" in soupimg["src"]:
                     # you know, if ads wouldn't contain a fucking HUGE gif that
                     # completely freezes my thunderbird for a couple of seconds while
                     # it tries to display the stupid ad, this wouldn't be necessary.
