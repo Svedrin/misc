@@ -28,7 +28,7 @@ def host(request, fqdn):
 
 def delete_host(request, fqdn):
     host = get_object_or_404(Host, fqdn=fqdn)
-    if not thehost.has_perm(request.user, "d"):
+    if not host.has_perm(request.user, "d"):
         return redirect_to_login(request.build_absolute_uri())
     if request.method == "POST":
         form = ConfirmHostDeleteForm( request.POST )
