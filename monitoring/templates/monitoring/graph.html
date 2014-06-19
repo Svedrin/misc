@@ -69,7 +69,10 @@ function draggerize(imgel, selector){
   selector.mousemove(mousemove);
   // Drag end
   var mouseup = function(ev){
-    if(!in_drag) return true;
+    // If we move to the left, FireFox fires mouseout on the img element. We want to
+    // react on the img's mouseout in general, just not in this particular case which
+    // is handled by mousemove.
+    if(!in_drag || ev.relatedTarget.id === "imgselector") return true;
     selector.css({
       visibility: "hidden",
       left:   startX - 2,
