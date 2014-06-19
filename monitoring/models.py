@@ -110,7 +110,7 @@ class Check(models.Model):
 
     @property
     def last_update(self):
-        return self.rrd.last_update
+        return make_aware(self.rrd.last_update, get_default_timezone())
 
     @property
     def config(self):
