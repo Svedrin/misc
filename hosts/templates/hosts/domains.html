@@ -2,6 +2,7 @@
 {# kate: space-indent on; indent-width 2; replace-tabs on; hl Django HTML Template; #}
 {% load mptt_tags %}
 {% load display_extras %}
+{% load monitoring_extras %}
 {% block title %}Fluxmon &mdash; Domains{% endblock %}
 {% block content %}
 <ul class="children">
@@ -11,7 +12,9 @@
         {{ node }} {% if node.host_set.count %} ({{ node.host_set.count }} Host{{ node.host_set.count|pluralize }})
           <ul>
             {% for host in node.get_hosts %}
-              <li><a href="{% url hosts.views.host host.fqdn %}">{{ host }}</a></li>
+              {% ifperm "r" on host %}
+                <li><a href="{% url hosts.views.host host.fqdn %}">{{ host }}</a></li>
+              {% endifperm %}
             {% endfor %}
           </ul>
         {% endif %}
