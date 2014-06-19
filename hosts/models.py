@@ -53,6 +53,7 @@ class Host(models.Model):
     domain      = TreeForeignKey(Domain)
     subscribers = models.ManyToManyField(auth.User, blank=True)
     acl         = models.ForeignKey(ACL, null=True, blank=True)
+    last_update = models.DateTimeField(  null=True, blank=True)
 
     @property
     def config(self):
@@ -60,6 +61,20 @@ class Host(models.Model):
 
     def __unicode__(self):
         return self.fqdn
+
+    def get_last_update(self):
+        """ Probe our checks' RRDs to determine the last time we received
+            any updates, update last_update accordingly and return the
+            value.
+        """
+        altered = False
+        for check in self.check_target_set.filter(is_active=True):
+            if self.last_update is None or check.last_update > self.last_update:
+                self.last_update = check.last_update
+                altered = True
+        if altered:
+            self.save()
+        return self.last_update
 
     @property
     def all_acls(self):
