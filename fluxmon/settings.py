@@ -152,6 +152,7 @@ INSTALLED_APPS = (
     'monitoring',
     'display',
     'msgsign',
+    'pushnotify',
 )
 
 # A sample logging configuration. The only tangible logging
