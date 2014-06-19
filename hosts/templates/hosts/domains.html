@@ -4,21 +4,24 @@
 {% load display_extras %}
 {% block title %}Fluxmon &mdash; Domains{% endblock %}
 {% block content %}
-<ul>
+<ul class="children">
   {% recursetree nodes %}
-    <li>
-      {{ node }} ({{ node.host_set.count }} Hosts)
-      <ul>
-        {% for host in node.host_set.all %}
-          <li><a href="{% url hosts.views.host host.fqdn %}">{{ host }}</a></li>
-        {% endfor %}
-      </ul>
+    {% if not node.is_root_node %}
+      <li>
+        {{ node }} {% if node.host_set.count %} ({{ node.host_set.count }} Host{{ node.host_set.count|pluralize }})
+          <ul>
+            {% for host in node.get_hosts %}
+              <li><a href="{% url hosts.views.host host.fqdn %}">{{ host }}</a></li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      {% endif %}
       {% if not node.is_leaf_node %}
         <ul class="children">
           {{ children }}
         </ul>
-      {% endif %}
-    </li>
+      </li>
+    {% endif %}
   {% endrecursetree %}
 </ul>
 {% endblock %}

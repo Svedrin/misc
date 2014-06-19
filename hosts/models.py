@@ -48,6 +48,9 @@ class Domain(MPTTModel):
             return inh + [(self, self.acl)]
         return inh
 
+    def get_hosts(self):
+        return self.host_set.order_by("fqdn")
+
 class Host(models.Model):
     fqdn        = models.CharField(max_length=255, unique=True)
     domain      = TreeForeignKey(Domain)
