@@ -28,6 +28,8 @@ def main():
     parser.add_option("-i", "--interval", default=300, type="int")
     parser.add_option("-k", "--keygen",   default=False, action="store_true",
                             help="Only generate private and public keys and then exit.")
+    parser.add_option("-l", "--logfile",  default="", type="string",
+                            help="Redirect log output to a file.")
     parser.add_option("-f", "--fqdn",     default=socket.getfqdn(), type="string",
                             help=("FQDN to use (defaults to %s)" % socket.getfqdn()))
     parser.add_option("-n", "--noop",     default=False, action="store_true",
@@ -43,11 +45,13 @@ def main():
     rootlogger.name = "fluxd"
     rootlogger.setLevel(logging.DEBUG)
 
-    if options.verbose:
+    if options.logfile:
+        logch = logging.FileHandler(options.logfile)
+    else:
         logch = logging.StreamHandler()
-        logch.setLevel({2: logging.DEBUG, 1: logging.INFO, 0: logging.WARNING}[int(options.verbose)])
-        logch.setFormatter( logging.Formatter('%(asctime)s - %(levelname)s - %(message)s') )
-        rootlogger.addHandler(logch)
+    logch.setLevel({3: logging.DEBUG, 2: logging.INFO, 1: logging.WARNING, 0: logging.ERROR}.get(int(options.verbose), logging.DEBUG))
+    logch.setFormatter( logging.Formatter('%(asctime)s - %(levelname)s - %(message)s') )
+    rootlogger.addHandler(logch)
 
     keysdir = os.path.join( os.path.dirname(options.config), ".keys" )
     if options.keygen or not os.path.exists(keysdir):
