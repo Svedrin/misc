@@ -22,6 +22,7 @@ from sensors.sensor import SensorMeta
 def main():
     parser = OptionParser(usage="%prog [options]")
 
+    parser.add_option("-1", "--oneshot",  default=False, action="store_true")
     parser.add_option("-c", "--config",   default="fluxd.conf")
     parser.add_option("-d", "--datadir",  default="/var/lib/fluxmon")
     parser.add_option("-i", "--interval", default=300, type="int")
@@ -138,6 +139,9 @@ def main():
                     results.append(checkresult)
 
             account.submit(results)
+
+            if options.oneshot:
+                break
 
             dura = max( nextdue - time(), 5 )
             colorprint(Colors.gray, "Sleeping for %d seconds (next due %s), good night." % (dura,
