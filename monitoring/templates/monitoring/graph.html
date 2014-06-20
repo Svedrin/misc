@@ -3,18 +3,20 @@
 {# kate: space-indent on; indent-width 2; replace-tabs on; hl Django HTML Template; #}
 {% block title %}Fluxmon &mdash; {{ check.target_host|display:"fqdn" }} &mdash; {% for checkparam in check.checkparameter_set.all %}{{ checkparam.parameter|display }}: {{ checkparam.value }} {% endfor %} &mdash; {{ variable|display }}{% endblock %}
 {% block content %}
-<ol class="breadcrumb">
-  <li><a href="{% url hosts.views.domains %}">Hosts</a></li>
-  <li>
-    <a href="{% url hosts.views.host check.target_host.fqdn %}">{{ check.target_host|display:"fqdn" }}</a>
-    {% if check.target_host != check.exec_host %}(as seen by <a href="{% url hosts.views.host check.exec_host.fqdn %}">{{ check.exec_host|display:"fqdn" }}</a>){% endif %}
-  </li>
-  <li><a href="{% url monitoring.views.check_details check.uuid %}">{{ check|display:"uuid" }}</a></li>
-  <li class="active">{{ variable|display }}</li>
-</ol>
+<div class="screenonly">
+  <ol class="breadcrumb">
+    <li><a href="{% url hosts.views.domains %}">Hosts</a></li>
+    <li>
+      <a href="{% url hosts.views.host check.target_host.fqdn %}">{{ check.target_host|display:"fqdn" }}</a>
+      {% if check.target_host != check.exec_host %}(as seen by <a href="{% url hosts.views.host check.exec_host.fqdn %}">{{ check.exec_host|display:"fqdn" }}</a>){% endif %}
+    </li>
+    <li><a href="{% url monitoring.views.check_details check.uuid %}">{{ check|display:"uuid" }}</a></li>
+    <li class="active">{{ variable|display }}</li>
+  </ol>
+</div>
 {% include "monitoring/checkinfo.inc.html" %}
 <h3>{{ variable|display }}</h3>
-<div id="profiles">
+<div id="profiles" class="screenonly">
   {% for profile in profiles %}
     <a class="btn {% if profile == active_profile %}btn-primary{% else %}btn-default{% endif %}" href="{% url monitoring.views.render_check_page check.uuid variable.name profile %}">{{ profile }}</a>
   {% endfor %}

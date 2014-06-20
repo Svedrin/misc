@@ -32,6 +32,14 @@ dd ul {
 .tinyscreenonly {
   display: none;
 }
+.screenonly {
+  display: none;
+}
+@media screen {
+  .screenonly {
+    display: inline;
+  }
+}
 @media screen and (max-width:825px) {
   #content {
 /*     width: 500px; */
