@@ -114,6 +114,8 @@ def on_message(channel, method_frame, header_frame, body):
     if not isinstance(data, list):
         data = [data]
 
+    logging.info("Received data chunk with %d packets." % len(data))
+
     for packet in data:
         if not isinstance(packet, dict) or "type" not in packet:
             logging.error("Invalid Packet")
