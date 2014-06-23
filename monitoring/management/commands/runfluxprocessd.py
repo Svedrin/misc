@@ -232,6 +232,7 @@ class Command( BaseCommand ):
             routing_key   = "fluxmon")
         channel.basic_qos(prefetch_count=1) # dispatch to first idle consumer
 
+        print "ready to roll"
         try:
             channel.basic_consume(on_message, "fluxmon")
             channel.start_consuming()
@@ -239,3 +240,4 @@ class Command( BaseCommand ):
             channel.stop_consuming()
 
         connection.close()
+        print "kbai"
