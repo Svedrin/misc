@@ -29,7 +29,7 @@
   <dt>Host:</dt>
   <dd>{{ host.fqdn }}</dd>
   <dt>Last update:</dt>
-  <dd>{{ host.get_last_update }}</dd>
+  <dd>{{ host.get_last_update|default_if_none:"never updated" }}</dd>
 </dl>
 {% include "monitoring/listchecks.inc.html" with list_checks=checks %}
 {% endblock %}

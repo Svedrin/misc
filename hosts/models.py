@@ -72,7 +72,8 @@ class Host(models.Model):
         """
         altered = False
         for check in self.check_target_set.filter(is_active=True):
-            if self.last_update is None or check.last_update > self.last_update:
+            if check.last_update is not None and \
+               (self.last_update is None or check.last_update > self.last_update):
                 self.last_update = check.last_update
                 altered = True
         if altered:

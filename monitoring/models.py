@@ -110,6 +110,8 @@ class Check(models.Model):
 
     @property
     def last_update(self):
+        if self.rrd.last_update is None:
+            return None
         return make_aware(self.rrd.last_update, get_default_timezone())
 
     @property
