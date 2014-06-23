@@ -20,7 +20,7 @@
     </dd>
   {% endif %}
   <dt>Last update:</dt>
-  <dd>{{ check.last_update }}</dd>
+  <dd>{{ check.last_update|default_if_none:"never updated" }}</dd>
   {% if check.current_alert %}
   <dt>Failing since:</dt>
   <dd>{{ check.current_alert.starttime }} ({{ check.current_alert.starttime|timesince }})</dd>
