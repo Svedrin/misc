@@ -14,6 +14,11 @@ from time import sleep
 
 from wolfobject import WolfObject
 
+def chunks(l, n):
+    """ Yield successive n-sized chunks from l. """
+    for i in xrange(0, len(l), n):
+        yield l[i:i+n]
+
 class FluxAccount(WolfObject):
     objtype = "fluxaccount"
 
@@ -90,10 +95,11 @@ class FluxAccount(WolfObject):
     def submit(self, data):
         for thing in data:
             thing["type"] = "result"
-        return self._request(data)
+        for datachunk in chunks(data, 50):
+            self._request(datachunk)
 
     def deactivate(self, check):
-        return self._request({
+        self._request({
             "type": "deactivate",
             "uuid": check["uuid"]
         })
@@ -101,4 +107,5 @@ class FluxAccount(WolfObject):
     def add_checks(self, data):
         for thing in data:
             thing["type"] = "add_check"
-        return self._request(data)
+        for datachunk in chunks(data, 50):
+            self._request(datachunk)
