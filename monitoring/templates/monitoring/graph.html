@@ -18,7 +18,7 @@
 <h3>{{ variable|display }}</h3>
 <div id="profiles" class="screenonly">
   {% for profile in profiles %}
-    <a class="btn {% if profile == active_profile %}btn-primary{% else %}btn-default{% endif %}" href="{% url monitoring.views.render_check_page check.uuid variable.name profile %}">{{ profile }}</a>
+    <a class="btn {% if profile == active_profile %}btn-primary{% else %}btn-default{% endif %}" href="{% url monitoring.views.render_check_page check.uuid variable.name profile %}#imgcontainer">{{ profile }}</a>
   {% endfor %}
 </div>
 <div style="width: 100%; position: relative;" id="imgcontainer">
