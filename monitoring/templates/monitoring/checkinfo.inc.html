@@ -6,9 +6,9 @@
   <dt>Sensor:</dt>
   <dd>{{ check.sensor }}</dd>
   <dt>Executed on host:</dt>
-  <dd><a href="{% url hosts.views.host check.exec_host.fqdn %}">{{ check.exec_host|display:"fqdn" }}</a></dd>
+  <dd><a href="{% url 'hosts.views.host' check.exec_host.fqdn %}">{{ check.exec_host|display:"fqdn" }}</a></dd>
   <dt>Target host:</dt>
-  <dd><a href="{% url hosts.views.host check.target_host.fqdn %}">{{ check.target_host|display:"fqdn" }}</a></dd>
+  <dd><a href="{% url 'hosts.views.host' check.target_host.fqdn %}">{{ check.target_host|display:"fqdn" }}</a></dd>
   {% if check.checkparameter_set.count %}
     <dt>Parameters:</dt>
     <dd>

@@ -10,11 +10,11 @@
     {% if not node.is_root_node %}
       <li>
         {{ node }} {% if node.host_set.count %} ({{ node.host_set.count }} Host{{ node.host_set.count|pluralize }})
-        (<a href="{% url hosts.views.add_host node.id %}">+</a>)
+        (<a href="{% url 'hosts.views.add_host' node.id %}">+</a>)
           <ul>
             {% for host in node.get_hosts %}
               {% ifperm "r" on host %}
-                <li><a href="{% url hosts.views.host host.fqdn %}">{{ host }}</a></li>
+                <li><a href="{% url 'hosts.views.host' host.fqdn %}">{{ host }}</a></li>
               {% endifperm %}
             {% endfor %}
           </ul>

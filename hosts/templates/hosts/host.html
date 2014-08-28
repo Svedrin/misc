@@ -5,7 +5,7 @@
 {% block title %}Fluxmon &mdash; {{ host|display:"fqdn" }}{% endblock %}
 {% block content %}
 <ol class="breadcrumb">
-  <li><a href="{% url hosts.views.domains %}">Hosts</a></li>
+  <li><a href="{% url 'hosts.views.domains' %}">Hosts</a></li>
   <li class="active">{{ host|display:"fqdn" }}</li>
 </ol>
 <div class="btn-group" style="float: right">
@@ -15,12 +15,12 @@
   {% if not user.is_anonymous %}
   <ul class="dropdown-menu" role="menu">
     {% ifperm "r" on host %}
-    <li><a href="{% url monitoring.views.config host.fqdn %}" target="_blank">Download Config</a></li>
+    <li><a href="{% url 'monitoring.views.config' host.fqdn %}" target="_blank">Download Config</a></li>
     {% endifperm %}
     {% ifperm "d" on host %}
     <li class="divider"></li>
     <li><a href="#">Delete all Checks</a></li>
-    <li><a href="{% url hosts.views.delete_host host.fqdn %}">Delete Host</a></li>
+    <li><a href="{% url 'hosts.views.delete_host' host.fqdn %}">Delete Host</a></li>
     {% endifperm %}
   </ul>
   {% endif %}

@@ -28,16 +28,16 @@
             <ul class="nav navbar-nav">
               <li><a href="/">Home</a></li>
               {% if not user.is_anonymous %}
-              <li><a href="{% url monitoring.views.profile %}">{{ user }}</a></li>
-              <li><a href="{% url hosts.views.domains %}">Hosts</a></li>
-              <li><a href="{% url monitoring.views.search %}" id="searchlink">Search</a></li>
-              <li><a href="{% url django.contrib.auth.views.logout %}">Logout</a></li>
+              <li><a href="{% url 'monitoring.views.profile' %}">{{ user }}</a></li>
+              <li><a href="{% url 'hosts.views.domains' %}">Hosts</a></li>
+              <li><a href="{% url 'monitoring.views.search' %}" id="searchlink">Search</a></li>
+              <li><a href="{% url 'django.contrib.auth.views.logout' %}">Logout</a></li>
               <script type="text/javascript">
                 $(function(){
                   $("#searchlink").popover({
                     trigger: "manual",
                     title: "Search",
-                    content: '<form action="{% url monitoring.views.search %}"><input type="text" class="form-control" id="searchinput" name="query" placeholder="Query" style="width: 250px" /></form>',
+                    content: '<form action="{% url 'monitoring.views.search' %}"><input type="text" class="form-control" id="searchinput" name="query" placeholder="Query" style="width: 250px" /></form>',
                     placement: "bottom",
                     html: true
                   });
@@ -54,9 +54,9 @@
                 });
               </script>
               {% elif user.is_authenticated %}
-              <li><a href="{% url django.contrib.auth.views.login %}">Guest</a></li>
+              <li><a href="{% url 'django.contrib.auth.views.login' %}">Guest</a></li>
               {% else %}
-              <li><a href="{% url django.contrib.auth.views.login %}">Login</a></li>
+              <li><a href="{% url 'django.contrib.auth.views.login' %}">Login</a></li>
               {% endif %}
             </ul>
           </div><!--/.nav-collapse -->

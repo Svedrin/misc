@@ -4,7 +4,7 @@
 {% block title %}Fluxmon &mdash; {{ host|display:"fqdn" }}{% endblock %}
 {% block content %}
 <ol class="breadcrumb">
-  <li><a href="{% url hosts.views.domains %}">Hosts</a></li>
+  <li><a href="{% url 'hosts.views.domains' %}">Hosts</a></li>
   <li class="active">{{ host|display:"fqdn" }}</li>
 </ol>
 <h2>Delete Host</h2>

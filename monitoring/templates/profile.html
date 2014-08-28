@@ -67,7 +67,7 @@
           <tbody>
           {% for alert in currentalerts %}
             {% ifperm "r" on alert.check %}
-              <tr onclick="window.location='{% url monitoring.views.check_details alert.check.uuid %}';">
+              <tr onclick="window.location='{% url 'monitoring.views.check_details' alert.check.uuid %}';">
                 <td>
                   {{ alert.check.target_host }}
                   {% if alert.check.target_host != alert.check.exec_host %}(as seen by {{ alert.check.exec_host }}){% endif %}
@@ -77,7 +77,7 @@
                 <td>{{ alert.check.paramstring }}</td>
                 <td><span title="{{ alert.starttime }}">{{ alert.starttime|timesince }}</a></td>
                 <td>{{ alert.failcount }}</td>
-                <td><a href="{% url monitoring.views.check_details alert.check.uuid %}" title="View details" style="text-decoration: none">→</a></td>
+                <td><a href="{% url 'monitoring.views.check_details' alert.check.uuid %}" title="View details" style="text-decoration: none">→</a></td>
               </tr>
             {% endifperm %}
           {% endfor %}

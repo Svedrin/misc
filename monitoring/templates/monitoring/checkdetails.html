@@ -5,10 +5,10 @@
 {% block title %}Fluxmon &mdash; {{ check.target_host|display:"fqdn" }} &mdash; {% for checkparam in check.checkparameter_set.all %}{{ checkparam.parameter|display }}: {{ checkparam.value }}{% endfor %}{% endblock %}
 {% block content %}
 <ol class="breadcrumb">
-  <li><a href="{% url hosts.views.domains %}">Hosts</a></li>
+  <li><a href="{% url 'hosts.views.domains' %}">Hosts</a></li>
   <li>
-    <a href="{% url hosts.views.host check.target_host.fqdn %}">{{ check.target_host|display:"fqdn" }}</a>
-    {% if check.target_host != check.exec_host %}(as seen by <a href="{% url hosts.views.host check.exec_host.fqdn %}">{{ check.exec_host|display:"fqdn" }}</a>){% endif %}
+    <a href="{% url 'hosts.views.host' check.target_host.fqdn %}">{{ check.target_host|display:"fqdn" }}</a>
+    {% if check.target_host != check.exec_host %}(as seen by <a href="{% url 'hosts.views.host' check.exec_host.fqdn %}">{{ check.exec_host|display:"fqdn" }}</a>){% endif %}
   </li>
   <li class="active">{{ check|display:"uuid" }}</li>
 </ol>
@@ -30,11 +30,11 @@
         <table class="table table-hover">
           <tbody>
           {% for variable, alerts in vars %}
-            <tr targetlink="{% url monitoring.views.render_check_page check.uuid variable.name %}" class="checktr {% if alerts %}warning{% else %}success{% endif %}">
+            <tr targetlink="{% url 'monitoring.views.render_check_page' check.uuid variable.name %}" class="checktr {% if alerts %}warning{% else %}success{% endif %}">
               <td>
                 {{ variable|display }}
               </td>
-              <td><a href="{% url monitoring.views.render_check_page check.uuid variable.name %}" title="View graph" style="text-decoration: none">→</a></td>
+              <td><a href="{% url 'monitoring.views.render_check_page' check.uuid variable.name %}" title="View graph" style="text-decoration: none">→</a></td>
             </tr>
           {% endfor %}
           </tbody>
