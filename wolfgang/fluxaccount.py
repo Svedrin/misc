@@ -35,24 +35,21 @@ class FluxAccount(WolfObject):
             self.channel.exchange_declare(
                 exchange      = self.exchange,
                 exchange_type = "direct",
-                passive       = False,
+                passive       = True,
                 durable       = True,
                 auto_delete   = False)
         except TypeError:
             self.channel.exchange_declare(
                 exchange      = self.exchange,
                 type          = "direct",
-                passive       = False,
+                passive       = True,
                 durable       = True,
                 auto_delete   = False)
         self.channel.queue_declare(
             queue         = "fluxmon",
             auto_delete   = False,
+            passive       = True,
             durable       = True)
-        self.channel.queue_bind(
-            queue         = "fluxmon",
-            exchange      = self.exchange,
-            routing_key   = "fluxmon")
 
         self.privkey = None
 
