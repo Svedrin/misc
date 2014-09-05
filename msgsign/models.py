@@ -31,4 +31,4 @@ class PublicKey(models.Model):
 
     @property
     def config(self):
-        return 'fluxaccount %s key=%s rabbiturl="amqp://guest:guest@localhost/fluxmon"\n' % (self.owner.username, self.uuid)
+        return 'fluxaccount %s key=%s rabbiturl="amqp://fluxmon:fluxmon@fluxmon.de/fluxmon"\n' % (self.owner.username, self.uuid)
