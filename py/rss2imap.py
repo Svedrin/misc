@@ -165,7 +165,10 @@ def process_feed(dirname, feedname, feedinfo):
         feedurl   = feedinfo
         feedproxy = None
 
-    feed = feedparser.parse(feedurl)
+    try:
+        feed = feedparser.parse(feedurl)
+    except TypeError:
+        return
 
     pending = Queue()
     pendingupload = Queue()
