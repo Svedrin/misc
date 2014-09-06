@@ -155,7 +155,8 @@ def main():
     except KeyboardInterrupt:
         print "\nCaught ^c, shutting down."
 
-    account.close_connection()
+    finally:
+        account.close_connection()
 
     return 0
 
