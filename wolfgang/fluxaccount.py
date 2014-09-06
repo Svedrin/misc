@@ -83,6 +83,10 @@ class FluxAccount(WolfObject):
             )
         )
 
+    def close_connection(self):
+        self.channel.close()
+        self.connection.close()
+
     def sleep(self, dura):
         if hasattr(self.connection, "sleep"):
             self.connection.sleep(dura)
