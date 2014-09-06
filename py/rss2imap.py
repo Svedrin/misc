@@ -211,6 +211,7 @@ def process_feed(dirname, feedname, feedinfo):
             mp["From"] = entry.get("author", feedname)
             mp["Subject"] = entry.title
             mp["X-RSS2IMAP-ID"] = entid
+            mp["Date"] = entry.get("published", email.Utils.formatdate())
 
             alt  = email.mime.Multipart.MIMEMultipart("alternative")
             mp.attach(alt)
