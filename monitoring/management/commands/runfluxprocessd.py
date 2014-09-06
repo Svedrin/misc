@@ -5,6 +5,7 @@ import os
 import logging
 import socket
 import urlparse
+import resource
 import json
 import pika
 
@@ -138,6 +139,8 @@ def on_message(channel, method_frame, header_frame, body):
 
     channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
+    if resource.getrusage(resource.RUSAGE_SELF).ru_maxrss >= 128 * 1024:
+        raise KeyboardInterrupt("I'm leaking, please restart me")
 
 
 def getloglevel(levelstr):
