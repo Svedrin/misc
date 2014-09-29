@@ -2,8 +2,8 @@
 
 $("div.fluxeditable").children("div.fluxlabel").children("button").click(function(){
   var fluxeditable = $(this.parentNode.parentNode);
-  fluxeditable.children("div.fluxlabel").addClass("fluxhidden");
-  fluxeditable.children("div.fluxeditor").removeClass("fluxhidden");
+  fluxeditable.children("div.fluxlabel").addClass("hidden");
+  fluxeditable.children("div.fluxeditor").removeClass("hidden");
   fluxeditable.children("div.fluxeditor").children("form").children("div").children("input").focus();
   fluxeditable.children("div.fluxeditor").children("form").submit(function(){
     var self = this;
@@ -17,8 +17,8 @@ $("div.fluxeditable").children("div.fluxlabel").children("button").click(functio
       dataType: "json",
       success: function(data){
         fluxeditable.children("div.fluxlabel").children("span").html(data.display || self.placeholder.value);
-        fluxeditable.children("div.fluxlabel").removeClass("fluxhidden");
-        fluxeditable.children("div.fluxeditor").addClass("fluxhidden");
+        fluxeditable.children("div.fluxlabel").removeClass("hidden");
+        fluxeditable.children("div.fluxeditor").addClass("hidden");
       }});
     return false;
   });
