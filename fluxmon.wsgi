@@ -14,7 +14,8 @@ if not MUMBLE_DJANGO_ROOT or not exists( MUMBLE_DJANGO_ROOT ):
 # environment variables
 sys.path.append( MUMBLE_DJANGO_ROOT )
 sys.path.append( join( MUMBLE_DJANGO_ROOT, 'fluxmon' ) )
-os.environ['DJANGO_SETTINGS_MODULE'] = 'fluxmon.settings'
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "fluxmon.settings")
 
 
 # If you get an error about Python not being able to write to the Python
@@ -25,6 +26,5 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'fluxmon.settings'
 
 
 # WSGI handler
-import django.core.handlers.wsgi
-application = django.core.handlers.wsgi.WSGIHandler()
-
+from django.core.wsgi import get_wsgi_application
+application = get_wsgi_application()

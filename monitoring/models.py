@@ -175,7 +175,7 @@ class Check(models.Model):
                     for varname, info in confintervals.items() ]):
                 # if we have any failed values, update alerts
                 if curralert is None:
-                    curralert = Alert(check=self, starttime=make_aware(datetime.now(), get_default_timezone()), endtime=None, failcount=0)
+                    curralert = Alert(check_inst=self, starttime=make_aware(datetime.now(), get_default_timezone()), endtime=None, failcount=0)
                 curralert.failcount += 1
                 curralert.save()
                 for varname, info in confintervals.items():
@@ -198,19 +198,19 @@ models.signals.pre_delete.connect(__check_pre_delete, sender=Check)
 
 
 class CheckParameter(models.Model):
-    check       = models.ForeignKey(Check)
+    check_inst  = models.ForeignKey(Check, db_column="check_id")
     parameter   = models.ForeignKey(SensorParameter)
     value       = models.CharField("Parameter value", max_length=255)
 
     class Meta:
-        unique_together = (("check", "parameter"), )
+        unique_together = (("check_inst", "parameter"), )
 
     def __unicode__(self):
         return "%s.%s = %s" % (self.parameter.sensor.name, self.parameter.name, self.value)
 
 
 class Alert(models.Model):
-    check       = models.ForeignKey(Check)
+    check_inst  = models.ForeignKey(Check, db_column="check_id")
     starttime   = models.DateTimeField()
     endtime     = models.DateTimeField(null=True)
     failcount   = models.IntegerField()
@@ -223,7 +223,7 @@ class AlertVariable(models.Model):
     alert       = models.ForeignKey(Alert)
     variable    = models.ForeignKey(SensorVariable)
     timestamp   = models.DateTimeField()
-    fail        = models.BooleanField()
+    fail        = models.BooleanField(default=False)
     exp_lower   = models.FloatField()
     exp_upper   = models.FloatField()
     value       = models.FloatField()

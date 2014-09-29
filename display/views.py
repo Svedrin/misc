@@ -48,4 +48,4 @@ def set_display(request, app, obj):
 
     return HttpResponse( json.dumps({
         "display": display.display if display is not None else ""
-    }), mimetype="application/json" )
+    }), content_type="application/json" )

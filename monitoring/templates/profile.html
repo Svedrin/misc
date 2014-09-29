@@ -66,18 +66,18 @@
           </thead>
           <tbody>
           {% for alert in currentalerts %}
-            {% ifperm "r" on alert.check %}
-              <tr onclick="window.location='{% url 'monitoring.views.check_details' alert.check.uuid %}';">
+            {% ifperm "r" on alert.check_inst %}
+              <tr onclick="window.location='{% url 'monitoring.views.check_details' alert.check_inst.uuid %}';">
                 <td>
-                  {{ alert.check.target_host }}
-                  {% if alert.check.target_host != alert.check.exec_host %}(as seen by {{ alert.check.exec_host }}){% endif %}
+                  {{ alert.check_inst.target_host }}
+                  {% if alert.check_inst.target_host != alert.check_inst.exec_host %}(as seen by {{ alert.check_inst.exec_host }}){% endif %}
                 </td>
-                <td>{{ alert.check|displayonly }}</td>
-                <td>{{ alert.check.sensor }}</td>
-                <td>{{ alert.check.paramstring }}</td>
+                <td>{{ alert.check_inst|displayonly }}</td>
+                <td>{{ alert.check_inst.sensor }}</td>
+                <td>{{ alert.check_inst.paramstring }}</td>
                 <td><span title="{{ alert.starttime }}">{{ alert.starttime|timesince }}</a></td>
                 <td>{{ alert.failcount }}</td>
-                <td><a href="{% url 'monitoring.views.check_details' alert.check.uuid %}" title="View details" style="text-decoration: none">→</a></td>
+                <td><a href="{% url 'monitoring.views.check_details' alert.check_inst.uuid %}" title="View details" style="text-decoration: none">→</a></td>
               </tr>
             {% endifperm %}
           {% endfor %}

@@ -36,7 +36,7 @@ def config(request, host_fqdn):
         conf.append("target %s\n" % target.fqdn)
     conf.extend([s.config for s in Sensor.objects.all()])
     conf.extend([chk.config for chk in hh.check_exec_set.all()])
-    return HttpResponse(''.join(conf).encode("utf-8"), mimetype="text/plain")
+    return HttpResponse(''.join(conf).encode("utf-8"), content_type="text/plain")
 
 
 @login_required
@@ -203,5 +203,5 @@ def render_check(request, uuid, ds):
     if unit is not None:
         builder.verttitle = unit
 
-    return HttpResponse(builder.get_image(), mimetype="image/png")
+    return HttpResponse(builder.get_image(), content_type="image/png")
 
