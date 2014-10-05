@@ -18,7 +18,7 @@ fluxmon.directive("zoomable", function(){
                         'z-index: 100; visibility: hidden;">&nbsp;</div>',
                 '<img ng-src="{[ ngSrc ]}" />',
             '</div>'].join(''),
-        link: function($scope, element, attr){
+        link: function(scope, element, attr){
 
             var imgel    = element.children("img"),
                 selector = element.children(".imgselector"),
@@ -98,8 +98,8 @@ fluxmon.directive("zoomable", function(){
                     width:  1,
                 });
                 in_drag = false;
-                var start = parseInt($scope.start);
-                var end   = parseInt($scope.end);
+                var start = parseInt(scope.start);
+                var end   = parseInt(scope.end);
                 // Calc new start/end and call our callback
                 console.log({
                     start: start,
@@ -109,7 +109,7 @@ fluxmon.directive("zoomable", function(){
                     minX:   minX,
                     maxX:   maxX
                 });
-                $scope.zoomTo({
+                scope.zoomTo({
                     "start": parseInt(start + (end - start) * (startX - minX) / (maxX - minX)),
                     "end":   parseInt(start + (end - start) * (endX   - minX) / (maxX - minX))
                 });
