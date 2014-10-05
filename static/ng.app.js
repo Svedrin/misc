@@ -28,7 +28,7 @@ fluxmon.controller("GraphDurationCtrl", function($scope, $timeout){
 	$scope.$watch("end", update_start);
 
 	var update_end = function(){
-		if( new Date() > ($scope.end + 300) * 1000 ){
+		while( new Date() > ($scope.end + 300) * 1000 ){
 			$scope.end += 300;
 		}
 		$timeout(update_end, 1);
