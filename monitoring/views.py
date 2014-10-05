@@ -124,7 +124,7 @@ def check_details(request, uuid):
         var = check.sensor.sensorvariable_set.all()[0]
         return HttpResponseRedirect(reverse(render_check_page, args=(check.uuid, var.name)))
     svars = []
-    for variable in check.sensor.sensorvariable_set.all():
+    for variable in check.sensor.sensorvariable_set.order_by('name'):
         alerts = []
         if check.current_alert:
             alerts = check.current_alert.alertvariable_set.filter(variable=variable, fail=True)
