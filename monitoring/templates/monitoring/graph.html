@@ -33,10 +33,7 @@
     <br />
   </div>
   <div style="position: relative;" id="imgcontainer">
-    <div
-      id="imgselector"
-      style="background-color: rgba(30, 30, 220, 0.4); position: absolute; height: 153px; width: 1px; z-index: 100; visibility: hidden;">&nbsp;</div>
-    <img
+    <img zoomable zoom-to="zoomTo({start: start, end: end})"
       class="visible-md-inline visible-lg-inline" alt="graph" style="margin: 0 auto"
       ng-src="{% url 'monitoring.views.render_check' check.uuid variable.name %}?width=700&amp;start={[ start ]}&amp;end={[ end ]}&amp;prediction={[ prediction ]}" />
     <img
