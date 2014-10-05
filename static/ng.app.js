@@ -7,9 +7,57 @@ fluxmon.config(function($interpolateProvider) {
     $interpolateProvider.endSymbol(']}');
 });
 
-fluxmon.controller("GraphCtrl", function($scope, $timeout){
+fluxmon.controller("GraphCtrl", function($scope, $interval){
+    var self = this;
+
+    $scope.zoomTo = function(args){
+        // When zooming in, we're called as:
+        //   zoomTo({start: <start>, end: <end>})
+        // When zooming back out or saved_* values change, we're called as:
+        //   zoomTo()
+
+        // Set defaults
+        args    = args || {}
+        start   = args.start   || 0;
+        end     = args.end     || self.saved_end;
+        profile = args.profile || self.saved_profile;
+
+        console.log("zoomTo()!", args);
+
+        // Known start overwrites the profile
+        if( start ){
+            profile = null;
+        }
+        else{
+            start = end - profile.duration;
+        }
+
+        $scope.start = start;
+        $scope.end   = end;
+        $scope.active_profile = profile;
+    }
+
     $scope.prediction = true;
 
+    // Initialize end
+
+    $interval(function(){
+        var old_saved_end = self.saved_end;
+        // See if we need to update saved_end...
+        while( new Date() > (self.saved_end + 300) * 1000 ){
+            self.saved_end += 300;
+        }
+        // ...and if we updated it, call zoomTo() to update the images
+        if( $scope.end == old_saved_end && old_saved_end != self.saved_end )
+            $scope.zoomTo();
+    }, 1000);
+
+    $scope.set_end = function(end){
+        self.saved_end = end;
+        $scope.zoomTo();
+    };
+
+    // Initialize profiles
     $scope.profiles = [
         {title:  "4h", duration:      6*60*60, tiny: true },
         {title: "24h", duration:     24*60*60, tiny: true },
@@ -21,21 +69,11 @@ fluxmon.controller("GraphCtrl", function($scope, $timeout){
         {title:  "6m", duration: 180*24*60*60, tiny: false},
         {title:  "1y", duration: 365*24*60*60, tiny: true },
     ];
-    $scope.active_profile = $scope.profiles[1]; // 24h
     $scope.set_active_profile = function(val){
-        $scope.active_profile = val;
+        self.saved_profile = val;
+        if( self.saved_profile != $scope.active_profile )
+            $scope.zoomTo();
     }
-    var update_start = function(){
-        $scope.start = $scope.end - $scope.active_profile.duration;
-    };
-    $scope.$watch("active_profile", update_start);
-    $scope.$watch("end", update_start);
+    $scope.set_active_profile($scope.profiles[1]); //24h
 
-    var update_end = function(){
-        while( new Date() > ($scope.end + 300) * 1000 ){
-            $scope.end += 300;
-        }
-        $timeout(update_end, 1);
-    }
-    update_end();
 })
