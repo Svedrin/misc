@@ -138,24 +138,8 @@ def render_check_page(request, uuid, ds, profile="24h"):
     check = get_object_or_404(Check, uuid=uuid)
     if not check.has_perm(request.user, "r"):
         return redirect_to_login(request.build_absolute_uri())
-    profiles = (
-        ( "4h",      6*60*60),
-        ("24h",     24*60*60),
-        ("48h",     48*60*60),
-        ( "1w",   7*24*60*60),
-        ( "2w",  14*24*60*60),
-        ( "1m",  30*24*60*60),
-        ( "3m",  90*24*60*60),
-        ( "6m", 180*24*60*60),
-        ( "1y", 365*24*60*60),
-    )
-    start = int(time()) - dict(profiles)[profile]
     return render_to_response("monitoring/graph.html", {
         'check':    check,
-        'profiles': [p[0] for p in profiles],
-        'active_profile': profile,
-        'start':    start,
-        'end':      check.rrd.last_check,
         'variable': check.sensor.sensorvariable_set.get(name=ds)
         }, context_instance=RequestContext(request))
 

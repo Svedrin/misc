@@ -17,7 +17,7 @@
 {% include "monitoring/checkinfo.inc.html" %}
 <h3>{{ variable|display }}</h3>
 <div
-    ng-controller="GraphDurationCtrl" ng-init="end = {{ end }};"
+    ng-controller="GraphDurationCtrl" ng-init="end = {{ check.rrd.last_check }};"
     class="container col-xs-12 col-sm-12 col-md-12 col-lg-12 no-padding">
   <div id="profiles">
     <a ng-repeat="profile in profiles"

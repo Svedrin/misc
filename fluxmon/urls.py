@@ -23,7 +23,6 @@ urlpatterns = patterns('',
     url(r'^display/(?P<app>\w+)/(?P<obj>\w+)',             'display.views.set_display'),
     url(r'^details/(?P<uuid>[\w\d-]+)/',                   'monitoring.views.check_details'),
     url(r'^render/(?P<uuid>[\w\d-]+)/(?P<ds>[\w_]+).html', 'monitoring.views.render_check_page'),
-    url(r'^render/(?P<uuid>[\w\d-]+)/(?P<ds>[\w_]+)/(?P<profile>[\d\w]+).html', 'monitoring.views.render_check_page'),
     url(r'^render/(?P<uuid>[\w\d-]+)/(?P<ds>[\w_]+).png',  'monitoring.views.render_check'),
 
     url(r'^$',                                             TemplateView.as_view(template_name='index.html'), name="index.html"),
