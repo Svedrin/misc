@@ -68,8 +68,9 @@ class SensorVariable(models.Model):
 class OutdatedChecksQuerySet(models.query.QuerySet):
     def __iter__(self):
         for check in models.query.QuerySet.__iter__(self):
-            lu = check.last_update
-            if lu is None or (datetime.now() - lu) > timedelta(minutes=5):
+            lu  = check.last_update
+            now = make_aware(datetime.now(), get_default_timezone())
+            if lu is None or (now - lu) > timedelta(minutes=5):
                 yield check
         raise StopIteration
 
