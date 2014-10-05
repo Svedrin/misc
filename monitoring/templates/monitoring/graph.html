@@ -14,7 +14,9 @@
     <li class="active">{{ variable|display }}</li>
   </ol>
 </div>
-{% include "monitoring/checkinfo.inc.html" %}
+<div class="hidden-xs">
+  {% include "monitoring/checkinfo.inc.html" %}
+</div>
 <h3>{{ variable|display }}</h3>
 <div
     ng-controller="GraphCtrl" ng-init="set_end({{ check.rrd.last_check }})"
@@ -42,6 +44,9 @@
     <img
       class="visible-xs-block" alt="graph"
       ng-src="{% url 'monitoring.views.render_check' check.uuid variable.name %}?width=220&amp;start={[ start ]}&amp;end={[ end ]}&amp;prediction={[ prediction ]}" />
+  </div>
+  <div class="visible-xs-block" >
+    <label><input type="checkbox" ng-model="prediction" /> Show prediction</label>
   </div>
 </div>
 {% endblock %}
