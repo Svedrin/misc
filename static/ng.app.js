@@ -46,7 +46,7 @@ fluxmon.controller("GraphCtrl", function($scope, $interval){
             self.saved_end += 300;
         }
         // ...and if we updated it, call zoomTo() to update the images
-        if( $scope.end == old_saved_end && old_saved_end != self.saved_end )
+        if( $scope.active_profile && old_saved_end != self.saved_end )
             $scope.zoomTo();
     }, 1000);
 
