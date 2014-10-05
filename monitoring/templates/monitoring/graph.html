@@ -17,7 +17,7 @@
 {% include "monitoring/checkinfo.inc.html" %}
 <h3>{{ variable|display }}</h3>
 <div
-    ng-controller="GraphDurationCtrl" ng-init="end = {{ check.rrd.last_check }};"
+    ng-controller="GraphCtrl" ng-init="end = {{ check.rrd.last_check }}"
     class="container col-xs-12 col-sm-12 col-md-12 col-lg-12 no-padding">
   <div id="profiles">
     <a ng-repeat="profile in profiles"
@@ -28,7 +28,7 @@
          }"
        ng-click="set_active_profile(profile)">{[ profile.title ]}</a>
     <div class="visible-sm-inline visible-md-inline visible-lg-inline" >
-      <label><input type="checkbox" ng-model="prediction" ng-init="prediction = true" /> Show prediction</label>
+      <label><input type="checkbox" ng-model="prediction" /> Show prediction</label>
     </div>
     <br />
   </div>

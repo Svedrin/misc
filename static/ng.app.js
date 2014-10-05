@@ -7,7 +7,9 @@ fluxmon.config(function($interpolateProvider) {
     $interpolateProvider.endSymbol(']}');
 });
 
-fluxmon.controller("GraphDurationCtrl", function($scope, $timeout){
+fluxmon.controller("GraphCtrl", function($scope, $timeout){
+    $scope.prediction = true;
+
     $scope.profiles = [
         {title:  "4h", duration:      6*60*60, tiny: true },
         {title: "24h", duration:     24*60*60, tiny: true },
