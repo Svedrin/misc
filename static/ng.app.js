@@ -22,8 +22,6 @@ fluxmon.controller("GraphCtrl", function($scope, $interval){
         end     = args.end     || self.saved_end;
         profile = args.profile || self.saved_profile;
 
-        console.log("zoomTo()!", args);
-
         // Known start overwrites the profile
         if( start ){
             profile = null;
