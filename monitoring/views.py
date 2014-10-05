@@ -167,6 +167,9 @@ def render_check(request, uuid, ds):
     builder.grad   = request.GET.get("grad", "false") == "true"
     builder.title  = unicode(check)
 
+    rrd = check.rrd
+    rrd.prediction = request.GET.get("prediction", "true") == "true"
+
     var = check.sensor.sensorvariable_set.get(name=ds)
     if var.formula:
         srcline = var.formula
@@ -179,7 +182,7 @@ def render_check(request, uuid, ds):
         unit = None
 
     for src in parse(srcline):
-        node = src.get_value(check.rrd)
+        node = src.get_value(rrd)
         builder.add_source( node )
         if unit is None:
             unit = unicode(extract_units(node))

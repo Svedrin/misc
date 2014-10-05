@@ -53,7 +53,7 @@ def dictset(dct, varname, value):
 
 
 class RRD(object):
-    def __init__(self, check):
+    def __init__(self, check, prediction=True):
         self.check = check
         self.rrdpath = os.path.join(settings.RRDDIR, "%s.rrd" % check.uuid)
         if os.path.exists(self.rrdpath):
@@ -62,14 +62,19 @@ class RRD(object):
             self.last_check = int(time())
         self.service_description = "Need sum srs service descripshun"
         self._info = None
+        self.prediction = prediction
 
     def delete(self):
         if os.path.exists(self.rrdpath):
             os.remove(self.rrdpath)
 
     def get_source(self, srcname):
-        from graphpredict import PredictingSource
-        return PredictingSource( self, srcname )
+        if self.prediction:
+            from graphpredict import PredictingSource
+            return PredictingSource( self, srcname )
+        else:
+            from graphbuilder import Source
+            return Source( self, srcname )
 
     def get_source_varname(self, srcname):
         return srcname[:19]
