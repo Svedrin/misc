@@ -32,86 +32,16 @@
     </div>
     <br />
   </div>
-  <div style="position: relative;" id="imgcontainer">
-    <img zoomable zoom-to="zoomTo({start: start, end: end})"
-      class="visible-md-inline visible-lg-inline" alt="graph" style="margin: 0 auto"
+  <div>
+    <img zoomable zoom-to="zoomTo({start: start, end: end})" start="{[ start ]}" end="{[ end ]}"
+      class="visible-md-block visible-lg-block" alt="graph"
       ng-src="{% url 'monitoring.views.render_check' check.uuid variable.name %}?width=700&amp;start={[ start ]}&amp;end={[ end ]}&amp;prediction={[ prediction ]}" />
     <img
-      class="visible-sm-inline" alt="graph" style="margin: 0 auto"
+      class="visible-sm-block" alt="graph"
       ng-src="{% url 'monitoring.views.render_check' check.uuid variable.name %}?width=410&amp;start={[ start ]}&amp;end={[ end ]}&amp;prediction={[ prediction ]}" />
     <img
-      class="visible-xs-inline" alt="graph" style="margin: 0 auto"
+      class="visible-xs-block" alt="graph"
       ng-src="{% url 'monitoring.views.render_check' check.uuid variable.name %}?width=220&amp;start={[ start ]}&amp;end={[ end ]}&amp;prediction={[ prediction ]}" />
   </div>
 </div>
-<script type="text/javascript">
-function min(a, b){ if( a < b ) return a; return b; }
-function max(a, b){ if( a > b ) return a; return b; }
-function draggerize(imgel, selector){
-  var in_drag = false,
-      start   = {{ start }},
-      end     = {{ end }},
-      maxX    = 0,
-      minX    = 0,
-      startX  = 0,
-      endX    = 0;
-  imgel.load(function(){
-    maxX = imgel.width() - 30;
-    minX = maxX - 700;
-  });
-  // Drag start
-  imgel.mousedown(function(ev){
-    ev.preventDefault();
-    var ctpos = $("#imgcontainer").position();
-    if(ev.pageX - ctpos.left >= maxX)
-      return true;
-    in_drag = true;
-    startX = max(ev.pageX - ctpos.left, minX);
-    selector.css({
-      top:    31,
-      left:   startX,
-      width:  1,
-      height: 153,
-      visibility: "visible",
-    });
-  });
-  // Dragging
-  var mousemove = function(ev){
-    if(!in_drag) return true;
-    var ctpos = $("#imgcontainer").position();
-    endX = min(ev.pageX - ctpos.left, maxX);
-    selector.css({
-      width:  endX - selector.position().left,
-    });
-  };
-  imgel.mousemove(mousemove);
-  selector.mousemove(mousemove);
-  // Drag end
-  var mouseup = function(ev){
-    if(!in_drag || (
-      // If we move to the left, FireFox fires mouseout on the img element. We want to
-      // react on the img's mouseout in general, just not in this particular case which
-      // is handled by mousemove.
-      ev.type === "mouseout" && ev.relatedTarget.id === "imgselector"
-      )) return true;
-    selector.css({
-      visibility: "hidden",
-      left:   startX - 2,
-      width:  1,
-    });
-    in_drag = false;
-    var new_start = parseInt(start + (end - start) * (startX - minX) / (maxX - minX));
-    var new_end   = parseInt(start + (end - start) * (endX   - minX) / (maxX - minX));
-    start = new_start;
-    end   = new_end;
-    // Load the new image
-    imgel[0].src = "{% url 'monitoring.views.render_check' check.uuid variable.name %}?start="+start+"&end="+end;
-    // Turn the currently highlighted button into a normal one
-    $("#profiles a.btn-primary").removeClass("btn-primary").addClass("btn-default");
-  };
-  imgel.mouseup(mouseup);
-  imgel.mouseout(mouseup);
-}
-draggerize($("img.widescreenonly"), $("#imgselector"));
-</script>
 {% endblock %}
