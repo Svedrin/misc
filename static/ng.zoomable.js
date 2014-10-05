@@ -101,14 +101,6 @@ fluxmon.directive("zoomable", function(){
                 var start = parseInt(scope.start);
                 var end   = parseInt(scope.end);
                 // Calc new start/end and call our callback
-                console.log({
-                    start: start,
-                    end:   end,
-                    startX: startX,
-                    endX:   endX,
-                    minX:   minX,
-                    maxX:   maxX
-                });
                 scope.zoomTo({
                     "start": parseInt(start + (end - start) * (startX - minX) / (maxX - minX)),
                     "end":   parseInt(start + (end - start) * (endX   - minX) / (maxX - minX))
