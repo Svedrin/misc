@@ -28,6 +28,9 @@ fluxmon.controller("GraphCtrl", function($scope, $interval){
         }
         else{
             start = end - profile.duration;
+            if( end == self.saved_end ){
+                $scope.new_data_available = false;
+            }
         }
 
         $scope.start = start;
@@ -36,6 +39,7 @@ fluxmon.controller("GraphCtrl", function($scope, $interval){
     }
 
     $scope.prediction = true;
+    $scope.new_data_available = false;
 
     // Initialize end
 
@@ -46,8 +50,14 @@ fluxmon.controller("GraphCtrl", function($scope, $interval){
             self.saved_end += 300;
         }
         // ...and if we updated it, call zoomTo() to update the images
-        if( $scope.active_profile && old_saved_end != self.saved_end )
-            $scope.zoomTo();
+        if( old_saved_end != self.saved_end ){
+            if( $scope.active_profile ){
+                $scope.zoomTo();
+            }
+            else{
+                $scope.new_data_available = true;
+            }
+        }
     }, 1000);
 
     $scope.set_end = function(end){
@@ -69,8 +79,9 @@ fluxmon.controller("GraphCtrl", function($scope, $interval){
     ];
     $scope.set_active_profile = function(val){
         self.saved_profile = val;
-        if( self.saved_profile != $scope.active_profile )
+        if( self.saved_profile != $scope.active_profile ){
             $scope.zoomTo();
+        }
     }
     $scope.set_active_profile($scope.profiles[1]); //24h
 

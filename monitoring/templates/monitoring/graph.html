@@ -44,6 +44,9 @@
     <img
       class="visible-xs-block" alt="graph"
       ng-src="{% url 'monitoring.views.render_check' check.uuid variable.name %}?width=220&amp;start={[ start ]}&amp;end={[ end ]}&amp;prediction={[ prediction ]}" />
+    <div class="alert alert-info" ng-show="new_data_available">
+      New data is available, but not visible. Choose a profile to view it.
+    </div>
   </div>
   <div class="visible-xs-block" >
     <label><input type="checkbox" ng-model="prediction" /> Show prediction</label>
