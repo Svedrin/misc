@@ -28,10 +28,6 @@ fluxmon.directive("zoomable", function(){
                 startX   = 0,  // Where the user actually started dragging
                 endX     = 0;  // Where the user actually stopped dragging
 
-            console.log("element", element);
-            console.log("imgel", imgel);
-            console.log("selector", selector);
-
             imgel.load(function(){
                 maxX = imgel.width() - 30;
                 minX = maxX - 700;
