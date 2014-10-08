@@ -35,9 +35,9 @@
     <br />
   </div>
   <div>
-    <img zoomable zoom-to="zoomTo({start: start, end: end})" start="{[ start ]}" end="{[ end ]}"
+    <zoomable zoom-to="zoomTo({start: start, end: end})" start="{[ start ]}" end="{[ end ]}"
       class="visible-md-block visible-lg-block" alt="graph"
-      ng-src="{% url 'monitoring.views.render_check' check.uuid variable.name %}?width=700&amp;start={[ start ]}&amp;end={[ end ]}&amp;prediction={[ prediction ]}" />
+      img-src="{% url 'monitoring.views.render_check' check.uuid variable.name %}?width=700&amp;start={[ start ]}&amp;end={[ end ]}&amp;prediction={[ prediction ]}"></zoomable>
     <img
       class="visible-sm-block" alt="graph"
       ng-src="{% url 'monitoring.views.render_check' check.uuid variable.name %}?width=410&amp;start={[ start ]}&amp;end={[ end ]}&amp;prediction={[ prediction ]}" />

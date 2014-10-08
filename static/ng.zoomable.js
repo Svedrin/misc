@@ -2,26 +2,24 @@
 
 fluxmon.directive("zoomable", function(){
     return {
-        restrict: "A",
+        restrict: "E",
         scope: {
             "zoomTo":  "&",
-            "ngSrc":   "@",
+            "imgSrc":  "@",
             "start":   "@",
             "end":     "@",
         },
-        replace: true,
         template: [
             '<div class="imgcontainer" style="position: relative">',
                 '<div class="imgselector" ',
                     'style="background-color: rgba(30, 30, 220, 0.4); ',
                         'position: absolute; height: 153px; width: 1px; ',
                         'z-index: 100; visibility: hidden;">&nbsp;</div>',
-                '<img ng-src="{[ ngSrc ]}" />',
+                '<img ng-src="{[ imgSrc ]}" />',
             '</div>'].join(''),
         link: function(scope, element, attr){
-
-            var imgel    = element.children("img"),
-                selector = element.children(".imgselector"),
+            var imgel    = element.find("img"),
+                selector = element.find(".imgselector"),
                 in_drag  = false,
                 minX     = 0,  // How far to the left we may go
                 maxX     = 0,  // How far to the right we may go
