@@ -1,0 +1,25 @@
+#!/bin/bash
+
+gearadmin --status | awk '
+BEGIN {
+	format="%-30s %10s %10s %10s\n"
+	totalqueues  = 0
+	totaljobs    = 0
+	totalactive  = 0
+	totalworkers = 0
+	printf format, "Queue", "Jobs", "Active", "Workers"
+}
+{
+	if( $1 == "." )
+		next
+	printf format, $1, $2, $3, $4
+	totalqueues++
+	totaljobs    += $2
+	totalactive  += $3
+	totalworkers += $4
+}
+END {
+	print ""
+	printf format, totalqueues " Queues", totaljobs, totalactive, totalworkers
+}
+'
