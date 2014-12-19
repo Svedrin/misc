@@ -15,6 +15,14 @@ DATABASES = {
     }
 }
 
+ANONYMOUS_USER_ID = -1
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'fluxmon.restauth.IsNonAnonymous',
+    ),
+}
+
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.4/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = []
@@ -133,6 +141,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.admindocs',
     'registration',
+    'rest_framework',
     'mptt',
     'hosts',
     'fluxacl',
