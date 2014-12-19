@@ -178,6 +178,13 @@ class Command( BaseCommand ):
     def handle(self, **options):
         os.environ["LANG"] = "en_US.UTF-8"
 
+        try:
+            import setproctitle
+        except ImportError:
+            pass
+        else:
+            setproctitle.setproctitle("fluxprocessd")
+
         rabbiturl  = urlparse.urlparse(options["rabbiturl"])
         if rabbiturl.scheme != "amqp":
             raise ValueError("Your URL sucks, see -h")
