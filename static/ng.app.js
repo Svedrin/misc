@@ -17,10 +17,10 @@ fluxmon.controller("GraphCtrl", function($scope, $interval){
         //   zoomTo()
 
         // Set defaults
-        args    = args || {}
-        start   = args.start   || 0;
-        end     = args.end     || self.saved_end;
-        profile = args.profile || self.saved_profile;
+        var args    = args || {}
+        var start   = args.start   || 0;
+        var end     = args.end     || self.saved_end;
+        var profile = args.profile || self.saved_profile;
 
         // Known start overwrites the profile
         if( start ){
