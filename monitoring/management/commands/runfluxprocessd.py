@@ -183,7 +183,7 @@ class Command( BaseCommand ):
             raise ValueError("Your URL sucks, see -h")
 
         rootlogger = logging.getLogger()
-        rootlogger.name = "openattic_rpcd"
+        rootlogger.name = "fluxprocessd"
         rootlogger.setLevel(logging.DEBUG)
 
         if not options['quiet']:
