@@ -9,6 +9,7 @@ import resource
 import json
 import pika
 
+from time import time
 from logging.handlers import SysLogHandler
 from optparse import make_option
 
@@ -56,8 +57,10 @@ def process(result, user):
         logging.warning("Check %s does not exist, cannot update", result["check"])
     else:
         if check.user_allowed(user):
-            logging.info("Updating check %s (%s)", result["check"], check.target_host.fqdn)
+            start = time()
             check.process_result(result)
+            end = time()
+            logging.info("Updating check %s (%s) took %.5fs", result["check"], check.target_host.fqdn, end - start)
         else:
             logging.warning("Check %s denied update permission to user %s", result["check"], user)
 
@@ -116,6 +119,7 @@ def on_message(channel, method_frame, header_frame, body):
         data = [data]
 
     logging.info("Received data chunk with %d packets." % len(data))
+    start = time()
 
     for packet in data:
         if not isinstance(packet, dict) or "type" not in packet:
@@ -137,7 +141,9 @@ def on_message(channel, method_frame, header_frame, body):
             import traceback
             logging.error(traceback.format_exc())
 
+    end = time()
     channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+    logging.info("Processing data chunk with %d packets took %.5fs (%.5fs/p).", len(data), end - start, (end - start) / len(data))
 
     if resource.getrusage(resource.RUSAGE_SELF).ru_maxrss >= 128 * 1024:
         raise KeyboardInterrupt("I'm leaking, please restart me")
