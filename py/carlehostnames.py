@@ -1,17 +1,18 @@
 import random
 
 def mkname():
-    cons = 'bcdfghjklmnpqrstvwxyz'
+    hard = 'bdgkpqtx'
+    soft = 'cfhjlmnrsvwyz'
     vows = 'aeiou'
     return ''.join([
-        random.choice(cons),
-        random.choice(cons),
+        random.choice(hard),
+        random.choice(soft),
         random.choice(vows),
         'k',
-        random.choice(cons),
+        random.choice(soft),
         random.choice(vows),
-        random.choice(cons),
-        random.choice(cons),
+        random.choice(hard),
+        random.choice(soft),
     ])
 
 if __name__ == '__main__':
