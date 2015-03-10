@@ -14,7 +14,7 @@
   <dd>{{ domain }}</dd>
 </dl>
 <h3>Add Host</h3>
-<form method="post">
+<form method="post" ng-non-bindable>
   {% csrf_token %}
   {{ form.as_p }}
   <p><input type="submit" /></p>
