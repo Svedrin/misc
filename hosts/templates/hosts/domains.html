@@ -20,12 +20,12 @@
             {% endfor %}
           </ul>
         {% endif %}
-      {% endif %}
-      {% if not node.is_leaf_node %}
-        <ul class="children">
-          {{ children }}
-        </ul>
       </li>
+    {% endif %}
+    {% if not node.is_leaf_node %}
+      <ul class="children">
+        {{ children }}
+      </ul>
     {% endif %}
   {% endrecursetree %}
 </ul>
