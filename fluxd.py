@@ -5,6 +5,7 @@
 import os
 import sys
 import socket
+import signal
 import logging
 import os.path
 
@@ -145,6 +146,7 @@ def main():
             account.submit(results)
 
             if options.oneshot:
+                signal.alarm(240)
                 break
 
             dura = max( nextdue - time(), 5 )
