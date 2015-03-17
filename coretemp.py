@@ -26,7 +26,7 @@ class CoreTempSensor(AbstractSensor):
             fmt = "/sys/devices/platform/coretemp.%(zone)s/hwmon/hwmon1/temp%(tsensor)s_%(field)s"
 
         return {
-            "temp": int(fmt % dict(params, field="input"), "rb").read().strip()) / 1000.
+            "temp": int(open(fmt % dict(params, field="input"), "rb").read().strip()) / 1000.
         }, {
-            "temp": int(fmt % dict(params, field="crit" ), "rb").read().strip()) / 1000.
+            "temp": int(open(fmt % dict(params, field="crit" ), "rb").read().strip()) / 1000.
         }
