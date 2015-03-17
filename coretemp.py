@@ -16,8 +16,17 @@ class CoreTempSensor(AbstractSensor):
             if field.startswith("temp") and field.endswith("_input")]
 
     def check(self, checkinst):
+        fmt = "/sys/devices/platform/coretemp.%(zone)s/temp%(tsensor)s_%(field)s"
+        params = {
+            'zone': checkinst["zone"],
+            'tsensor': checkinst["tsensor"]
+        }
+
+        if not os.path.exists(fmt % dict(params, field="input")):
+            fmt = "/sys/devices/platform/coretemp.%(zone)s/hwmon/hwmon1/temp%(tsensor)s_%(field)s"
+
         return {
-            "temp": int(open("/sys/devices/platform/coretemp.%s/temp%s_input" % (checkinst["zone"], checkinst["tsensor"]), "rb").read().strip()) / 1000.
+            "temp": int(fmt % dict(params, field="input"), "rb").read().strip()) / 1000.
         }, {
-            "temp": int(open("/sys/devices/platform/coretemp.%s/temp%s_crit"  % (checkinst["zone"], checkinst["tsensor"]), "rb").read().strip()) / 1000.
+            "temp": int(fmt % dict(params, field="crit" ), "rb").read().strip()) / 1000.
         }
