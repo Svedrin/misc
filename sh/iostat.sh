@@ -2,7 +2,7 @@
 
 # I'm gonna hate myself for this thing one day
 
-LANG=C iostat -xdm "$@" | awk '
+LANG=C iostat -xdm "$@" | awk -W interactive '
 function colorprint(color, number){
 	printf "\033[1;%sm%10.2f\033[1;m", color, number
 }
