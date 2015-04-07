@@ -45,6 +45,9 @@ function format_aastra($callerid){
 }
 
 function format_snom($callerid){
+    if( mb_strlen($callerid) > 14 && strpos($callerid, ',') !== FALSE ){
+        $callerid = implode(",\n", explode(', ', $callerid));
+    }
     $output = "<SnomIPPhoneText>\n";
     $output.= "<Text>{$callerid}</Text>\n";
     $output.= "</SnomIPPhoneText>\n";
