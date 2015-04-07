@@ -38,7 +38,7 @@ function find_callerid($number){
 }
 
 function format_aastra($callerid){
-    $output = "<AastraIPPhoneFormattedTextScreen Timeout=\"5\">\n";
+    $output = "<AastraIPPhoneFormattedTextScreen Timeout=\"30\">\n";
     $output.= "<Line>{$callerid}</Line>\n";
     $output.= "</AastraIPPhoneFormattedTextScreen>\n";
     return $output;
