@@ -73,9 +73,10 @@ class DeterministicGate(BaseGPIO):
         self.check_state_switch()
 
 class RandomGate(BaseGPIO):
-    def __init__(self):
+    def __init__(self, logger):
+        self.logger = logger
         self.state = random.choice(["down", "up", "unknown"])
-        print u"→ state initialized as".encode("utf-8"), self.state
+        self.logger.debug(u"→ state initialized as %s", self.state)
 
     def input(self, pin):
         if pin == GateController.PIN_UPPER: # upper pin needs to be false if gate is up
@@ -98,13 +99,13 @@ class RandomGate(BaseGPIO):
         self.state = "transitioning"
 
     def state_up(self, *args):
-        print u"→ setting state to up".encode("utf-8")
+        self.logger.debug(u"→ setting state to up")
         self.state = "up"
 
     def state_down(self, *args):
-        print u"→ setting state to down".encode("utf-8")
+        self.logger.debug(u"→ setting state to down")
         self.state = "down"
 
     def state_unknown(self, *args):
-        print u"→ setting state to unknown".encode("utf-8")
+        self.logger.debug(u"→ setting state to unknown")
         self.state = "unknown"

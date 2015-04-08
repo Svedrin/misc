@@ -6,28 +6,43 @@ from ConfigParser import ConfigParser
 import sys
 import os
 import requests
+import logging
 
 from gatecontroller import GateController
+
+class PushoverHandler(logging.Handler):
+    """ A logging handler that sends messages via pushover.net.
+
+        Inspired by <https://github.com/zacharytamas/django-pushover>.
+    """
+    def __init__(self, level, conf):
+        logging.Handler.__init__(self, level)
+        self.conf = conf
+
+    def emit(self, record):
+        try:
+            requests.post( self.conf.get("pushover", "url"), {
+                "token":   self.conf.get("pushover", "token"),
+                "user":    self.conf.get("pushover", "user"),
+                "message": record.getMessage()
+            })
+        except Exception, err:
+            import traceback
+            traceback.print_exc()
+
 
 if __name__ == '__main__':
     unbufed = os.fdopen(sys.stdout.fileno(), 'w', 0)
     sys.stdout = unbufed
 
-    conf = ConfigParser()
-    HAVE_PUSHOVER = bool(conf.read("pushover.ini"))
+    logger = logging.getLogger('GateController')
+    logger.setLevel(logging.DEBUG)
 
-    def log(message):
-        print message
-        if False and HAVE_PUSHOVER and not sys.stdout.isatty():
-            try:
-                requests.post( conf.get("pushover", "url"), {
-                    "token":   conf.get("pushover", "token"),
-                    "user":    conf.get("pushover", "user"),
-                    "message": message
-                })
-            except Exception, err:
-                import traceback
-                traceback.print_exc()
+    conf = ConfigParser()
+    conf.add_section("pushover")
+    conf.set("pushover", "enabled", "no")
+    if conf.read(os.environ["HOME"] + "/.gate-pushover.ini") and conf.getboolean("pushover", "enabled"):
+        logger.addHandler( PushoverHandler(logging.INFO, conf) )
 
     if len(sys.argv) > 1:
         want = sys.argv[-1]
@@ -40,13 +55,15 @@ if __name__ == '__main__':
     try:
         from RPi import GPIO
     except ImportError:
-        print "RPi module is not available, mocking it. Nothing is going to happen in the real world(tm)."
+        logging.warn("RPi module is not available, mocking it. Nothing is going to happen in the real world(tm).")
         from rpi_mock import RandomGate
-        GPIO = RandomGate()
+        randomlogger = logging.getLogger("RandomGate")
+        randomlogger.setLevel(logging.DEBUG)
+        GPIO = RandomGate(randomlogger)
 
-    gate = GateController(GPIO, log)
+    gate = GateController(GPIO, logger)
     if want is None:
-        log("Gate is %s!" % gate.get_state())
+        logger.info("Gate is %s!", gate.get_state())
     elif want == "trigger":
         gate.trigger()
     else:

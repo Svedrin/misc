@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 # kate: space-indent on; indent-width 4; replace-tabs on;
 
+import logging
 import unittest
 
 from rpi_mock import DeterministicGate
 from tor import GateController
 
-def log_print(message):
-    pass
+TESTLOGGER = logging.getLogger("TestCase")
 
 class TestDeterministicGate(unittest.TestCase):
     """ Test that DeterministicGate returns the correct status flags and counts triggers correctly. """
@@ -78,28 +78,28 @@ class TestGateControllerBasics(unittest.TestCase):
     """ Test that GateController deduces the correct states from the pin states and triggering works correctly. """
     def test_get_state_down(self):
         gpio = DeterministicGate("down")
-        ctrl = GateController(gpio, log_print)
+        ctrl = GateController(gpio, TESTLOGGER)
         self.assertEqual(ctrl.get_state(), "down")
 
     def test_get_state_up(self):
         gpio = DeterministicGate("up")
-        ctrl = GateController(gpio, log_print)
+        ctrl = GateController(gpio, TESTLOGGER)
         self.assertEqual(ctrl.get_state(), "up")
 
     def test_get_state_transitioning(self):
         gpio = DeterministicGate("unknown")
-        ctrl = GateController(gpio, log_print)
+        ctrl = GateController(gpio, TESTLOGGER)
         self.assertEqual(ctrl.get_state(), "transitioning")
 
     def test_get_state_broken(self):
         gpio = DeterministicGate("broken")
-        ctrl = GateController(gpio, log_print)
+        ctrl = GateController(gpio, TESTLOGGER)
         with self.assertRaises(ValueError):
             ctrl.get_state()
 
     def test_trigger(self):
         gpio = DeterministicGate("unknown")
-        ctrl = GateController(gpio, log_print)
+        ctrl = GateController(gpio, TESTLOGGER)
         self.assertFalse(gpio.motor_pin_state)
         self.assertEqual(gpio.triggered, 0)
         ctrl.trigger()
@@ -115,7 +115,7 @@ class TestGateControllerMove(unittest.TestCase):
 
     def test_already_open(self):
         gpio = DeterministicGate("up")
-        ctrl = GateController(gpio, log_print)
+        ctrl = GateController(gpio, TESTLOGGER)
         self.assertEqual(ctrl.get_state(), "up")
         ctrl.move_to_state("up")
         self.assertEqual(ctrl.get_state(), "up")
@@ -123,7 +123,7 @@ class TestGateControllerMove(unittest.TestCase):
 
     def test_already_closed(self):
         gpio = DeterministicGate("down")
-        ctrl = GateController(gpio, log_print)
+        ctrl = GateController(gpio, TESTLOGGER)
         self.assertEqual(ctrl.get_state(), "down")
         ctrl.move_to_state("down")
         self.assertEqual(ctrl.get_state(), "down")
@@ -131,7 +131,7 @@ class TestGateControllerMove(unittest.TestCase):
 
     def test_simple_open(self):
         gpio = DeterministicGate("down")
-        ctrl = GateController(gpio, log_print)
+        ctrl = GateController(gpio, TESTLOGGER)
         self.assertEqual(ctrl.get_state(), "down")
         gpio.states_after_trigger.extend([(1, "unknown"), (20, "up")])
         ctrl.move_to_state("up")
@@ -140,7 +140,7 @@ class TestGateControllerMove(unittest.TestCase):
 
     def test_simple_close(self):
         gpio = DeterministicGate("up")
-        ctrl = GateController(gpio, log_print)
+        ctrl = GateController(gpio, TESTLOGGER)
         self.assertEqual(ctrl.get_state(), "up")
         gpio.states_after_trigger.extend([(1, "unknown"), (20, "down")])
         ctrl.move_to_state("down")
@@ -149,7 +149,7 @@ class TestGateControllerMove(unittest.TestCase):
 
     def test_interrupted_close(self):
         gpio = DeterministicGate("up")
-        ctrl = GateController(gpio, log_print)
+        ctrl = GateController(gpio, TESTLOGGER)
         self.assertEqual(ctrl.get_state(), "up")
         gpio.states_after_trigger.extend([
             (1, "unknown"), None,               # gate starts moving, but someone stops it so it never arrives anywhere
@@ -160,7 +160,7 @@ class TestGateControllerMove(unittest.TestCase):
 
     def test_interrupted_open(self):
         gpio = DeterministicGate("down")
-        ctrl = GateController(gpio, log_print)
+        ctrl = GateController(gpio, TESTLOGGER)
         self.assertEqual(ctrl.get_state(), "down")
         gpio.states_after_trigger.extend([
             (1, "unknown"), None,               # gate starts moving, but someone stops it so it never arrives anywhere
@@ -172,7 +172,7 @@ class TestGateControllerMove(unittest.TestCase):
 
     def test_unknown_close(self):
         gpio = DeterministicGate("unknown")
-        ctrl = GateController(gpio, log_print)
+        ctrl = GateController(gpio, TESTLOGGER)
         self.assertEqual(ctrl.get_state(), "transitioning")
         gpio.states_after_trigger.extend([
             (1, "unknown"), (20, "down")])      # gate closes
@@ -182,7 +182,7 @@ class TestGateControllerMove(unittest.TestCase):
 
     def test_unknown_open(self):
         gpio = DeterministicGate("unknown")
-        ctrl = GateController(gpio, log_print)
+        ctrl = GateController(gpio, TESTLOGGER)
         self.assertEqual(ctrl.get_state(), "transitioning")
         gpio.states_after_trigger.extend([
             (20, "down"), None,                 # gate closes
@@ -193,7 +193,7 @@ class TestGateControllerMove(unittest.TestCase):
 
     def test_broken(self):
         gpio = DeterministicGate("broken")
-        ctrl = GateController(gpio, log_print)
+        ctrl = GateController(gpio, TESTLOGGER)
         with self.assertRaises(ValueError):
             ctrl.get_state()
         with self.assertRaises(ValueError):
