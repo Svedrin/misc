@@ -4,6 +4,8 @@
 import signal
 import random
 
+from gatecontroller import GateController
+
 class BaseGPIO(object):
     BOARD = None
     HIGH  = True
@@ -33,9 +35,9 @@ class RandomGate(BaseGPIO):
         print u"→ state initialized as".encode("utf-8"), self.state
 
     def input(self, pin):
-        if pin == 18: # upper pin needs to be false if gate is up
+        if pin == GateController.PIN_UPPER: # upper pin needs to be false if gate is up
             return not self.state == "up"
-        if pin == 16: # lower pin needs to be false if gate is down
+        if pin == GateController.PIN_LOWER: # lower pin needs to be false if gate is down
             return not self.state == "down"
 
     def output(self, pin, value):
