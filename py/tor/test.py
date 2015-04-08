@@ -46,14 +46,17 @@ class TestDeterministicGate(unittest.TestCase):
         gpio.output(GateController.PIN_MOTOR, False)
         self.assertEqual(gpio.motor_pin_state, False)
         self.assertEqual(gpio.triggered, 1)
+        self.assertEqual(gpio.state, "unknown")
 
-        # Test normal triggering -- trigger twice...
+        # Test normal triggering -- trigger twice, with a new state...
+        gpio.states_after_trigger.append((0, "up"))
         gpio.output(GateController.PIN_MOTOR, True)
         self.assertEqual(gpio.motor_pin_state, True)
         self.assertEqual(gpio.triggered, 1)
         gpio.output(GateController.PIN_MOTOR, False)
         self.assertEqual(gpio.motor_pin_state, False)
         self.assertEqual(gpio.triggered, 2)
+        self.assertEqual(gpio.state, "up")
 
         # Try to output something on the input ports
         with self.assertRaises(KeyError):
