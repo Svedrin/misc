@@ -151,7 +151,10 @@ class TestGateControllerMove(unittest.TestCase):
         gpio = DeterministicGate("down")
         ctrl = GateController(gpio, log_print)
         self.assertEqual(ctrl.get_state(), "down")
-        gpio.states_after_trigger.extend([(1, "unknown"), None, (1, "unknown"), (20, "down"), None, (1, "unknown"), (20, "up")])
+        gpio.states_after_trigger.extend([
+            (1, "unknown"), None,               # gate starts moving, but someone stops it so it never arrives anywhere
+            (1, "unknown"), (20, "down"), None, # gate closes
+            (1, "unknown"), (20, "up")])        # gate opens
         ctrl.move_to_state("up")
         self.assertEqual(ctrl.get_state(), "up")
         self.assertEqual(gpio.triggered, 3)
