@@ -26,12 +26,12 @@ class PushoverHandler(logging.Handler):
                 "user":    self.conf.get("pushover", "user"),
                 "message": record.getMessage()
             })
-        except Exception, err:
+        except Exception:
             import traceback
             traceback.print_exc()
 
 
-if __name__ == '__main__':
+def main():
     unbufed = os.fdopen(sys.stdout.fileno(), 'w', 0)
     sys.stdout = unbufed
 
@@ -68,3 +68,7 @@ if __name__ == '__main__':
         gate.trigger()
     else:
         gate.move_to_state(want)
+
+
+if __name__ == '__main__':
+    main()
