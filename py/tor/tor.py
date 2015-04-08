@@ -4,8 +4,6 @@
 from ConfigParser import ConfigParser
 from time import sleep, time
 
-from RPi import GPIO
-
 import sys
 import os
 import requests
@@ -119,6 +117,12 @@ if __name__ == '__main__':
             sys.exit(255)
     else:
         want = None
+
+    try:
+        from RPi import GPIO
+    except ImportError:
+        print "RPi module is not available, mocking it. Nothing is going to happen in the real world(tm)."
+        from rpi_mock import GPIO
 
     gate = GateController(GPIO, log)
     if want is None:
