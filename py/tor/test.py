@@ -110,6 +110,51 @@ class TestGateControllerBasics(unittest.TestCase):
         self.assertEqual(gpio.triggered, 2)
 
 
+class TestGateControllerMove(unittest.TestCase):
+    """ Test moving the gate. """
+
+    def test_already_open(self):
+        gpio = DeterministicGate("up")
+        ctrl = GateController(gpio, log_print)
+        self.assertEqual(ctrl.get_state(), "up")
+        ctrl.move_to_state("up")
+        self.assertEqual(ctrl.get_state(), "up")
+        self.assertEqual(gpio.triggered, 0)
+
+    def test_already_closed(self):
+        gpio = DeterministicGate("down")
+        ctrl = GateController(gpio, log_print)
+        self.assertEqual(ctrl.get_state(), "down")
+        ctrl.move_to_state("down")
+        self.assertEqual(ctrl.get_state(), "down")
+        self.assertEqual(gpio.triggered, 0)
+
+    def test_simple_open(self):
+        gpio = DeterministicGate("down")
+        ctrl = GateController(gpio, log_print)
+        self.assertEqual(ctrl.get_state(), "down")
+        gpio.states_after_trigger.extend([(1, "unknown"), (20, "up")])
+        ctrl.move_to_state("up")
+        self.assertEqual(ctrl.get_state(), "up")
+        self.assertEqual(gpio.triggered, 1)
+
+    def test_simple_close(self):
+        gpio = DeterministicGate("up")
+        ctrl = GateController(gpio, log_print)
+        self.assertEqual(ctrl.get_state(), "up")
+        gpio.states_after_trigger.extend([(1, "unknown"), (20, "down")])
+        ctrl.move_to_state("down")
+        self.assertEqual(ctrl.get_state(), "down")
+        self.assertEqual(gpio.triggered, 1)
+
+    def test_interrupted_open(self):
+        gpio = DeterministicGate("down")
+        ctrl = GateController(gpio, log_print)
+        self.assertEqual(ctrl.get_state(), "down")
+        gpio.states_after_trigger.extend([(1, "unknown"), None, (1, "unknown"), (20, "down"), None, (1, "unknown"), (20, "up")])
+        ctrl.move_to_state("up")
+        self.assertEqual(ctrl.get_state(), "up")
+        self.assertEqual(gpio.triggered, 3)
 
 if __name__ == '__main__':
     unittest.main()
