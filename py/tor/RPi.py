@@ -53,15 +53,15 @@ class Gate(BaseGPIO):
         self.state = "transitioning"
 
     def state_up(self, *args):
-        print u"→ setting state to up"
+        print u"→ setting state to up".encode("utf-8")
         self.state = "up"
 
     def state_down(self, *args):
-        print u"→ setting state to down"
+        print u"→ setting state to down".encode("utf-8")
         self.state = "down"
 
     def state_unknown(self, *args):
-        print u"→ setting state to unknown"
+        print u"→ setting state to unknown".encode("utf-8")
         self.state = "unknown"
 
 
