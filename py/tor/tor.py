@@ -10,10 +10,8 @@ import sys
 import os
 import requests
 
-unbufed = os.fdopen(sys.stdout.fileno(), 'w', 0)
-sys.stdout = unbufed
-
-
+class GateTimeout(Exception):
+    pass
 
 class GateController(object):
     PIN_MOTOR = 12
@@ -32,54 +30,72 @@ class GateController(object):
         self.gpio.setup(GateController.PIN_LOWER, self.gpio.IN)
 
     def trigger(self):
+        """ Trigger the gate. """
         self.log("LET'S DO THIS")
         self.gpio.output(GateController.PIN_MOTOR, self.gpio.HIGH)
         sleep(0.2)
         self.gpio.output(GateController.PIN_MOTOR, self.gpio.LOW)
 
-    def move_to_state(self, want):
+    def get_state(self):
+        """ Get the current gate status. """
+        upper = not self.gpio.input(GateController.PIN_UPPER)
+        lower = not self.gpio.input(GateController.PIN_LOWER)
+        if upper and lower:
+            raise ValueError("The gate appears to be both up and down.")
+        if upper:
+            return "up"
+        if lower:
+            return "down"
+        return "transitioning"
+
+    def wait_for_state(self, *states, **kwargs):
+        """ wait_for_state('up', 'down', timeout=30, interval=1)
+
+            Wait for the gate to reach one of the given states. If the timeout is reached,
+            GateTimeout is raised.
+        """
+        if not states:
+            raise ValueError("need at least one state to wait for")
+        timeout  = kwargs.get("timeout",  30)
+        interval = kwargs.get("interval",  1)
         start = time()
+        while self.get_state() not in states:
+            if time() - start >= timeout:
+                raise GateTimeout()
+            sleep(interval)
+
+    def move_to_state(self, want):
+        """ Move the gate by triggering it repeatedly until it reaches the state we want. """
         while True:
-            upper = not self.gpio.input(GateController.PIN_UPPER)
-            lower = not self.gpio.input(GateController.PIN_LOWER)
+            state = self.get_state()
 
-            if want is not None and not upper and not lower:
+            if state == "transitioning":
                 self.log("Gate is transitioning. Waiting...")
-                while not upper and not lower:
-                    if time() - start >= 60:
-                        print "Gone in 60 seconds."
-                        start = time()
-                        self.trigger()
-                    sleep(1)
-                    upper = not self.gpio.input(GateController.PIN_UPPER)
-                    lower = not self.gpio.input(GateController.PIN_LOWER)
-                print "Waiting for state to settle..."
-                sleep(5)
-
-            if upper and lower:
-                print "WTF"
-                sys.exit(2)
-
-            if upper:
-                state = "up"
-            elif lower:
-                state = "down"
-            else:
-                state = "transitioning"
+                try:
+                    self.wait_for_state("up", "down")
+                except GateTimeout:
+                    self.log("Gone in 30 seconds.")
+                    self.trigger()
+                    continue
+                else:
+                    print "Waiting for state to settle..."
+                    sleep(5)
+                    state = self.get_state()
 
             self.log("Gate is %s!" % state)
 
-            if want is not None and state != want:
+            if state != want:
                 self.trigger()
                 print "Waiting for gate to start moving..."
-                while (state == "up"   and not self.gpio.input(GateController.PIN_UPPER)) or \
-                    (state == "down" and not self.gpio.input(GateController.PIN_LOWER)):
-                    sleep(1)
+                self.wait_for_state("transitioning")
             else:
                 break
 
 
 if __name__ == '__main__':
+    unbufed = os.fdopen(sys.stdout.fileno(), 'w', 0)
+    sys.stdout = unbufed
+
     conf = ConfigParser()
     HAVE_PUSHOVER = bool(conf.read("pushover.ini"))
 
@@ -105,5 +121,8 @@ if __name__ == '__main__':
         want = None
 
     gate = GateController(GPIO, log)
-    gate.move_to_state(want)
+    if want is None:
+        log("Gate is %s!" % gate.get_state())
+    else:
+        gate.move_to_state(want)
 
