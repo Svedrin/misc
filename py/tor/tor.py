@@ -112,8 +112,8 @@ if __name__ == '__main__':
 
     if len(sys.argv) > 1:
         want = sys.argv[-1]
-        if want not in ("up", "down"):
-            print "Target state can only be up or down"
+        if want not in ("up", "down", "trigger"):
+            print "Command can only be one of up, down and trigger."
             sys.exit(255)
     else:
         want = None
@@ -127,6 +127,7 @@ if __name__ == '__main__':
     gate = GateController(GPIO, log)
     if want is None:
         log("Gate is %s!" % gate.get_state())
+    elif want == "trigger":
+        gate.trigger()
     else:
         gate.move_to_state(want)
-
