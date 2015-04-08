@@ -29,6 +29,34 @@ class BaseGPIO(object):
         print "Setting pin %d to %s" % (pin, value)
 
 
+class DeterministicGate(BaseGPIO):
+    def __init__(self, state):
+        self.state = state
+        self.motor_pin_state = False
+        self.triggered = 0
+
+    def input(self, pin):
+        if pin == GateController.PIN_UPPER: # upper pin needs to be false if gate is up
+            return self.state not in ("up",   "broken")
+        if pin == GateController.PIN_LOWER: # lower pin needs to be false if gate is down
+            return self.state not in ("down", "broken")
+
+    def output(self, pin, value):
+        if pin != GateController.PIN_MOTOR:
+            raise KeyError("That pin is unused")
+        if value:
+            if not self.motor_pin_state:
+                self.motor_pin_state = True
+            else:
+                raise ValueError("motor pin is already high")
+        else:
+            if self.motor_pin_state:
+                self.motor_pin_state = False
+                self.triggered += 1
+            else:
+                raise ValueError("motor pin is already low")
+
+
 class RandomGate(BaseGPIO):
     def __init__(self):
         self.state = random.choice(["down", "up", "unknown"])
