@@ -27,7 +27,7 @@ class BaseGPIO(object):
         print "Setting pin %d to %s" % (pin, value)
 
 
-class Gate(BaseGPIO):
+class RandomGate(BaseGPIO):
     def __init__(self):
         self.state = random.choice(["down", "up", "unknown"])
         print u"→ state initialized as".encode("utf-8"), self.state
@@ -63,6 +63,3 @@ class Gate(BaseGPIO):
     def state_unknown(self, *args):
         print u"→ setting state to unknown".encode("utf-8")
         self.state = "unknown"
-
-
-GPIO = Gate()

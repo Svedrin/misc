@@ -41,7 +41,8 @@ if __name__ == '__main__':
         from RPi import GPIO
     except ImportError:
         print "RPi module is not available, mocking it. Nothing is going to happen in the real world(tm)."
-        from rpi_mock import GPIO
+        from rpi_mock import RandomGate
+        GPIO = RandomGate()
 
     gate = GateController(GPIO, log)
     if want is None:
