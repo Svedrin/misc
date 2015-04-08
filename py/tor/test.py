@@ -147,6 +147,17 @@ class TestGateControllerMove(unittest.TestCase):
         self.assertEqual(ctrl.get_state(), "down")
         self.assertEqual(gpio.triggered, 1)
 
+    def test_interrupted_close(self):
+        gpio = DeterministicGate("up")
+        ctrl = GateController(gpio, log_print)
+        self.assertEqual(ctrl.get_state(), "up")
+        gpio.states_after_trigger.extend([
+            (1, "unknown"), None,               # gate starts moving, but someone stops it so it never arrives anywhere
+            (1, "unknown"), (20, "down")])
+        ctrl.move_to_state("down")
+        self.assertEqual(ctrl.get_state(), "down")
+        self.assertEqual(gpio.triggered, 2)
+
     def test_interrupted_open(self):
         gpio = DeterministicGate("down")
         ctrl = GateController(gpio, log_print)
@@ -159,6 +170,35 @@ class TestGateControllerMove(unittest.TestCase):
         self.assertEqual(ctrl.get_state(), "up")
         self.assertEqual(gpio.triggered, 3)
 
+    def test_unknown_close(self):
+        gpio = DeterministicGate("unknown")
+        ctrl = GateController(gpio, log_print)
+        self.assertEqual(ctrl.get_state(), "transitioning")
+        gpio.states_after_trigger.extend([
+            (1, "unknown"), (20, "down")])      # gate closes
+        ctrl.move_to_state("down")
+        self.assertEqual(ctrl.get_state(), "down")
+        self.assertEqual(gpio.triggered, 1)
+
+    def test_unknown_open(self):
+        gpio = DeterministicGate("unknown")
+        ctrl = GateController(gpio, log_print)
+        self.assertEqual(ctrl.get_state(), "transitioning")
+        gpio.states_after_trigger.extend([
+            (20, "down"), None,                 # gate closes
+            (1, "unknown"), (20, "up")])        # gate opens
+        ctrl.move_to_state("up")
+        self.assertEqual(ctrl.get_state(), "up")
+        self.assertEqual(gpio.triggered, 2)
+
+    def test_broken(self):
+        gpio = DeterministicGate("broken")
+        ctrl = GateController(gpio, log_print)
+        with self.assertRaises(ValueError):
+            ctrl.get_state()
+        with self.assertRaises(ValueError):
+            ctrl.move_to_state("up")
+
+
 if __name__ == '__main__':
     unittest.main()
-
