@@ -30,7 +30,7 @@ class BaseGPIO(object):
 class Gate(BaseGPIO):
     def __init__(self):
         self.state = random.choice(["down", "up", "unknown"])
-        print u"→ state initialized as", self.state
+        print u"→ state initialized as".encode("utf-8"), self.state
 
     def input(self, pin):
         if pin == 18: # upper pin needs to be false if gate is up
