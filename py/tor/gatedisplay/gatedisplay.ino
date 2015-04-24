@@ -20,8 +20,6 @@ void loop() {
   if (Serial.available() > 0) {
     boolean cmdprocessed = false;
     String command = Serial.readStringUntil('\n');
-    Serial.print("we read a command: ");
-    Serial.println(command);
     if( command.equals("off") ){
       state = STATE_OFF;
       cmdprocessed = true;
