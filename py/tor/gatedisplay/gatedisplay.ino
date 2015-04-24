@@ -81,6 +81,21 @@ void loop() {
       state = STATE_COUNTDOWN;
       cmdprocessed = true;
     }
+    else if( command.equals("help") ){
+      Serial.println("Commands:");
+      Serial.println("help                -- display this help message");
+      Serial.println("off                 -- clear the display");
+      Serial.println("scrolltext [text]   -- display [text] as a scrolling marquee");
+      Serial.println("filltop [rows]      -- light up the top n rows");
+      Serial.println("fillbtm [rows]      -- light up the bottom n rows");
+      Serial.println("filllft [columns]   -- light up the left n columns");
+      Serial.println("fillrgt [columns]   -- light up the right n columns");
+      Serial.println("countdown [seconds] -- count down from n seconds to 0");
+      Serial.println("");
+      Serial.println("Commands are acknowledged with OK.");
+      Serial.println("Failures are indicated with FAIL.");
+      cmdprocessed = true;
+    }
     if( cmdprocessed ){
       Serial.println("OK");
     }
