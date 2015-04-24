@@ -37,6 +37,10 @@ def main():
 
     logger = logging.getLogger('GateController')
     logger.setLevel(logging.DEBUG)
+    if sys.stdout.isatty():
+        logger.addHandler(logging.StreamHandler(sys.stdout))
+    else:
+        logger.addHandler(logging.FileHandler("/tmp/gate.log"))
 
     conf = ConfigParser()
     conf.add_section("pushover")
