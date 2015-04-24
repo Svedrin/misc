@@ -4,10 +4,16 @@
 
 #define STATE_OFF        0
 #define STATE_SCROLLTEXT 1
+#define STATE_FILL       2
 
 int8_t state;
 int8_t currchar, x_offset;
 String scrolltext;
+
+long fill_xfrom;
+long fill_xto;
+long fill_yfrom;
+long fill_yto;
 
 void setup() {
   Serial.begin(9600);
@@ -34,6 +40,38 @@ void loop() {
       state = STATE_SCROLLTEXT;
       cmdprocessed = true;
     }
+    else if( command.startsWith("filltop ") ){
+      fill_xfrom = 0;
+      fill_xto = DISPLAY_COLS;
+      fill_yfrom = 0;
+      fill_yto = command.substring(strlen("filltop ")).toInt();
+      state = STATE_FILL;
+      cmdprocessed = true;
+    }
+    else if( command.startsWith("fillbtm ") ){
+      fill_xfrom = 0;
+      fill_xto = DISPLAY_COLS;
+      fill_yfrom = DISPLAY_ROWS - command.substring(strlen("fillbtm ")).toInt();
+      fill_yto = DISPLAY_ROWS;
+      state = STATE_FILL;
+      cmdprocessed = true;
+    }
+    else if( command.startsWith("filllft ") ){
+      fill_xfrom = 0;
+      fill_xto = command.substring(strlen("filllft ")).toInt();
+      fill_yfrom = 0;
+      fill_yto = DISPLAY_ROWS;
+      state = STATE_FILL;
+      cmdprocessed = true;
+    }
+    else if( command.startsWith("fillrgt ") ){
+      fill_xfrom = DISPLAY_COLS - command.substring(strlen("fillrgt ")).toInt();
+      fill_xto = DISPLAY_COLS;
+      fill_yfrom = 0;
+      fill_yto = DISPLAY_ROWS;
+      state = STATE_FILL;
+      cmdprocessed = true;
+    }
     if( cmdprocessed ){
       Serial.println("OK");
     }
@@ -42,9 +80,11 @@ void loop() {
     }
   }
 
-  LedSign::Clear();
-
-  if( state == STATE_SCROLLTEXT ){
+  if( state == STATE_OFF ){
+    LedSign::Clear();
+  }
+  else if( state == STATE_SCROLLTEXT ){
+    LedSign::Clear();
     int8_t drawchar = currchar, len = scrolltext.length();
     for (int8_t x_draw = x_offset; x_draw < DISPLAY_COLS;) {
       x_draw += Font::Draw(scrolltext.charAt(drawchar), x_draw, 0);
@@ -56,6 +96,13 @@ void loop() {
     }
     x_offset--;
     delay(80);
+  }
+  else if( state == STATE_FILL ){
+    for( int8_t y = 0; y < DISPLAY_ROWS; y++ ){
+      for( int8_t x = 0; x < DISPLAY_COLS; x++ ){
+        LedSign::Set(x, y, x >= fill_xfrom && x < fill_xto && y >= fill_yfrom && y < fill_yto);
+      }
+    }
   }
 }
 
