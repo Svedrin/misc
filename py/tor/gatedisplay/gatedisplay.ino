@@ -35,6 +35,7 @@ void loop() {
     }
     else if( command.startsWith("scrolltext ") ){
       scrolltext = command.substring(strlen("scrolltext "));
+      scrolltext.toUpperCase();
       if( !scrolltext.endsWith(" ") ){
         scrolltext += " ";
       }
