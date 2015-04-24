@@ -120,6 +120,7 @@ void loop() {
       Serial.println(seconds);
       delay(1000);
     }
+    Serial.println("0");
     state = STATE_OFF;
   }
 }
