@@ -5,6 +5,7 @@
 #define STATE_OFF        0
 #define STATE_SCROLLTEXT 1
 #define STATE_FILL       2
+#define STATE_COUNTDOWN  3
 
 int8_t state;
 int8_t currchar, x_offset;
@@ -14,6 +15,8 @@ long fill_xfrom;
 long fill_xto;
 long fill_yfrom;
 long fill_yto;
+
+long seconds;
 
 void setup() {
   Serial.begin(9600);
@@ -72,6 +75,11 @@ void loop() {
       state = STATE_FILL;
       cmdprocessed = true;
     }
+    else if( command.startsWith("countdown ") ){
+      seconds = command.substring(strlen("countdown ")).toInt();
+      state = STATE_COUNTDOWN;
+      cmdprocessed = true;
+    }
     if( cmdprocessed ){
       Serial.println("OK");
     }
@@ -103,6 +111,15 @@ void loop() {
         LedSign::Set(x, y, x >= fill_xfrom && x < fill_xto && y >= fill_yfrom && y < fill_yto);
       }
     }
+  }
+  else if( state == STATE_COUNTDOWN ){
+    for(; seconds > 0; seconds--){
+      LedSign::Clear();
+      Font::Draw('0' + seconds, 5, 0);
+      Serial.println(seconds);
+      delay(1000);
+    }
+    state = STATE_OFF;
   }
 }
 
