@@ -1,3 +1,4 @@
+#include <avr/pgmspace.h>
 #include <Charliplexing.h>
 #include <Font.h>
 #include <Figure.h>
@@ -21,7 +22,7 @@ long fill_yto;
 unsigned long countdown_last_update = 0;
 long seconds;
 
-const boolean arrow[9][14] = {
+const unsigned char arrow[9][14] PROGMEM = {
   { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
   { 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0 },
   { 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0 },
@@ -204,10 +205,11 @@ void loop() {
   else if( state == STATE_ARROWUP || state == STATE_ARROWDOWN ){
     for( int8_t y = 0; y < DISPLAY_ROWS; y++ ){
       for( int8_t x = 0; x < DISPLAY_COLS; x++ ){
+        unsigned char px = pgm_read_byte_near(&(arrow[y][x]));
         if( state == STATE_ARROWDOWN )
-          LedSign::Set(x, (y + arrow_row_offset) % DISPLAY_ROWS, arrow[y][x]);
+          LedSign::Set(x, (y + arrow_row_offset) % DISPLAY_ROWS, px );
         if( state == STATE_ARROWUP )
-          LedSign::Set(x, DISPLAY_ROWS - 1 - ((y + arrow_row_offset) % DISPLAY_ROWS), arrow[y][x]);
+          LedSign::Set(x, DISPLAY_ROWS - 1 - ((y + arrow_row_offset) % DISPLAY_ROWS), px);
       }
     }
     if( arrow_move )
