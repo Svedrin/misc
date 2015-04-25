@@ -18,6 +18,7 @@ long fill_xto;
 long fill_yfrom;
 long fill_yto;
 
+unsigned long countdown_last_update = 0;
 long seconds;
 
 const boolean arrow[9][14] = {
@@ -96,6 +97,7 @@ void loop() {
     else if( command.startsWith("countdown ") ){
       seconds = command.substring(strlen("countdown ")).toInt();
       if( seconds > 99 ) seconds = 99;
+      countdown_last_update = 0;
       state = STATE_COUNTDOWN;
       cmdprocessed = true;
     }
@@ -140,6 +142,7 @@ void loop() {
       Serial.println("");
       Serial.println("Commands are acknowledged with OK.");
       Serial.println("Failures are indicated with FAIL.");
+      Serial.println("Commands are processed every 100ms.");
       cmdprocessed = true;
     }
     if( cmdprocessed ){
@@ -174,21 +177,25 @@ void loop() {
     }
   }
   else if( state == STATE_COUNTDOWN ){
-    for(; seconds > 0; seconds--){
+    if( millis() - countdown_last_update >= 1000 ){
+      countdown_last_update = millis();
       LedSign::Clear();
-      if( seconds > 9 ){
-        Font::Draw('0' + seconds / 10, 2, 0);
-        Font::Draw('0' + seconds % 10, 8, 0);
-      }
-      else{
-        Font::Draw('0' + seconds, 5, 0);
-      }
       Serial.print("t=");
       Serial.println(seconds);
-      delay(1000);
+      if( seconds > 0 ){
+        if( seconds > 9 ){
+          Font::Draw('0' + seconds / 10, 2, 0);
+          Font::Draw('0' + seconds % 10, 8, 0);
+        }
+        else{
+          Font::Draw('0' + seconds, 5, 0);
+        }
+        seconds--;
+      }
+      else{
+        state = STATE_OFF;
+      }
     }
-    Serial.println("t=0");
-    state = STATE_OFF;
   }
   else if( state == STATE_ARROWUP || state == STATE_ARROWDOWN ){
     for( int8_t y = 0; y < DISPLAY_ROWS; y++ ){
