@@ -189,7 +189,7 @@ void loop() {
   }
   else if( state == STATE_SCROLLTEXT ){
     LedSign::Clear();
-    int8_t drawchar = currchar, len = scrolltext.length();
+    int drawchar = currchar, len = scrolltext.length();
     for (int8_t x_draw = x_offset; x_draw < DISPLAY_COLS;) {
       x_draw += Font::Draw(scrolltext.charAt(drawchar), x_draw, 0);
       drawchar = (drawchar + 1) % len;
