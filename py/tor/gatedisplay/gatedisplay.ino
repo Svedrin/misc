@@ -33,6 +33,7 @@ const boolean arrow[9][14] = {
 };
 
 uint8_t arrow_row_offset;
+boolean arrow_move = false;
 
 void setup() {
   Serial.begin(9600);
@@ -98,13 +99,27 @@ void loop() {
       state = STATE_COUNTDOWN;
       cmdprocessed = true;
     }
+    else if( command.equals("arrowmoveup") ){
+      arrow_row_offset = 0;
+      arrow_move = true;
+      state = STATE_ARROWUP;
+      cmdprocessed = true;
+    }
     else if( command.equals("arrowup") ){
       arrow_row_offset = 0;
+      arrow_move = false;
       state = STATE_ARROWUP;
+      cmdprocessed = true;
+    }
+    else if( command.equals("arrowmovedown") ){
+      arrow_row_offset = 0;
+      arrow_move = true;
+      state = STATE_ARROWDOWN;
       cmdprocessed = true;
     }
     else if( command.equals("arrowdown") ){
       arrow_row_offset = 0;
+      arrow_move = false;
       state = STATE_ARROWDOWN;
       cmdprocessed = true;
     }
@@ -118,8 +133,10 @@ void loop() {
       Serial.println("filllft [columns]   -- light up the left n columns");
       Serial.println("fillrgt [columns]   -- light up the right n columns");
       Serial.println("countdown [seconds] -- count down from n seconds to 0 (max 99 seconds)");
-      Serial.println("arrowup             -- display an upward-facing, scrolling arrow");
-      Serial.println("arrowdown           -- display a downward-facing, scrolling arrow");
+      Serial.println("arrowmoveup         -- display an upward-facing scrolling arrow");
+      Serial.println("arrowup             -- display an upward-facing fixed arrow");
+      Serial.println("arrowmovedown       -- display a downward-facing scrolling arrow");
+      Serial.println("arrowdown           -- display a downward-facing fixed arrow");
       Serial.println("");
       Serial.println("Commands are acknowledged with OK.");
       Serial.println("Failures are indicated with FAIL.");
@@ -148,7 +165,6 @@ void loop() {
       }
     }
     x_offset--;
-    delay(80);
   }
   else if( state == STATE_FILL ){
     for( int8_t y = 0; y < DISPLAY_ROWS; y++ ){
@@ -167,6 +183,7 @@ void loop() {
       else{
         Font::Draw('0' + seconds, 5, 0);
       }
+      Serial.print("t=");
       Serial.println(seconds);
       delay(1000);
     }
@@ -182,8 +199,9 @@ void loop() {
           LedSign::Set(x, DISPLAY_ROWS - 1 - ((y + arrow_row_offset) % DISPLAY_ROWS), arrow[y][x]);
       }
     }
-    arrow_row_offset++;
-    delay(80);
+    if( arrow_move )
+      arrow_row_offset++;
   }
+  delay(100);
 }
 
