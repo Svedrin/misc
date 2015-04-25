@@ -9,6 +9,7 @@
 #define STATE_COUNTDOWN  3
 #define STATE_ARROWUP    4
 #define STATE_ARROWDOWN  5
+#define STATE_BLOCKED    6
 
 int8_t state;
 int8_t currchar, x_offset;
@@ -37,11 +38,22 @@ const unsigned char arrow[9][14] PROGMEM = {
 uint8_t arrow_row_offset;
 boolean arrow_move = false;
 
+const unsigned char blocked[9][14] PROGMEM = {
+  { 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0 },
+  { 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0 },
+  { 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0 },
+  { 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0 },
+  { 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0 },
+  { 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0 },
+  { 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0 },
+  { 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0 },
+  { 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0 },
+};
+
 void setup() {
   Serial.begin(9600);
   LedSign::Init();
   state = STATE_OFF;
-  scrolltext;
 }
 
 void loop() {
@@ -129,6 +141,10 @@ void loop() {
       state = STATE_ARROWDOWN;
       cmdprocessed = true;
     }
+    else if( command.equals("blocked") ){
+      state = STATE_BLOCKED;
+      cmdprocessed = true;
+    }
     else if( command.equals("help") ){
       Serial.println("Commands:");
       Serial.println("help                -- display this help message");
@@ -143,6 +159,7 @@ void loop() {
       Serial.println("arrowup             -- display an upward-facing fixed arrow");
       Serial.println("arrowmovedown       -- display a downward-facing scrolling arrow");
       Serial.println("arrowdown           -- display a downward-facing fixed arrow");
+      Serial.println("blocked             -- display the \"blocked\" picture");
       Serial.println("");
       Serial.println("Commands are acknowledged with OK.");
       Serial.println("Failures are indicated with FAIL.");
@@ -214,6 +231,14 @@ void loop() {
     }
     if( arrow_move )
       arrow_row_offset = (arrow_row_offset + 1) % DISPLAY_ROWS;
+  }
+  else if( state == STATE_BLOCKED ){
+    for( int8_t y = 0; y < DISPLAY_ROWS; y++ ){
+      for( int8_t x = 0; x < DISPLAY_COLS; x++ ){
+        unsigned char px = pgm_read_byte_near(&(blocked[y][x]));
+        LedSign::Set(x, y, px);
+      }
+    }
   }
   delay(100);
 }
