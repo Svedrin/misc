@@ -47,6 +47,9 @@ void loop() {
   if (Serial.available() > 0) {
     boolean cmdprocessed = false;
     String command = Serial.readStringUntil('\n');
+    if( command.endsWith("\r") ){
+      command.replace("\r", "");
+    }
     if( command.equals("off") ){
       state = STATE_OFF;
       cmdprocessed = true;
@@ -143,6 +146,7 @@ void loop() {
       Serial.println("Commands are acknowledged with OK.");
       Serial.println("Failures are indicated with FAIL.");
       Serial.println("Commands are processed every 100ms.");
+      Serial.println("Commands should be terminated with \\n only.");
       cmdprocessed = true;
     }
     if( cmdprocessed ){
