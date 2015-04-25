@@ -187,7 +187,7 @@ void loop() {
       Serial.println(seconds);
       delay(1000);
     }
-    Serial.println("0");
+    Serial.println("t=0");
     state = STATE_OFF;
   }
   else if( state == STATE_ARROWUP || state == STATE_ARROWDOWN ){
@@ -200,7 +200,7 @@ void loop() {
       }
     }
     if( arrow_move )
-      arrow_row_offset++;
+      arrow_row_offset = (arrow_row_offset + 1) % DISPLAY_ROWS;
   }
   delay(100);
 }
