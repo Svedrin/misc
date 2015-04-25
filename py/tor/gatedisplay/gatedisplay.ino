@@ -94,6 +94,7 @@ void loop() {
     }
     else if( command.startsWith("countdown ") ){
       seconds = command.substring(strlen("countdown ")).toInt();
+      if( seconds > 99 ) seconds = 99;
       state = STATE_COUNTDOWN;
       cmdprocessed = true;
     }
@@ -116,7 +117,7 @@ void loop() {
       Serial.println("fillbtm [rows]      -- light up the bottom n rows");
       Serial.println("filllft [columns]   -- light up the left n columns");
       Serial.println("fillrgt [columns]   -- light up the right n columns");
-      Serial.println("countdown [seconds] -- count down from n seconds to 0");
+      Serial.println("countdown [seconds] -- count down from n seconds to 0 (max 99 seconds)");
       Serial.println("arrowup             -- display an upward-facing, scrolling arrow");
       Serial.println("arrowdown           -- display a downward-facing, scrolling arrow");
       Serial.println("");
@@ -159,7 +160,13 @@ void loop() {
   else if( state == STATE_COUNTDOWN ){
     for(; seconds > 0; seconds--){
       LedSign::Clear();
-      Font::Draw('0' + seconds, 5, 0);
+      if( seconds > 9 ){
+        Font::Draw('0' + seconds / 10, 2, 0);
+        Font::Draw('0' + seconds % 10, 8, 0);
+      }
+      else{
+        Font::Draw('0' + seconds, 5, 0);
+      }
       Serial.println(seconds);
       delay(1000);
     }
