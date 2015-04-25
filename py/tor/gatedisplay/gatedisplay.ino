@@ -6,6 +6,8 @@
 #define STATE_SCROLLTEXT 1
 #define STATE_FILL       2
 #define STATE_COUNTDOWN  3
+#define STATE_ARROWUP    4
+#define STATE_ARROWDOWN  5
 
 int8_t state;
 int8_t currchar, x_offset;
@@ -17,6 +19,20 @@ long fill_yfrom;
 long fill_yto;
 
 long seconds;
+
+const boolean arrow[9][14] = {
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+  { 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0 },
+  { 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0 },
+  { 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0 },
+  { 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0 },
+  { 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0 },
+  { 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0 },
+  { 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0 },
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+uint8_t arrow_row_offset;
 
 void setup() {
   Serial.begin(9600);
@@ -81,6 +97,16 @@ void loop() {
       state = STATE_COUNTDOWN;
       cmdprocessed = true;
     }
+    else if( command.equals("arrowup") ){
+      arrow_row_offset = 0;
+      state = STATE_ARROWUP;
+      cmdprocessed = true;
+    }
+    else if( command.equals("arrowdown") ){
+      arrow_row_offset = 0;
+      state = STATE_ARROWDOWN;
+      cmdprocessed = true;
+    }
     else if( command.equals("help") ){
       Serial.println("Commands:");
       Serial.println("help                -- display this help message");
@@ -91,6 +117,8 @@ void loop() {
       Serial.println("filllft [columns]   -- light up the left n columns");
       Serial.println("fillrgt [columns]   -- light up the right n columns");
       Serial.println("countdown [seconds] -- count down from n seconds to 0");
+      Serial.println("arrowup             -- display an upward-facing, scrolling arrow");
+      Serial.println("arrowdown           -- display a downward-facing, scrolling arrow");
       Serial.println("");
       Serial.println("Commands are acknowledged with OK.");
       Serial.println("Failures are indicated with FAIL.");
@@ -137,6 +165,18 @@ void loop() {
     }
     Serial.println("0");
     state = STATE_OFF;
+  }
+  else if( state == STATE_ARROWUP || state == STATE_ARROWDOWN ){
+    for( int8_t y = 0; y < DISPLAY_ROWS; y++ ){
+      for( int8_t x = 0; x < DISPLAY_COLS; x++ ){
+        if( state == STATE_ARROWDOWN )
+          LedSign::Set(x, (y + arrow_row_offset) % DISPLAY_ROWS, arrow[y][x]);
+        if( state == STATE_ARROWUP )
+          LedSign::Set(x, DISPLAY_ROWS - 1 - ((y + arrow_row_offset) % DISPLAY_ROWS), arrow[y][x]);
+      }
+    }
+    arrow_row_offset++;
+    delay(80);
   }
 }
 
