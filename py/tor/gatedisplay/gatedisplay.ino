@@ -50,6 +50,28 @@ const unsigned char blocked[9][14] PROGMEM = {
   { 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0 },
 };
 
+const char helptext[] PROGMEM = ""
+  "Commands:\n"
+  "help                -- display this help message\n"
+  "off                 -- clear the display\n"
+  "scrolltext [text]   -- display [text] as a scrolling marquee\n"
+  "filltop [rows]      -- light up the top n rows\n"
+  "fillbtm [rows]      -- light up the bottom n rows\n"
+  "filllft [columns]   -- light up the left n columns\n"
+  "fillrgt [columns]   -- light up the right n columns\n"
+  "countdown [seconds] -- count down from n seconds to 0 (max 99 seconds)\n"
+  "arrowmoveup         -- display an upward-facing scrolling arrow\n"
+  "arrowup             -- display an upward-facing fixed arrow\n"
+  "arrowmovedown       -- display a downward-facing scrolling arrow\n"
+  "arrowdown           -- display a downward-facing fixed arrow\n"
+  "blocked             -- display the \"blocked\" picture\n"
+  "\n"
+  "Commands are acknowledged with OK.\n"
+  "Failures are indicated with FAIL.\n"
+  "Commands are processed every 100ms.\n"
+  "Commands should be terminated with \\n only.\n";
+
+
 void setup() {
   Serial.begin(9600);
   LedSign::Init();
@@ -146,25 +168,12 @@ void loop() {
       cmdprocessed = true;
     }
     else if( command.equals("help") ){
-      Serial.println("Commands:");
-      Serial.println("help                -- display this help message");
-      Serial.println("off                 -- clear the display");
-      Serial.println("scrolltext [text]   -- display [text] as a scrolling marquee");
-      Serial.println("filltop [rows]      -- light up the top n rows");
-      Serial.println("fillbtm [rows]      -- light up the bottom n rows");
-      Serial.println("filllft [columns]   -- light up the left n columns");
-      Serial.println("fillrgt [columns]   -- light up the right n columns");
-      Serial.println("countdown [seconds] -- count down from n seconds to 0 (max 99 seconds)");
-      Serial.println("arrowmoveup         -- display an upward-facing scrolling arrow");
-      Serial.println("arrowup             -- display an upward-facing fixed arrow");
-      Serial.println("arrowmovedown       -- display a downward-facing scrolling arrow");
-      Serial.println("arrowdown           -- display a downward-facing fixed arrow");
-      Serial.println("blocked             -- display the \"blocked\" picture");
-      Serial.println("");
-      Serial.println("Commands are acknowledged with OK.");
-      Serial.println("Failures are indicated with FAIL.");
-      Serial.println("Commands are processed every 100ms.");
-      Serial.println("Commands should be terminated with \\n only.");
+      char buffer[33];
+      for( int i = 0; i < strlen(helptext); i+= 32 ){
+        strncpy_PF(buffer, (uint_farptr_t)(helptext + i), 32);
+        buffer[32] = 0;
+        Serial.print(buffer);
+      }
       cmdprocessed = true;
     }
     if( cmdprocessed ){
