@@ -11,8 +11,9 @@ class GateController(object):
     PIN_UPPER = 18
     PIN_LOWER = 16
 
-    def __init__(self, gpio, logger):
+    def __init__(self, gpio, display, logger):
         self.gpio = gpio
+        self.display = display
         self.logger = logger
 
         self.gpio.setmode(self.gpio.BOARD)
@@ -22,9 +23,14 @@ class GateController(object):
         self.gpio.setup(GateController.PIN_UPPER, self.gpio.IN)
         self.gpio.setup(GateController.PIN_LOWER, self.gpio.IN)
 
-    def trigger(self):
+    def trigger(self, direction_or_msg=None):
         """ Trigger the gate. """
+        self.display.countdown(30, True)
         self.logger.debug("LET'S DO THIS")
+        if direction_or_msg in ('up', 'down'):
+            self.display.arrow(direction_or_msg, True)
+        elif direction_or_msg:
+            self.display.scrolltext(direction_or_msg)
         self.gpio.output(GateController.PIN_MOTOR, self.gpio.HIGH)
         sleep(0.2)
         self.gpio.output(GateController.PIN_MOTOR, self.gpio.LOW)
@@ -68,17 +74,19 @@ class GateController(object):
                     self.wait_for_state("up", "down")
                 except GateTimeout:
                     self.logger.debug("Gone in 30 seconds.")
-                    self.trigger()
+                    self.trigger("Waiting")
                     continue
                 else:
                     self.logger.debug("Waiting for state to settle...")
+                    state = self.get_state()
+                    self.display.arrow(state, move=False)
                     sleep(5)
                     state = self.get_state()
 
             self.logger.info("Gate is %s!" % state)
 
             if state != want:
-                self.trigger()
+                self.trigger(want)
                 self.logger.debug("Waiting for gate to start moving...")
                 self.wait_for_state("transitioning")
             else:

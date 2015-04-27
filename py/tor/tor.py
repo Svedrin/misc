@@ -5,10 +5,12 @@ from ConfigParser import ConfigParser
 
 import sys
 import os
+import os.path
 import requests
 import logging
 
 from gatecontroller import GateController
+from displaycontroller import DisplayController
 
 class PushoverHandler(logging.Handler):
     """ A logging handler that sends messages via pushover.net.
@@ -65,13 +67,24 @@ def main():
         randomlogger.setLevel(logging.DEBUG)
         GPIO = RandomGate(randomlogger)
 
-    gate = GateController(GPIO, logger)
+    if os.path.exists("/dev/ttyUSB0"):
+        display = DisplayController("/dev/ttyUSB0", 9600, logger)
+    elif os.path.exists("/dev/ttyAMA0"):
+        display = DisplayController("/dev/ttyAMA0", 9600, logger)
+    else:
+        raise SystemError("display not found at /dev/ttyUSB0 or /dev/ttyAMA0")
+
+    display.off()
+
+    gate = GateController(GPIO, display, logger)
     if want is None:
         logger.info("Gate is %s!", gate.get_state())
     elif want == "trigger":
         gate.trigger()
     else:
         gate.move_to_state(want)
+
+    display.off()
 
 
 if __name__ == '__main__':
