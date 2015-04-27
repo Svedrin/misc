@@ -8,16 +8,17 @@ class DisplayError(Exception):
     pass
 
 class DisplayController(object):
-    def __init__(self, port, baud=9600):
+    def __init__(self, port, baud, logger):
+        self.logger = logger
         self.ser = serial.Serial(port, baud)
         self.ser.setTimeout(1.5)
         self.countdown_running = False
 
     def command(self, command):
-        print "sending", command
+        self.logger.debug("sending %s to display", command)
         self.ser.write(command + "\n")
         answer = self.ser.readline().strip()
-        print "got", answer
+        self.logger.debug("got %s from display", answer)
         if answer == "FAIL":
             raise DisplayError(command)
 
