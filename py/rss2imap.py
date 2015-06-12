@@ -64,6 +64,8 @@ class DilbertProxy(object):
     def get_content(self, entry):
         req = requests.get(entry.link, headers={"User-Agent": USER_AGENT})
         soup = BeautifulSoup(req.content)
+        for soupimg in soup.findAll("meta", property="og:image"):
+            return '<img src="%s">' % soupimg["content"]
         for soupimg in soup.findAll("img"):
             if soupimg["src"].startswith("/dyn/str_strip/") and (soupimg["src"].endswith(".strip.gif") or soupimg["src"].endswith(".strip.sunday.gif")):
                 return '<img src="http://www.dilbert.com%s">' % soupimg["src"]
