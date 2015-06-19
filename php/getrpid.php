@@ -63,7 +63,7 @@ switch($_GET["action"]){
                         $contactname = "{$splitname[0]}, {$initial}. (0{$shortnum}…)";
                     }
                     else{
-                        $contactname = "{$contactinfo["props"]["fileas"]} (0{$shortnum}…)";
+                        $contactname = "{$contactinfo["props"]["fileas"]} ({$number})";
                     }
 
                     $output.= '  <DirectoryEntry>';
