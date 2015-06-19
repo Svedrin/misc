@@ -53,7 +53,7 @@ switch($_GET["action"]){
 
         foreach( $contacts as $contactinfo ){
             foreach( ["cellular_telephone_number", "business2_telephone_number", "business_telephone_number", "home_telephone_number", "home2_telephone_number"] as $field ){
-                if( isset($contactinfo["props"][$field])){
+                if( isset($contactinfo["props"][$field]) && strlen($contactinfo["props"][$field])){
                     $number = unify_number($contactinfo["props"][$field]);
                     $shortnum = substr($number, 3, 5);
 
@@ -68,7 +68,7 @@ switch($_GET["action"]){
 
                     $output.= '  <DirectoryEntry>';
                     $output.= '    <Name>'.$contactname.'</Name>';
-                    $output.= '    <Telephone>'.$number.'</Telephone>';
+                    $output.= '    <Telephone>'.str_replace('+', '00', $number).'</Telephone>';
                     $output.= '  </DirectoryEntry>';
                 }
             }
