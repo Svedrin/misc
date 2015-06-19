@@ -52,9 +52,15 @@ switch($_GET["action"]){
         $output.= '  <Prompt>Dial</Prompt>';
 
         foreach( $contacts as $contactinfo ){
+            $known_numbers = [];
             foreach( ["cellular_telephone_number", "business2_telephone_number", "business_telephone_number", "home_telephone_number", "home2_telephone_number"] as $field ){
                 if( isset($contactinfo["props"][$field]) && strlen($contactinfo["props"][$field])){
                     $number = unify_number($contactinfo["props"][$field]);
+
+                    if( in_array($number, $known_numbers) )
+                        continue;
+                    $known_numbers[] = $number;
+
                     $shortnum = substr($number, 3, 5);
 
                     if( strpos($_SERVER["HTTP_USER_AGENT"], "snom300-SIP") !== FALSE ){
