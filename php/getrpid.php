@@ -10,6 +10,9 @@
 
 error_reporting(E_ALL);
 
+$CONTACTS_JSON = "/var/lib/asterisk/.zsync/contacts.json";
+$REDIAL_JSON   = "/var/lib/asterisk/.zsync/redial.json";
+
 function unify_number($number){
     $number = str_replace([" ", "-"], "", $number); // Android likes to put those in
     if( strpos($number, "00") === 0 )
@@ -23,7 +26,9 @@ function unify_number($number){
 }
 
 function find_callerid($number){
-    $contacts = json_decode(file_get_contents("/var/lib/asterisk/.zsync/contacts.json"), true);
+    global $CONTACTS_JSON;
+
+    $contacts = json_decode(file_get_contents($CONTACTS_JSON), true);
     $target_number = unify_number($number);
 
     foreach( $contacts as $contactinfo ){
@@ -39,14 +44,35 @@ function find_callerid($number){
 
 $output = '<?xml version="1.0" encoding="UTF-8"?>';
 
+if( !isset($_GET["action"]) )
+    $_GET["action"] = "default";
+
 switch($_GET["action"]){
     case 'exit':
         $output.= '<exit />';
         break;
 
-    case 'directory':
-        $contacts = json_decode(file_get_contents("/var/lib/asterisk/.zsync/contacts.json"), true);
+    case 'redial':
+        $redial = json_decode(file_get_contents($REDIAL_JSON), true);
+        $output.= '<?xml-stylesheet version="1.0" href="SnomIPPhoneDirectory.xsl" type="text/xsl" ?>';
+        $output.= '<SnomIPPhoneDirectory speedselect="select">';
+        $output.= '  <Title>Redial</Title>';
+        $output.= '  <Prompt>Dial</Prompt>';
 
+        foreach($redial as $redialinfo){
+            $dt = date("d.M H:i:s", $redialinfo["time"]);
+            $output.= '  <DirectoryEntry>';
+            $output.= "    <Name>{$redialinfo["text"]} ($dt)</Name>";
+            $output.= "    <Telephone>{$redialinfo["number"]}</Telephone>";
+            $output.= '  </DirectoryEntry>';
+        }
+        $output.= '</SnomIPPhoneDirectory>';
+        break;
+
+    case 'directory':
+        $contacts = json_decode(file_get_contents($CONTACTS_JSON), true);
+
+        $output.= '<?xml-stylesheet version="1.0" href="SnomIPPhoneDirectory.xsl" type="text/xsl" ?>';
         $output.= '<SnomIPPhoneDirectory speedselect="select">';
         $output.= '  <Title>Directory</Title>';
         $output.= '  <Prompt>Dial</Prompt>';
@@ -61,12 +87,12 @@ switch($_GET["action"]){
                         continue;
                     $known_numbers[] = $number;
 
-                    $shortnum = substr($number, 3, 5);
 
                     if( strpos($_SERVER["HTTP_USER_AGENT"], "snom300-SIP") !== FALSE ){
                         $splitname = explode(', ', $contactinfo["props"]["fileas"]);
                         $initial = substr($splitname[1], 0, 1);
-                        $contactname = "{$splitname[0]}, {$initial}. (0{$shortnum}…)";
+                        $shortnum = substr($number, 3);
+                        $contactname = "{$splitname[0]}, {$initial}. (0{$shortnum})";
                     }
                     else{
                         $contactname = "{$contactinfo["props"]["fileas"]} ({$number})";
@@ -85,6 +111,13 @@ switch($_GET["action"]){
     default:
         $callerid = htmlspecialchars(find_callerid($_GET["cid"]));
 
+        $redial = json_decode(file_get_contents($REDIAL_JSON), true);
+        if(count($redial) >= 50){
+            array_pop($redial);
+        }
+        array_unshift($redial, [ "text" => $callerid, "number" => $_GET["cid"], "time" => time() ]);
+        file_put_contents($REDIAL_JSON, json_encode($redial));
+
         if( strpos($_SERVER["HTTP_USER_AGENT"], "snom300-SIP") !== FALSE ){
             if( mb_strlen($callerid) > 14 && strpos($callerid, ',') !== FALSE ){
                 $callerid = implode(",<br/>", explode(', ', $callerid));
@@ -95,6 +128,7 @@ switch($_GET["action"]){
         $output.= "<Text>{$callerid}</Text>";
         $output.= '<fetch mil="5000">http://'.$_SERVER["HTTP_HOST"].$_SERVER['SCRIPT_NAME'].'?action=exit</fetch>';
         $output.= "</SnomIPPhoneText>";
+
         break;
 }
 
