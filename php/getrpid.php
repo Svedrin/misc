@@ -43,6 +43,15 @@ function find_callerid($number){
 }
 
 function name_to_numbers($name){
+    /* Keys on the phone:
+
+               abc     def
+
+        ghi    jkl     mno
+
+        pqrs   tuv    wxyz
+
+    */
     $numberkeys = [
         "a" => "2", "Ä" => "2", "ä" => "2", "b" => "2", "c" => "2",
         "d" => "3", "e" => "3", "f" => "3",
