@@ -75,6 +75,7 @@ def main():
         raise SystemError("display not found at /dev/ttyUSB0 or /dev/ttyAMA0")
 
     display.off()
+    display.scrolltext("init")
 
     gate = GateController(GPIO, display, logger)
     if want is None:

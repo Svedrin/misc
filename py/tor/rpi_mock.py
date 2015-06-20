@@ -87,15 +87,14 @@ class RandomGate(BaseGPIO):
     def output(self, pin, value):
         if not value:
             return
-        if random.randint(0, 4) == 0:
+        watdo = random.randint(0, 10)
+        if watdo == 0:
             signal.signal(signal.SIGALRM, self.state_unknown)
-            signal.alarm(5)
+        elif watdo <= 5:
+            signal.signal(signal.SIGALRM, self.state_up)
         else:
-            if self.state == "up":
-                signal.signal(signal.SIGALRM, self.state_down)
-            else:
-                signal.signal(signal.SIGALRM, self.state_up)
-            signal.alarm(25)
+            signal.signal(signal.SIGALRM, self.state_down)
+        signal.alarm(random.randint(20, 35))
         self.state = "transitioning"
 
     def state_up(self, *args):

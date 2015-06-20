@@ -42,6 +42,26 @@ function find_callerid($number){
     return $number;
 }
 
+function name_to_numbers($name){
+    $numberkeys = [
+        "a" => "2", "Ä" => "2", "ä" => "2", "b" => "2", "c" => "2",
+        "d" => "3", "e" => "3", "f" => "3",
+        "g" => "4", "h" => "4", "i" => "4",
+        "j" => "5", "k" => "5", "l" => "5",
+        "m" => "6", "n" => "6", "o" => "6", "Ö" => "6", "ö" => "6",
+        "p" => "7", "q" => "7", "r" => "7", "s" => "7",
+        "t" => "8", "u" => "8", "Ü" => "8", "ü" => "8", "v" => "8",
+        "w" => "9", "x" => "9", "y" => "9", "z" => "9"
+    ];
+    $out = "";
+    for($i = 0; $i < mb_strlen($name); $i++){
+        $idx = mb_strtolower(mb_substr($name, $i, 1));
+        if( isset($numberkeys[$idx]) )
+            $out.= $numberkeys[$idx];
+    }
+    return $out;
+}
+
 $output = '<?xml version="1.0" encoding="UTF-8"?>';
 
 if( !isset($_GET["action"]) )
@@ -72,6 +92,22 @@ switch($_GET["action"]){
     case 'directory':
         $contacts = json_decode(file_get_contents($CONTACTS_JSON), true);
 
+        if(!isset($_GET["number"])){
+            $output.= '<SnomIPPhoneInput>';
+            $output.= '    <Title>Directory</Title>';
+            $output.= '    <Prompt>Search</Prompt>';
+            $output.= '    <URL>http://'.$_SERVER["HTTP_HOST"].$_SERVER['SCRIPT_NAME'].'</URL>';
+            $output.= '    <InputItem>';
+            $output.= '        <DisplayName>Search for entry...</DisplayName>';
+            $output.= '        <QueryStringParam>action=directory&amp;number</QueryStringParam>';
+            $output.= '        <DefaultValue />';
+            $output.= '        <InputFlags>n</InputFlags>';
+            $output.= '    </InputItem>';
+            $output.= '</SnomIPPhoneInput>';
+            break;
+        }
+
+
         $output.= '<?xml-stylesheet version="1.0" href="SnomIPPhoneDirectory.xsl" type="text/xsl" ?>';
         $output.= '<SnomIPPhoneDirectory speedselect="select">';
         $output.= '  <Title>Directory</Title>';
@@ -83,8 +119,15 @@ switch($_GET["action"]){
                 if( isset($contactinfo["props"][$field]) && strlen($contactinfo["props"][$field])){
                     $number = unify_number($contactinfo["props"][$field]);
 
-                    if( in_array($number, $known_numbers) )
+                    if( strlen($_GET["number"]) > 0 &&
+                        strpos(name_to_numbers($contactinfo["props"]["fileas"]), $_GET["number"]) === FALSE &&
+                        strpos($number, $_GET["number"]) === FALSE ){
                         continue;
+                    }
+
+                    if( in_array($number, $known_numbers) ){
+                        continue;
+                    }
                     $known_numbers[] = $number;
 
 
