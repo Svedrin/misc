@@ -45,10 +45,13 @@ function find_callerid($number){
 function name_to_numbers($name){
     /* Keys on the phone:
 
+         1      2       3
                abc     def
 
+         4      5       6
         ghi    jkl     mno
 
+         7      8       9
         pqrs   tuv    wxyz
 
     */
