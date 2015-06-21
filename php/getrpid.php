@@ -120,11 +120,7 @@ switch($_GET["action"]){
         }
 
 
-        $output.= '<?xml-stylesheet version="1.0" href="SnomIPPhoneDirectory.xsl" type="text/xsl" ?>';
-        $output.= '<SnomIPPhoneDirectory speedselect="select">';
-        $output.= '  <Title>Directory</Title>';
-        $output.= '  <Prompt>Dial</Prompt>';
-
+        $entries = [];
         foreach( $contacts as $contactinfo ){
             $known_numbers = [];
             foreach( ["cellular_telephone_number", "business2_telephone_number", "business_telephone_number", "home_telephone_number", "home2_telephone_number"] as $field ){
@@ -153,13 +149,19 @@ switch($_GET["action"]){
                         $contactname = "{$contactinfo["props"]["fileas"]} ({$number})";
                     }
 
-                    $output.= '  <DirectoryEntry>';
-                    $output.= '    <Name>'.$contactname.'</Name>';
-                    $output.= '    <Telephone>'.str_replace('+', '00', $number).'</Telephone>';
-                    $output.= '  </DirectoryEntry>';
+                    array_push($entries,
+                        '  <DirectoryEntry>'.
+                        '    <Name>'.$contactname.'</Name>'.
+                        '    <Telephone>'.str_replace('+', '00', $number).'</Telephone>'.
+                        '  </DirectoryEntry>');
                 }
             }
         }
+        $output.= '<?xml-stylesheet version="1.0" href="SnomIPPhoneDirectory.xsl" type="text/xsl" ?>';
+        $output.= '<SnomIPPhoneDirectory speedselect="select">';
+        $output.= '  <Title>Found '.count($entries).' Entries</Title>';
+        $output.= '  <Prompt>Dial</Prompt>';
+        $output.= implode('', $entries);
         $output.= '</SnomIPPhoneDirectory>';
         break;
 
