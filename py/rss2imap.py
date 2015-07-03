@@ -158,13 +158,17 @@ def process_feed(dirname, feedname, feedinfo):
     if "-q" not in sys.argv:
         outq.put("[%s] Started processing" % feedname)
 
-    if isinstance(feedinfo, dict):
-        feedurl   = feedinfo["url"]
+    if not isinstance(feedinfo, dict):
+        feedinfo = {"url": feedinfo}
+
+    if not feedinfo.get("enabled", True):
+        return
+
+    feedurl = feedinfo["url"]
+
+    if "proxy" in feedinfo:
         feedproxy = proxies[feedinfo["proxy"]]
-        if not feedinfo.get("enabled", True):
-            return
     else:
-        feedurl   = feedinfo
         feedproxy = None
 
     try:
