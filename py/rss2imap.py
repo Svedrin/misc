@@ -161,6 +161,8 @@ def process_feed(dirname, feedname, feedinfo):
     if isinstance(feedinfo, dict):
         feedurl   = feedinfo["url"]
         feedproxy = proxies[feedinfo["proxy"]]
+        if not feedinfo.get("enabled", True):
+            return
     else:
         feedurl   = feedinfo
         feedproxy = None
