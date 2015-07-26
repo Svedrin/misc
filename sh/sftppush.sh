@@ -52,7 +52,7 @@ case "$1" in
   diff)
     shift
     for FILEARG in "$@"; do
-      kioclient --noninteractive cat "$TARGETROOT/$FILEARG" | diff -u - "$FILEARG"
+      kioclient --noninteractive cat "$TARGETROOT/$FILEARG" | diff -u --label "$TARGETROOT/$FILEARG" --label "$LOCALROOT/$FILEARG" - "$FILEARG"
     done
     ;;
 
