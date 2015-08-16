@@ -210,6 +210,13 @@ class CheckParameter(models.Model):
         return "%s.%s = %s" % (self.parameter.sensor.name, self.parameter.name, self.value)
 
 
+class CheckMeasurement(models.Model):
+    check_inst  = models.ForeignKey(Check, db_column="check_id")
+    variable    = models.ForeignKey(SensorVariable)
+    measured_at = models.DateTimeField()
+    value       = models.FloatField()
+
+
 class Alert(models.Model):
     check_inst  = models.ForeignKey(Check, db_column="check_id")
     starttime   = models.DateTimeField()
