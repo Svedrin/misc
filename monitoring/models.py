@@ -6,7 +6,7 @@ import uuid
 from datetime import datetime, timedelta
 
 from django.db import models
-from django.utils.timezone import make_aware, get_default_timezone
+from django.utils.timezone import make_aware, get_default_timezone, utc
 
 from hosts import models as hosts
 from sensors.sensor import SensorMeta
@@ -113,7 +113,7 @@ class Check(models.Model):
     def last_update(self):
         if self.rrd.last_update is None:
             return None
-        return make_aware(self.rrd.last_update, get_default_timezone())
+        return make_aware(self.rrd.last_update, utc)
 
     @property
     def config(self):
