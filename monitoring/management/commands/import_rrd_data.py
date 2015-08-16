@@ -40,6 +40,9 @@ class Command( BaseCommand ):
         reading_data = False
         last_ts = make_aware(datetime.fromtimestamp(0), get_default_timezone())
 
+        start_ts = datetime.now()
+        count = 0
+
         with transaction.atomic():
             while True:
                 line = sys.stdin.readline().strip()
@@ -67,6 +70,10 @@ class Command( BaseCommand ):
                         if value != value: # value is NaN
                             continue
                         check.checkmeasurement_set.create(variable=metric, measured_at=timestamp, value=value)
+                        count += 1
+
+        finish_ts = datetime.now()
+        logging.warning( "Imported %d datasets in %.2f seconds.", count, (finish_ts - start_ts).total_seconds() )
 
 # g 1374 78045239-c3ea-48ea-b0cc-cf7a63f369d2
 # m 1375 db3acefc-943e-4ec7-8bde-cc73b930cfa8
