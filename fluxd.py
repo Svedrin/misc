@@ -158,7 +158,11 @@ def main():
         print "\nCaught ^c, shutting down."
 
     finally:
-        account.close_connection()
+        try:
+            account.close_connection()
+        except AttributeError:
+            # fail
+            pass
 
     return 0
 
