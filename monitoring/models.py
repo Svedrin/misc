@@ -5,7 +5,7 @@ import uuid
 
 from datetime import datetime, timedelta
 
-from django.db import models
+from django.db import models, transaction
 from django.utils.timezone import make_aware, get_default_timezone, utc
 
 from hosts import models as hosts
@@ -169,6 +169,13 @@ class Check(models.Model):
     def process_result(self, result):
         if result["data"] is not None:
             self.activate()
+
+            with transaction.atomic():
+                timestamp = make_aware(datetime.fromtimestamp(int(result["timestamp"])), get_default_timezone())
+                for key in result["data"]:
+                    self.checkmeasurement_set.create(variable=self.sensor.sensorvariable_set.get(name=key),
+                                                     measured_at=timestamp, value=result["data"][key])
+
             self.rrd.update(result)
             confintervals = self.rrd.get_confidence_intervals(result["data"].keys())
             curralert = self.current_alert
