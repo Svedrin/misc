@@ -2,7 +2,7 @@ syntax: glob
 
 *~
 *.pyc
-
+*.orig
 *.bkp
 
 fluxd.conf
