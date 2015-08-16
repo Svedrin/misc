@@ -137,6 +137,7 @@ class RRD(object):
             data[key] = re.findall("(\d*(\.\d*)?)", unicode(data[key]).encode("UTF-8"))[0][0]
 
         args = [ "rrdtool", "update", self.rrdpath ]
+        #args.extend([ "--daemon", "127.0.0.1:56342" ])
         names, values = zip( *(data.items()) )
         args.extend([ "--template", ":".join([ dsname[:19] for dsname in names ]),
             ":".join( [str(x) for x in ([result["timestamp"]] + list(values))] )
