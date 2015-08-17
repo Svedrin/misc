@@ -42,22 +42,10 @@ def config(request, host_fqdn):
 
 @login_required
 def profile(request):
-    timeline = []
-    viewstart = make_aware(datetime.now() - timedelta(hours=24), get_default_timezone())
-    for alert in Alert.objects.filter( Q(starttime__gt=viewstart) | Q(endtime=None) | Q(endtime__gt=viewstart) ):
-        # alert switched state in the last 24 hours.
-        if alert.starttime >= viewstart:
-            timeline.append((alert.starttime, alert, "start"))
-        if alert.endtime is not None:
-            timeline.append((alert.endtime, alert, "end"))
-    timeline.sort(key=lambda rec: rec[0])
-
+    most_viewed = request.user.checkviewcount_set.all().order_by("-count")[:5]
     return render_to_response("profile.html", {
-        'currentalerts':  Alert.objects.filter(endtime=None).order_by("-failcount"),
-        'outdatedchecks': Check.objects.get_outdated(),
-        'searchform': SearchForm(),
-        'timeline': timeline[:50][::-1],
-        'timeline_truncated': len(timeline) - 50,
+        'searchform':  SearchForm(),
+        'most_viewed': most_viewed,
         }, context_instance=RequestContext(request))
 
 
