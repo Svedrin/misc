@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 
 from django.db import models, transaction
 from django.utils.timezone import make_aware, get_default_timezone, utc
+from django.contrib.auth.models import User
 
 from hosts import models as hosts
 from sensors.sensor import SensorMeta
@@ -215,6 +216,13 @@ class CheckParameter(models.Model):
 
     def __unicode__(self):
         return "%s.%s = %s" % (self.parameter.sensor.name, self.parameter.name, self.value)
+
+
+class CheckViewcount(models.Model):
+    check_inst  = models.ForeignKey(Check, db_column="check_id")
+    variable    = models.ForeignKey(SensorVariable)
+    user        = models.ForeignKey(User)
+    count       = models.IntegerField(default=0)
 
 
 class CheckMeasurement(models.Model):
