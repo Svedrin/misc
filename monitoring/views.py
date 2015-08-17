@@ -14,12 +14,13 @@ from django.http                    import Http404, HttpResponse, HttpResponseRe
 from django.views.decorators.csrf   import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views      import redirect_to_login
+from django.db                      import transaction
 from django.db.models               import Q
 from django.core.urlresolvers       import reverse
 from django.utils.timezone          import make_aware, get_default_timezone
 
 from hosts.models import Host
-from monitoring.models import Sensor, SensorVariable, Check, Alert
+from monitoring.models import Sensor, SensorVariable, Check, Alert, CheckViewcount
 from monitoring.forms  import SearchForm
 from monitoring.graphbuilder import Graph
 from monitoring.graphunits   import parse, extract_units
@@ -171,6 +172,17 @@ def render_check(request, uuid, ds):
     rrd.prediction = request.GET.get("prediction", "true") == "true"
 
     var = check.sensor.sensorvariable_set.get(name=ds)
+
+    with transaction.atomic():
+        lock_check = Check.objects.select_for_update().get(id=check.id)
+        try:
+            vc = check.checkviewcount_set.select_for_update().get(variable=var, user=request.user)
+        except CheckViewcount.DoesNotExist:
+            vc = check.checkviewcount_set.create(variable=var, user=request.user, count=1)
+        else:
+            vc.count += 1
+            vc.save()
+
     if var.formula:
         srcline = var.formula
     else:
