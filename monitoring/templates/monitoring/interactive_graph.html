@@ -20,21 +20,7 @@
   {% include "monitoring/checkinfo.inc.html" %}
 </div>
 <h3>{{ variable|display }}</h3>
-<div
-    ng-controller="InteractiveGraphCtrl"
-    ng-init="check_uuid = '{{check.uuid}}'; variable_name='{{variable.name}}';"
-    class="container col-xs-12 col-sm-12 col-md-12 col-lg-12 no-padding">
-  <div id="profiles">
-    <a ng-repeat="profile in profiles"
-       class="btn" ng-class="{
-         'btn-primary': profile == active_profile,
-         'btn-default': profile != active_profile,
-         'hidden-xs':   !profile.tiny
-         }"
-       ng-click="set_active_profile(profile)">{[ profile.title ]}</a>
-  </div>
-  <div>
-    <flot dataset="chartData" options="chartOptions" height="300px" callback="flotCallback" zoom></flot>
-  </div>
+<div class="container col-xs-12 col-sm-12 col-md-12 col-lg-12 no-padding">
+    <interactive-graph check="{{ check.uuid }}" variable="{{ variable.name }}"></interactive-graph>
 </div>
 {% endblock %}
