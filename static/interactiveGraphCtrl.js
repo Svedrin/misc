@@ -22,7 +22,7 @@ fluxmon.controller("InteractiveGraphCtrl", function($scope, GraphDataService){
         },
     };
     $scope.$watchGroup(['check_uuid', 'variable_name'], function(){
-        if( $scope.check_uuid && $scope.variable_name )
+        if( $scope.check_uuid && $scope.variable_name ){
             GraphDataService.get_data($scope.check_uuid, $scope.variable_name).then(function(result){
                 var data = [];
                 for( var i = 0; i < result.data.length; i++ ){
@@ -32,5 +32,21 @@ fluxmon.controller("InteractiveGraphCtrl", function($scope, GraphDataService){
                     { 'label': $scope.variable_name, 'data': data }
                 ];
             });
+        }
     });
+});
+
+fluxmon.directive("zoom", function(){
+    return {
+        restrict: "A",
+        scope: false,
+        link: function(scope, element, attr){
+            var mc = new Hammer.Manager($(element).children("div")[0]);
+            var pinch = new Hammer.Pinch();
+            mc.add([pinch]);
+            mc.on("pinch", function(ev) {
+                alert("OMFG");
+            });
+        }
+    };
 });
