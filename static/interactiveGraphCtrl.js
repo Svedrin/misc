@@ -17,7 +17,8 @@ fluxmon.controller("InteractiveGraphCtrl", function($scope, GraphDataService){
     $scope.chartData    = [];
     $scope.chartOptions = {
         xaxis: {
-            mode: 'time'
+            mode: 'time',
+            timezone: 'browser'
         },
     };
     $scope.$watchGroup(['check_uuid', 'variable_name'], function(){
