@@ -19,7 +19,7 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService){
             variable: '@'
         },
         controller: function($scope){
-            var plot;
+            var plot, query, maybeRequery, requeryTimer = null;
 
             $scope.chartData    = [];
             $scope.chartOptions = {
@@ -38,20 +38,7 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService){
 
             $scope.$watchGroup(['check', 'variable'], function(){
                 if( $scope.check && $scope.variable ){
-                    var params = {};
-                    if( $scope.start ) params.start = parseInt($scope.start / 1000, 10);
-                    if( $scope.end   ) params.end   = parseInt($scope.end   / 1000, 10);
-                    GraphDataService.get_data($scope.check, $scope.variable, params).then(function(result){
-                        var i, data = [];
-                        for( i = 0; i < result.data.length; i++ ){
-                            data.push([ new Date(result.data[i][0]).valueOf(), result.data[i][1] ]);
-                        }
-                        $scope.chartData = [
-                            { 'label': $scope.variable, 'data': data }
-                        ];
-                        $scope.start = new Date(result.data[0][0]).valueOf();
-                        $scope.end   = new Date(result.data[i - 1][0]).valueOf()
-                    });
+                    query();
                 }
             });
 
@@ -64,7 +51,37 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService){
                 plot.setupGrid();
                 plot.draw();
                 plot.clearSelection();
+                maybeRequery();
             });
+
+            query = function(){
+                var params = {};
+                if( $scope.start ) params.start = parseInt($scope.start / 1000, 10);
+                if( $scope.end   ) params.end   = parseInt($scope.end   / 1000, 10);
+                GraphDataService.get_data($scope.check, $scope.variable, params).then(function(result){
+                    var i, data = [];
+                    for( i = 0; i < result.data.length; i++ ){
+                        data.push([ new Date(result.data[i][0]).valueOf(), result.data[i][1] ]);
+                    }
+                    $scope.chartData = [
+                        { 'label': $scope.variable, 'data': data }
+                    ];
+                    $scope.data_start = new Date(result.data[0][0]).valueOf();
+                    $scope.data_end   = new Date(result.data[i - 1][0]).valueOf()
+                    if( !$scope.start ) $scope.start = $scope.data_start;
+                    if( !$scope.end   ) $scope.end   = $scope.data_end;
+                });
+            }
+
+            maybeRequery = function(){
+                if( requeryTimer ){
+                    $timeout.cancel(requeryTimer);
+                    requeryTimer = null;
+                }
+                if( $scope.start < $scope.data_start || $scope.end > $scope.data_end ){
+                    requeryTimer = $timeout(query, 100);
+                }
+            }
         },
         link: function(scope, element, attr){
             var placeholder = $(element).children('flot').children('div');
