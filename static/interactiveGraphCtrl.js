@@ -44,8 +44,15 @@ fluxmon.directive("zoom", function(){
             var mc = new Hammer.Manager($(element).children("div")[0]);
             var pinch = new Hammer.Pinch();
             mc.add([pinch]);
-            mc.on("pinch", function(ev) {
-                alert("OMFG");
+            mc.on("pinchin", function(ev) {
+                alert("OMFG IN");
+            });
+            mc.on("pinchout", function(ev) {
+                alert("OMFG OUT");
+            });
+            $(element).children("div").bind("wheel", function(ev){
+                // -3 = upwards, +3 = downwards
+                console.log(ev.originalEvent.deltaY);
             });
         }
     };
