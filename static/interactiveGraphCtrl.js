@@ -98,14 +98,28 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService){
                 scope.$apply();
             }
             // Bind hammer for mobile pinch (doubletap) zooming
-            var mc = new Hammer.Manager(placeholder[0]);
+            var mc    = new Hammer.Manager(placeholder[0]);
+            var pan   = new Hammer.Pan();
             var pinch = new Hammer.Pinch();
-            mc.add([pinch]);
+            pan.recognizeWith(pinch);
+            mc.add([pan, pinch]);
             mc.on('pinchin', function(ev) {
                 zoomOut();
             });
             mc.on('pinchout', function(ev) {
                 zoomIn();
+            });
+            mc.on('panleft', function(ev) {
+                var intv = scope.end - scope.start;
+                scope.start += intv * 0.04;
+                scope.end   += intv * 0.04;
+                scope.$apply();
+            });
+            mc.on('panright', function(ev) {
+                var intv = scope.end - scope.start;
+                scope.start -= intv * 0.04;
+                scope.end   -= intv * 0.04;
+                scope.$apply();
             });
             // Bind wheel for standard mouse wheel scrolling
             placeholder.bind('wheel', function(ev){
