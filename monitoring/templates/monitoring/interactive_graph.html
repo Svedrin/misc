@@ -34,7 +34,7 @@
        ng-click="set_active_profile(profile)">{[ profile.title ]}</a>
   </div>
   <div>
-    <flot dataset="chartData" options="chartOptions" height="300px" zoom></flot>
+    <flot dataset="chartData" options="chartOptions" height="300px" callback="flotCallback" zoom></flot>
   </div>
 </div>
 {% endblock %}
