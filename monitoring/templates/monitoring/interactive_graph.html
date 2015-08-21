@@ -21,7 +21,8 @@
 </div>
 <h3>{{ variable|display }}</h3>
 <div
-    ng-controller="GraphCtrl" ng-init="set_end({{ check.rrd.last_check }})"
+    ng-controller="InteractiveGraphCtrl"
+    ng-init="check_uuid = '{{check.uuid}}'; variable_name='{{variable.name}}';"
     class="container col-xs-12 col-sm-12 col-md-12 col-lg-12 no-padding">
   <div id="profiles">
     <a ng-repeat="profile in profiles"
@@ -31,30 +32,9 @@
          'hidden-xs':   !profile.tiny
          }"
        ng-click="set_active_profile(profile)">{[ profile.title ]}</a>
-    <div class="visible-sm-inline visible-md-inline visible-lg-inline" >
-      <label><input type="checkbox" ng-model="prediction" /> Show prediction</label>
-    </div>
-    {% if not variable.formula %}
-      <a href="{% url 'monitoring.views.render_interactive_check_page' check.uuid variable.name %}" title="Check out the new graph that has moar glitter but less features">Interactive Graph</a>
-    {% endif %}
-    <br />
   </div>
   <div>
-    <zoomable zoom-to="zoomTo({start: start, end: end})" start="{[ start ]}" end="{[ end ]}"
-      class="visible-md-block visible-lg-block" alt="graph"
-      img-src="{% url 'monitoring.views.render_check' check.uuid variable.name %}?width=700&amp;start={[ start ]}&amp;end={[ end ]}&amp;prediction={[ prediction ]}"></zoomable>
-    <img
-      class="visible-sm-block" alt="graph"
-      ng-src="{% url 'monitoring.views.render_check' check.uuid variable.name %}?width=410&amp;start={[ start ]}&amp;end={[ end ]}&amp;prediction={[ prediction ]}" />
-    <img
-      class="visible-xs-block" alt="graph"
-      ng-src="{% url 'monitoring.views.render_check' check.uuid variable.name %}?width=220&amp;start={[ start ]}&amp;end={[ end ]}&amp;prediction={[ prediction ]}" />
-    <div class="alert alert-info" ng-show="new_data_available">
-      New data is available, but not visible. Choose a profile to view it.
-    </div>
-  </div>
-  <div class="visible-xs-block" >
-    <label><input type="checkbox" ng-model="prediction" /> Show prediction</label>
+    <flot dataset="chartData" options="chartOptions" height="500px"></flot>
   </div>
 </div>
 {% endblock %}

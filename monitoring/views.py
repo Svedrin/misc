@@ -10,7 +10,8 @@ from time import time
 
 from django.shortcuts               import render_to_response, get_object_or_404, get_list_or_404
 from django.template                import RequestContext
-from django.http                    import Http404, HttpResponse, HttpResponseRedirect
+from django.http                    import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden
+from django.core.serializers.json   import DjangoJSONEncoder
 from django.views.decorators.csrf   import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views      import redirect_to_login
@@ -191,4 +192,26 @@ def render_check(request, uuid, ds):
         builder.verttitle = unit
 
     return HttpResponse(builder.get_image(), content_type="image/png")
+
+def get_check_data(request, uuid, ds):
+    check = Check.objects.get(uuid=uuid)
+    if not check.has_perm(request.user, "r"):
+        return HttpResponseForbidden("I say nay nay")
+
+    start  = make_aware(datetime.fromtimestamp(int(request.GET.get("start",  time() - 24*60*60))), get_default_timezone())
+    end    = make_aware(datetime.fromtimestamp(int(request.GET.get("end",    time()))), get_default_timezone())
+
+    data = [(msmt.measured_at, msmt.value)
+            for msmt in check.checkmeasurement_set.filter(measured_at__range=(start, end), variable__name=ds)]
+
+    return HttpResponse(json.dumps(data, cls=DjangoJSONEncoder), content_type="application/json")
+
+def render_interactive_check_page(request, uuid, ds):
+    check = get_object_or_404(Check, uuid=uuid)
+    if not check.has_perm(request.user, "r"):
+        return redirect_to_login(request.build_absolute_uri())
+    return render_to_response("monitoring/interactive_graph.html", {
+        'check':    check,
+        'variable': check.sensor.sensorvariable_set.get(name=ds)
+        }, context_instance=RequestContext(request))
 

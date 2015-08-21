@@ -1,6 +1,6 @@
 // kate: space-indent on; indent-width 4; replace-tabs on; hl JavaScript;
 
-var fluxmon = angular.module('FluxmonApp', []);
+var fluxmon = angular.module('FluxmonApp', ['angular-flot']);
 
 fluxmon.config(function($interpolateProvider) {
     $interpolateProvider.startSymbol('{[');
