@@ -19,6 +19,8 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService){
             variable: '@'
         },
         controller: function($scope){
+            var plot;
+
             $scope.chartData    = [];
             $scope.chartOptions = {
                 xaxis: {
@@ -31,7 +33,7 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService){
             };
 
             $scope.flotCallback = function(plotObj){
-                $scope.plot = plotObj;
+                plot = plotObj;
             }
 
             $scope.$watchGroup(['check', 'variable'], function(){
@@ -54,14 +56,14 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService){
             });
 
             $scope.$watchGroup(['start', 'end'], function(){
-                $.each($scope.plot.getXAxes(), function(_, axis) {
+                $.each(plot.getXAxes(), function(_, axis) {
                     var opts = axis.options;
                     opts.min = $scope.start;
                     opts.max = $scope.end;
                 });
-                $scope.plot.setupGrid();
-                $scope.plot.draw();
-                $scope.plot.clearSelection();
+                plot.setupGrid();
+                plot.draw();
+                plot.clearSelection();
             });
         },
         link: function(scope, element, attr){
