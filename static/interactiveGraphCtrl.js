@@ -64,7 +64,11 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService){
                         data.push([ new Date(result.data[i][0]).valueOf(), result.data[i][1] ]);
                     }
                     $scope.chartData = [
-                        { 'label': $scope.variable, 'data': data }
+                        {
+                            label:  $scope.variable,
+                            data:   data,
+                            lines:  { show: true, fill: true }
+                        }
                     ];
                     $scope.data_start = new Date(result.data[0][0]).valueOf();
                     $scope.data_end   = new Date(result.data[i - 1][0]).valueOf()
