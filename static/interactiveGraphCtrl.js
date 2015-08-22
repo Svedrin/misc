@@ -10,7 +10,7 @@ fluxmon.service('GraphDataService', function($http){
     }
 });
 
-fluxmon.directive('interactiveGraph', function($timeout, GraphDataService){
+fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMobile){
     return {
         restrict: 'E',
         template: '<flot dataset="chartData" options="chartOptions" height="300px" callback="flotCallback"></flot>',
@@ -113,18 +113,21 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService){
             mc.on('pinchout', function(ev) {
                 zoomIn();
             });
-            mc.on('panleft', function(ev) {
-                var intv = scope.end - scope.start;
-                scope.start += intv * 0.04;
-                scope.end   += intv * 0.04;
-                scope.$apply();
-            });
-            mc.on('panright', function(ev) {
-                var intv = scope.end - scope.start;
-                scope.start -= intv * 0.04;
-                scope.end   -= intv * 0.04;
-                scope.$apply();
-            });
+            if( isMobile.any() ){
+                // Binding these events on a non-mobile client would break the selection
+                mc.on('panleft', function(ev) {
+                    var intv = scope.end - scope.start;
+                    scope.start += intv * 0.04;
+                    scope.end   += intv * 0.04;
+                    scope.$apply();
+                });
+                mc.on('panright', function(ev) {
+                    var intv = scope.end - scope.start;
+                    scope.start -= intv * 0.04;
+                    scope.end   -= intv * 0.04;
+                    scope.$apply();
+                });
+            }
             // Bind wheel for standard mouse wheel scrolling
             placeholder.bind('wheel', function(ev){
                 if(ev.originalEvent.deltaY < 0){
