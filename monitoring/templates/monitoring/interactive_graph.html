@@ -43,8 +43,14 @@
         </tbody>
     </table>
     <dl class="dl-horizontal">
-        <dt>Start:</dt><dd>{[ graphstate.start | date:'medium' ]} ({[ graphstate.data_start | date:'medium' ]})</dd>
-        <dt>End:  </dt><dd>{[ graphstate.end   | date:'medium' ]} ({[ graphstate.data_end   | date:'medium' ]})</dd>
+        <dt>Start:</dt>
+        <dd>{[ graphstate.start | date:'medium' ]}
+          <span ng-show="graphstate.start < graphstate.data_start">(data starts {[ graphstate.data_start | date:'medium' ]})</span>
+        </dd>
+        <dt>End:</dt>
+        <dd>{[ graphstate.end   | date:'medium' ]}
+          <span ng-show="graphstate.end   > graphstate.data_end"  >(data ends {[ graphstate.data_end   | date:'medium' ]})
+        </dd>
     </dl>
 </div>
 {% endblock %}
