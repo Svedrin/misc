@@ -21,6 +21,6 @@
 </div>
 <h3>{{ variable|display }}</h3>
 <div class="container col-xs-12 col-sm-12 col-md-12 col-lg-12 no-padding">
-    <interactive-graph check="{{ check.uuid }}" variable="{{ variable.name }}"></interactive-graph>
+    <interactive-graph check="{{ check.uuid }}" variable="{{ variable.name }}" variable-display="{{ variable.display }}" variable-unit="{{ variable.unit }}" ></interactive-graph>
 </div>
 {% endblock %}

@@ -16,7 +16,9 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
         template: '<flot dataset="chartData" options="chartOptions" height="300px" callback="flotCallback"></flot>',
         scope: {
             check:    '@',
-            variable: '@'
+            variable: '@',
+            variableDisplay: '@',
+            variableUnit: '@'
         },
         controller: function($scope){
             var plot, query, maybeRequery, requeryTimer = null;
@@ -65,7 +67,7 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
                     }
                     $scope.chartData = [
                         {
-                            label:  $scope.variable,
+                            label:  $scope.variableDisplay,
                             data:   data,
                             lines:  { show: true, fill: true }
                         }
