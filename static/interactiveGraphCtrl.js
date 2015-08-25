@@ -18,7 +18,8 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
             check:    '@',
             variable: '@',
             variableDisplay: '@',
-            variableUnit: '@'
+            variableUnit: '@',
+            graphState: '='
         },
         controller: function($scope){
             var plot, query, maybeRequery, requeryTimer = null;
@@ -88,6 +89,29 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
                     requeryTimer = $timeout(query, 100);
                 }
             }
+
+            $scope.$watchGroup(['start', 'end', 'data_start', 'data_end'], function(){
+                var i = 0, count = 0, min = null, max = null, avg = null, last;
+                for( i = 0; $scope.chartData[0] && i < $scope.chartData[0].data.length; i++ ){
+                    if( $scope.chartData[0].data[i][0] < $scope.start ||
+                        $scope.chartData[0].data[i][0] > $scope.end   ){
+                        continue;
+                    }
+                    last = $scope.chartData[0].data[i][1],
+                    min = (min == null ? last : (last < min ? last : min));
+                    max = (max == null ? last : (last > max ? last : max));
+                    avg += last;
+                    count++;
+                }
+                if(count) avg /= count;
+                $scope.graphState = {
+                    start: new Date($scope.start),
+                    end:   new Date($scope.end),
+                    data_start: $scope.data_start,
+                    data_end:   $scope.data_end,
+                    min: min, max: max, avg: avg, last: last
+                };
+            });
         },
         link: function(scope, element, attr){
             var placeholder = $(element).children('flot').children('div');
