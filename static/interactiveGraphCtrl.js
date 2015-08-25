@@ -132,9 +132,7 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
             pan.recognizeWith(pinch);
             mc.add([pan, pinch]);
             mc.on('pinchin', function(ev) {
-                var target = $(ev.target),
-                    zoomX  = (ev.center.x - target.offset().left) / target.width();
-                zoomOut(zoomX);
+                zoomOut(0.5);
             });
             mc.on('pinchout', function(ev) {
                 var target = $(ev.target),
@@ -164,7 +162,7 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
                     zoomIn(zoomX);
                 }
                 else{
-                    zoomOut(zoomX);
+                    zoomOut(0.5);
                 }
             });
             // Bind plot selection events
