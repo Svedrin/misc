@@ -32,6 +32,9 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
                 },
                 selection: {
                     mode: 'x'
+                },
+                grid: {
+                    hoverable: true
                 }
             };
 
@@ -180,6 +183,16 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
             placeholder.bind('plotselected', function (event, ranges) {
                 scope.start = ranges.xaxis.from;
                 scope.end   = ranges.xaxis.to;
+                scope.$apply();
+            });
+            placeholder.bind("plothover",  function (event, pos, item) {
+                scope.graphState = scope.graphState || {};
+                scope.graphState.hover = {pos: pos, item: item};
+                scope.$apply();
+            });
+            placeholder.bind("mouseout", function(event){
+                scope.graphState = scope.graphState || {};
+                scope.graphState.hover = {pos: null, item: null};
                 scope.$apply();
             });
         }
