@@ -91,29 +91,31 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
         },
         link: function(scope, element, attr){
             var placeholder = $(element).children('flot').children('div');
-            var zoomIn = function(){
+            var zoomIn = function(zoomX, dirIn){
                 var intv = scope.end - scope.start;
-                scope.start += intv * 0.10;
-                scope.end   -= intv * 0.10;
+                dirIn = dirIn || 1;
+                scope.start += dirIn * intv * 0.20 * zoomX;
+                scope.end   -= dirIn * intv * 0.20 * (1 - zoomX);
                 scope.$apply();
             }
-            var zoomOut = function(){
-                var intv = scope.end - scope.start;
-                scope.start -= intv * 0.10;
-                scope.end   += intv * 0.10;
-                scope.$apply();
+            var zoomOut = function(zoomX){
+                return zoomIn(zoomX, -1);
             }
-            // Bind hammer for mobile pinch (doubletap) zooming
+            // Bind hammer for mobile pinch zooming
             var mc    = new Hammer.Manager(placeholder[0]);
             var pan   = new Hammer.Pan();
             var pinch = new Hammer.Pinch();
             pan.recognizeWith(pinch);
             mc.add([pan, pinch]);
             mc.on('pinchin', function(ev) {
-                zoomOut();
+                var target = $(ev.target),
+                    zoomX  = (ev.center.x - target.offset().left) / target.width();
+                zoomOut(zoomX);
             });
             mc.on('pinchout', function(ev) {
-                zoomIn();
+                var target = $(ev.target),
+                    zoomX  = (ev.center.x - target.offset().left) / target.width();
+                zoomIn(zoomX);
             });
             if( isMobile.any() ){
                 // Binding these events on a non-mobile client would break the selection
@@ -132,11 +134,13 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
             }
             // Bind wheel for standard mouse wheel scrolling
             placeholder.bind('wheel', function(ev){
+                var target = $(ev.target),
+                    zoomX  = (ev.originalEvent.pageX - target.offset().left) / target.width();
                 if(ev.originalEvent.deltaY < 0){
-                    zoomIn();
+                    zoomIn(zoomX);
                 }
                 else{
-                    zoomOut();
+                    zoomOut(zoomX);
                 }
             });
             // Bind plot selection events
