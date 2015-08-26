@@ -69,7 +69,7 @@ class SensorVariable(models.Model):
     def get_unit(self):
         if not self.formula:
             return self.unit
-        return unicode( list(parse('wr_sectors * 512[B/sct] / wr_ios'))[0].get_unit(SensorNamespace(self.sensor)) )
+        return unicode( list(parse(self.formula))[0].get_unit(SensorNamespace(self.sensor)) )
 
 
 class View(models.Model):
