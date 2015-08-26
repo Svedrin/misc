@@ -237,6 +237,7 @@ def render_interactive_check_page(request, uuid, ds):
     varinfo = [{
         "name": var.name,
         "display": var.display,
+        "formula": var.formula,
         "unit": var.get_unit()
     }]
     return render_to_response("monitoring/interactive_graph.html", {
@@ -255,6 +256,7 @@ def render_view_page(request, uuid, view_id):
     varinfo = [{
         "name": var.name,
         "display": var.display,
+        "formula": var.formula,
         "unit": var.get_unit()
     } for var in view.variables.all()]
     return render_to_response("monitoring/interactive_graph.html", {

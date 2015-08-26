@@ -33,6 +33,7 @@
         <th>Max</th>
         <th ng-hide="isMobile">95%l</th>
         <th> </th>
+        <th ng-hide="isMobile"> </th>
       </tr>
     </thead>
     <tbody>
@@ -44,6 +45,7 @@
         <td>{[ varstats.max  | scalenumber ]}</td>
         <td ng-hide="isMobile">{[ varstats.p95  | scalenumber ]}</td>
         <td>{[ varstats.variable.unit ]}</td>
+        <td ng-hide="isMobile"><span ng-show="varstats.variable.formula" class="glyphicon glyphicon-info-sign" title="{[ varstats.variable.name ]} = {[ varstats.variable.formula ]}"></span></td>
       </tr>
     </tbody>
   </table>
