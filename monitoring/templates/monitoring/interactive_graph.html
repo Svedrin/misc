@@ -31,16 +31,18 @@
         <th>Avg</th>
         <th>Max</th>
         <th>95%l</th>
+        <th> </th>
       </tr>
     </thead>
     <tbody>
       <tr ng-repeat="varstats in graphstate.stats">
         <td>{[ varstats.variable.display ]}</td>
-        <td>{[ varstats.last | number:2 ]}</td>
-        <td>{[ varstats.min  | number:2 ]}</td>
-        <td>{[ varstats.avg  | number:2 ]}</td>
-        <td>{[ varstats.max  | number:2 ]}</td>
-        <td>{[ varstats.p95  | number:2 ]}</td>
+        <td>{[ varstats.last | scalenumber ]}</td>
+        <td>{[ varstats.min  | scalenumber ]}</td>
+        <td>{[ varstats.avg  | scalenumber ]}</td>
+        <td>{[ varstats.max  | scalenumber ]}</td>
+        <td>{[ varstats.p95  | scalenumber ]}</td>
+        <td>{[ varstats.variable.unit ]}</td>
       </tr>
     </tbody>
   </table>
