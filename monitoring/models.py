@@ -13,6 +13,7 @@ from hosts import models as hosts
 from sensors.sensor import SensorMeta
 from fluxacl.models import ACL
 from monitoring.rrd import RRD
+from monitoring.graphsql import parse, SensorNamespace
 
 class Sensor(models.Model):
     name        = models.CharField("Unique sensor name", max_length=255, unique=True)
@@ -64,6 +65,11 @@ class SensorVariable(models.Model):
 
     def __unicode__(self):
         return "%s: %s" % (self.sensor.name, self.name)
+
+    def get_unit(self):
+        if not self.formula:
+            return self.unit
+        return unicode( list(parse('wr_sectors * 512[B/sct] / wr_ios'))[0].get_unit(SensorNamespace(self.sensor)) )
 
 
 class View(models.Model):
@@ -213,7 +219,6 @@ class Check(models.Model):
         if not var.formula:
             return self.checkmeasurement_set.filter(variable=var, measured_at__range=(start, end))
         else:
-            from monitoring.graphsql import parse
             topnode  = list(parse(var.formula))[0]
             args     = [variable]
             valuedef = topnode.get_value(args)

@@ -36,6 +36,10 @@ class Name(Symbol):
         args.append(self.value)
         return "(avg(cm.value) filter (where sv.name = %s))"
 
+    def get_unit(self, namespace):
+        print self.value
+        return namespace.get_unit(self.value)
+
 class EndMarker(Symbol):
     pass
 
@@ -43,6 +47,9 @@ class Literal(Symbol):
     def get_value(self, args):
         args.append(self.value)
         return "%s"
+
+    def get_unit(self, namespace):
+        return namespace.get_unit(self.value)
 
 class Infix(Symbol):
     def led(self, left):
@@ -65,6 +72,9 @@ class OpPlus(Infix):
     def get_value(self, args):
         return "(%s + %s)" % (self.first.get_value(args), self.second.get_value(args))
 
+    def get_unit(self, namespace):
+        return self.first.get_unit(namespace) + self.second.get_unit(namespace)
+
 class OpMinus(Infix):
     lbp = 50
     rbp = 50
@@ -79,6 +89,9 @@ class OpMinus(Infix):
             return "(- %s)" % (self.first.get_value(args))
         return "(%s - %s)" % (self.first.get_value(args), self.second.get_value(args))
 
+    def get_unit(self, namespace):
+        return self.first.get_unit(namespace) - self.second.get_unit(namespace)
+
 class OpMult(Infix):
     lbp = 60
     rbp = 60
@@ -86,12 +99,18 @@ class OpMult(Infix):
     def get_value(self, args):
         return "(%s * %s)" % (self.first.get_value(args), self.second.get_value(args))
 
+    def get_unit(self, namespace):
+        return self.first.get_unit(namespace) * self.second.get_unit(namespace)
+
 class OpDiv(Infix):
     lbp = 60
     rbp = 60
 
     def get_value(self, args):
         return "(%s / %s)" % (self.first.get_value(args), self.second.get_value(args))
+
+    def get_unit(self, namespace):
+        return self.first.get_unit(namespace) / self.second.get_unit(namespace)
 
 class LeftParen(Prefix):
     def nud(self):
@@ -117,32 +136,27 @@ class LeftBracket(Infix):
         self.parser.advance() # skip the ]
         return self
 
-    def get_value(self, rrd):
-        value = self.value.get_value(rrd)
-        if not isinstance(value, Literal):
-            return value
-        unit  = self.unit.get_value(self.parser.unitfac)
-        return LiteralWithUnitNode(value, unit)
+    def get_value(self, args):
+        return self.value.get_value(args)
 
+    def get_unit(self, namespace):
+        return self.unit.get_unit(LiteralNamespace())
 
 class RightBracket(Symbol):
     pass
 
 
-class UnitLiteral(Symbol):
-    def get_value(self, rrd):
-        return self.parser.unitfac.get_source(self.value)
+class LiteralNamespace(object):
+    def get_unit(self, name):
+        return Unit([name], [])
 
-# GRAPH SEMANTICS
+class SensorNamespace(object):
+    def __init__(self, sensor):
+        self.sensor = sensor
 
-class LiteralWithUnit(Literal):
-    def __init__(self, value, unit):
-        Literal.__init__(self, value)
-        self._unit  = unit
-        self.unit   = unicode(unit)
-        self._label = "%s [%s]" % (value.label, self.unit)
-
-    varname    = property( lambda self: self._value.varname )
+    def get_unit(self, name):
+        unitstr = self.sensor.sensorvariable_set.get(name=name).unit
+        return list(parse(unitstr))[0].get_unit(LiteralNamespace())
 
 # UNIT SEMANTICS
 
@@ -221,28 +235,6 @@ class Unit(object):
 
     __str__ = __unicode__
 
-class UnitFactory(object):
-    def get_source(self, name):
-        return Unit([name], [])
-
-
-def extract_units(node):
-    if not isinstance(node, Node):
-        raise ValueError("this only works for nodes")
-    if isinstance(node, LiteralWithUnitNode):
-        return node._unit
-    if isinstance(node, UpsideDownNode):
-        return extract_units(node.lft)
-    if node.op == '+':
-        return extract_units(node.lft) + extract_units(node.rgt)
-    if node.op == '-':
-        return extract_units(node.lft) - extract_units(node.rgt)
-    if node.op == '*':
-        return extract_units(node.lft) * extract_units(node.rgt)
-    if node.op == '/':
-        return extract_units(node.lft) / extract_units(node.rgt)
-    raise TypeError("don't know how to extract units from %s" % unicode(node))
-
 
 # PARSER
 
@@ -264,11 +256,10 @@ class Parser(object):
             ')':         RightParen,
             '[':         LeftBracket,
             ']':         RightBracket,
-            '%':         UnitLiteral,
+            '%':         Literal,
             }
         self.token = None
         self.token_gen = token_gen
-        self.unitfac = UnitFactory()
         self.advance()
 
     def advance(self):
