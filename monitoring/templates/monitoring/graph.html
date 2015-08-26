@@ -34,9 +34,7 @@
     <div class="visible-sm-inline visible-md-inline visible-lg-inline" >
       <label><input type="checkbox" ng-model="prediction" /> Show prediction</label>
     </div>
-    {% if not variable.formula %}
-      <a href="{% url 'monitoring.views.render_interactive_check_page' check.uuid variable.name %}" title="Check out the new graph that has moar glitter but less features">Interactive Graph</a>
-    {% endif %}
+    <a href="{% url 'monitoring.views.render_interactive_check_page' check.uuid variable.name %}" title="Check out the new graph that has moar glitter but less features">Interactive Graph</a>
     <br />
   </div>
   <div>
