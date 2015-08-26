@@ -200,6 +200,35 @@ class Check(models.Model):
                     curralert.endtime = make_aware(datetime.now(), get_default_timezone())
                     curralert.save()
 
+    def get_measurements(self, variable, start, end):
+        var = self.sensor.sensorvariable_set.get(name=variable)
+        if not var.formula:
+            return self.checkmeasurement_set.filter(variable=var, measured_at__range=(start, end))
+        else:
+            from monitoring.graphsql import parse
+            topnode  = list(parse(var.formula))[0]
+            args     = [variable]
+            valuedef = topnode.get_value(args)
+            args.extend([self.id, start, end])
+            return CheckMeasurement.objects.raw("""select
+                  -1 as id,
+                  cm.check_id,
+                  (select id from monitoring_sensorvariable where name=%s) as variable_id,
+                  cm.measured_at,
+                  """ + valuedef + """ as value
+                from
+                  monitoring_checkmeasurement cm
+                  inner join monitoring_sensorvariable sv on variable_id=sv.id
+                where
+                  cm.check_id=%s and
+                  cm.measured_at BETWEEN %s AND %s
+                group by
+                  cm.check_id,
+                  cm.measured_at
+                order by cm.measured_at ;""", args)
+
+
+
 def __check_pre_delete(instance, **kwargs):
     instance.rrd.delete()
 

@@ -202,7 +202,7 @@ def get_check_data(request, uuid, ds):
     end    = make_aware(datetime.fromtimestamp(int(request.GET.get("end",    time()))), get_default_timezone())
 
     data = [(msmt.measured_at, msmt.value)
-            for msmt in check.checkmeasurement_set.filter(measured_at__range=(start, end), variable__name=ds)]
+            for msmt in check.get_measurements(ds, start, end)]
 
     return HttpResponse(json.dumps(data, cls=DjangoJSONEncoder), content_type="application/json")
 
