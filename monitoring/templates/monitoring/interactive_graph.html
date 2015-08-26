@@ -20,28 +20,29 @@
   {% include "monitoring/checkinfo.inc.html" %}
 </div>
 <h3>{{ variable|display }}</h3>
-<div class="container col-xs-12 col-sm-12 col-md-12 col-lg-12 no-padding">
+<div class="container col-xs-12 col-sm-12 col-md-12 col-lg-12 no-padding"
+     ng-controller="interactiveGraphCtrl">
   <interactive-graph check="{{ check.uuid }}" variables="{{ variables }}" graph-state="graphstate" ></interactive-graph>
   <table class="table">
     <thead>
       <tr>
         <th> </th>
-        <th>Cur</th>
+        <th ng-hide="isMobile">Cur</th>
         <th>Min</th>
         <th>Avg</th>
         <th>Max</th>
-        <th>95%l</th>
+        <th ng-hide="isMobile">95%l</th>
         <th> </th>
       </tr>
     </thead>
     <tbody>
       <tr ng-repeat="varstats in graphstate.stats">
         <td>{[ varstats.variable.display ]}</td>
-        <td>{[ varstats.last | scalenumber ]}</td>
+        <td ng-hide="isMobile">{[ varstats.last | scalenumber ]}</td>
         <td>{[ varstats.min  | scalenumber ]}</td>
         <td>{[ varstats.avg  | scalenumber ]}</td>
         <td>{[ varstats.max  | scalenumber ]}</td>
-        <td>{[ varstats.p95  | scalenumber ]}</td>
+        <td ng-hide="isMobile">{[ varstats.p95  | scalenumber ]}</td>
         <td>{[ varstats.variable.unit ]}</td>
       </tr>
     </tbody>
