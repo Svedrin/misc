@@ -78,7 +78,7 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
                 if( $scope.end   ) params.end   = parseInt($scope.end   / 1000, 10);
                 GraphDataService.get_data(params).then(function(response){
                     var result = response.data, i, v, respdata, data;
-                    var min, max, avg, last, visibleData;
+                    var min, max, avg, last, lastDate, prevDate, visibleData;
 
                     $scope.chartData = [];
 
@@ -103,18 +103,25 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
                         avg = null;
                         visibleData = [];
                         data = [];
+                        lastDate = null;
 
                         for( i = 0; i < respdata.length; i++ ){
                             // if( respdata[i][0] < $scope.start ||
                             //     respdata[i][0] > $scope.end   ){
                             //     continue;
                             // }
-                            data.push([ new Date(respdata[i][0]).valueOf(), respdata[i][1] ]);
                             last = respdata[i][1];
+                            lastDate = new Date(respdata[i][0]);
+                            if( prevDate && lastDate - prevDate > 3 * 300 * 1000 ){
+                                // If more than three data points are missing, assume we have a hole in the data
+                                data.push(null);
+                            }
+                            data.push([ lastDate.valueOf(), last ]);
                             min = (min == null ? last : (last < min ? last : min));
                             max = (max == null ? last : (last > max ? last : max));
                             avg += last;
                             visibleData.push(last);
+                            prevDate = lastDate;
                         }
                         if(visibleData) avg /= visibleData.length;
 
