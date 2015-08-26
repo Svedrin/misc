@@ -210,6 +210,7 @@ def get_check_data(request):
         'metrics': {}
     }
 
+    start_time = time()
     for ds in request.GET.getlist("variables"):
         response["metrics"][ds] = {
             "data": [(msmt.measured_at, msmt.value)
@@ -217,11 +218,14 @@ def get_check_data(request):
         }
         response["metrics"][ds]["start"] = response["metrics"][ds]["data"][ 0][0]
         response["metrics"][ds]["end"]   = response["metrics"][ds]["data"][-1][0]
+    end_time = time()
 
     response["data_window"] = {
         "start": min( metric["start"] for metric in response["metrics"].values() ),
         "end":   max( metric["end"]   for metric in response["metrics"].values() ),
     }
+
+    response["query_time"] = end_time - start_time
 
     return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type="application/json")
 

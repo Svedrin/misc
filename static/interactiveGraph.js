@@ -92,6 +92,7 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
                         end:   new Date($scope.end),
                         data_start: new Date($scope.data_start),
                         data_end:   new Date($scope.data_end),
+                        query_time: result.query_time,
                         stats: []
                     };
 

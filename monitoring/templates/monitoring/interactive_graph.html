@@ -55,6 +55,8 @@
     <dd>{[ graphstate.end   | date:'medium' ]}
       <span ng-show="graphstate.end   > graphstate.data_end"  >(data ends {[ graphstate.data_end   | date:'medium' ]})
     </dd>
+    <dt>Query time:</dt>
+    <dd>{[ graphstate.query_time | number:2 ]} seconds</dd>
   </dl>
 </div>
 {% endblock %}
