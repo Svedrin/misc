@@ -66,6 +66,14 @@ class SensorVariable(models.Model):
         return "%s: %s" % (self.sensor.name, self.name)
 
 
+class View(models.Model):
+    name        = models.CharField(   "Human-readable view name",  max_length=255)
+    variables   = models.ManyToManyField(SensorVariable)
+
+    def __unicode__(self):
+        return self.name
+
+
 class OutdatedChecksQuerySet(models.query.QuerySet):
     def __iter__(self):
         for check in models.query.QuerySet.__iter__(self):

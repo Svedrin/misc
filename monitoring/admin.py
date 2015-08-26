@@ -3,13 +3,16 @@
 
 from django.contrib import admin
 
-from monitoring.models import Sensor, SensorParameter, SensorVariable, Check, CheckParameter
+from monitoring.models import Sensor, SensorParameter, SensorVariable, Check, CheckParameter, View
 
 class SensorParameterInline(admin.TabularInline):
     model = SensorParameter
 
 class SensorVariableInline(admin.TabularInline):
     model = SensorVariable
+
+class ViewAdmin(admin.ModelAdmin):
+    model = View
 
 class SensorAdmin(admin.ModelAdmin):
     inlines      = [SensorParameterInline, SensorVariableInline]
@@ -24,3 +27,4 @@ class CheckAdmin(admin.ModelAdmin):
 
 admin.site.register( Sensor, SensorAdmin )
 admin.site.register( Check,  CheckAdmin )
+admin.site.register( View,   ViewAdmin )

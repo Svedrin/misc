@@ -21,7 +21,7 @@
 </div>
 <h3>{{ variable|display }}</h3>
 <div class="container col-xs-12 col-sm-12 col-md-12 col-lg-12 no-padding">
-  <interactive-graph check="{{ check.uuid }}" variable="{{ variable.name }}" variable-display="{{ variable.display }}" variable-unit="{{ variable.unit }}" graph-state="graphstate" ></interactive-graph>
+  <interactive-graph check="{{ check.uuid }}" variables="{{ variables }}" graph-state="graphstate" ></interactive-graph>
   <table class="table">
     <thead>
       <tr>
@@ -34,13 +34,13 @@
       </tr>
     </thead>
     <tbody>
-      <tr>
-        <td>{{ variable.display }}</td>
-        <td>{[ graphstate.last | number:2 ]}</td>
-        <td>{[ graphstate.min  | number:2 ]}</td>
-        <td>{[ graphstate.avg  | number:2 ]}</td>
-        <td>{[ graphstate.max  | number:2 ]}</td>
-        <td>{[ graphstate.p95  | number:2 ]}</td>
+      <tr ng-repeat="varstats in graphstate.stats">
+        <td>{[ varstats.variable.display ]}</td>
+        <td>{[ varstats.last | number:2 ]}</td>
+        <td>{[ varstats.min  | number:2 ]}</td>
+        <td>{[ varstats.avg  | number:2 ]}</td>
+        <td>{[ varstats.max  | number:2 ]}</td>
+        <td>{[ varstats.p95  | number:2 ]}</td>
       </tr>
     </tbody>
   </table>

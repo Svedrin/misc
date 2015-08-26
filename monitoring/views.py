@@ -21,7 +21,7 @@ from django.core.urlresolvers       import reverse
 from django.utils.timezone          import make_aware, get_default_timezone
 
 from hosts.models import Host
-from monitoring.models import Sensor, SensorVariable, Check, Alert, CheckViewcount
+from monitoring.models import Sensor, SensorVariable, Check, Alert, CheckViewcount, View
 from monitoring.forms  import SearchForm
 from monitoring.graphbuilder import Graph
 from monitoring.graphunits   import parse, extract_units
@@ -121,7 +121,8 @@ def check_details(request, uuid):
         svars.append((variable, alerts))
     return render_to_response("monitoring/checkdetails.html", {
         'check': check,
-        'vars':  svars
+        'vars':  svars,
+        'views': View.objects.filter(variables__sensor__check=check).distinct(),
         }, context_instance=RequestContext(request))
 
 def render_check_page(request, uuid, ds, profile="24h"):
@@ -193,25 +194,69 @@ def render_check(request, uuid, ds):
 
     return HttpResponse(builder.get_image(), content_type="image/png")
 
-def get_check_data(request, uuid, ds):
-    check = Check.objects.get(uuid=uuid)
+def get_check_data(request):
+    check = Check.objects.get(uuid=request.GET["check"])
     if not check.has_perm(request.user, "r"):
         return HttpResponseForbidden("I say nay nay")
 
     start  = make_aware(datetime.fromtimestamp(int(request.GET.get("start",  time() - 24*60*60))), get_default_timezone())
     end    = make_aware(datetime.fromtimestamp(int(request.GET.get("end",    time()))), get_default_timezone())
 
-    data = [(msmt.measured_at, msmt.value)
-            for msmt in check.get_measurements(ds, start, end)]
+    response = {
+        'request_window': {
+            'start': start,
+            'end':   end
+        },
+        'metrics': {}
+    }
 
-    return HttpResponse(json.dumps(data, cls=DjangoJSONEncoder), content_type="application/json")
+    for ds in request.GET.getlist("variables"):
+        response["metrics"][ds] = {
+            "data": [(msmt.measured_at, msmt.value)
+                for msmt in check.get_measurements(ds, start, end)]
+        }
+        response["metrics"][ds]["start"] = response["metrics"][ds]["data"][ 0][0]
+        response["metrics"][ds]["end"]   = response["metrics"][ds]["data"][-1][0]
+
+    response["data_window"] = {
+        "start": min( metric["start"] for metric in response["metrics"].values() ),
+        "end":   max( metric["end"]   for metric in response["metrics"].values() ),
+    }
+
+    return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type="application/json")
 
 def render_interactive_check_page(request, uuid, ds):
     check = get_object_or_404(Check, uuid=uuid)
     if not check.has_perm(request.user, "r"):
         return redirect_to_login(request.build_absolute_uri())
+    var = check.sensor.sensorvariable_set.get(name=ds)
+    varinfo = [{
+        "name": var.name,
+        "display": var.display,
+        "unit": var.unit
+    }]
     return render_to_response("monitoring/interactive_graph.html", {
-        'check':    check,
-        'variable': check.sensor.sensorvariable_set.get(name=ds)
+        'check':     check,
+        'view':      None,
+        'variable':  var,
+        'variables': json.dumps(varinfo)
+        }, context_instance=RequestContext(request))
+
+
+def render_view_page(request, uuid, view_id):
+    check = get_object_or_404(Check, uuid=uuid)
+    view  = get_object_or_404(View,  id=view_id)
+    if not check.has_perm(request.user, "r"):
+        return redirect_to_login(request.build_absolute_uri())
+    varinfo = [{
+        "name": var.name,
+        "display": var.display,
+        "unit": var.unit
+    } for var in view.variables.all()]
+    return render_to_response("monitoring/interactive_graph.html", {
+        'check':     check,
+        'view':      view,
+        'variable':  view,
+        'variables': json.dumps(varinfo)
         }, context_instance=RequestContext(request))
 

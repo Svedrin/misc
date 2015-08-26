@@ -29,6 +29,19 @@
       <div class="tab-pane active" id="variables">
         <table class="table table-hover">
           <tbody>
+          {% for view in views %}
+            <tr targetlink="{% url 'monitoring.views.render_view_page' check.uuid view.id %}" class="checktr">
+              <td>
+                {{ view.name }}
+              </td>
+              <td><a href="{% url 'monitoring.views.render_view_page' check.uuid view.id %}" title="View graph" style="text-decoration: none">→</a></td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+
+        <table class="table table-hover">
+          <tbody>
           {% for variable, alerts in vars %}
             <tr targetlink="{% url 'monitoring.views.render_check_page' check.uuid variable.name %}" class="checktr {% if alerts %}warning{% else %}success{% endif %}">
               <td>

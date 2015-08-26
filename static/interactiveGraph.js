@@ -2,8 +2,8 @@
 
 fluxmon.service('GraphDataService', function($http){
     return {
-        get_data: function(check, variable, params){
-            return $http.get('/check/' + check + '/' + variable + '.json', {
+        get_data: function(params){
+            return $http.get('/check.json', {
                 params: params
             });
         }
@@ -16,13 +16,13 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
         template: '<flot dataset="chartData" options="chartOptions" height="300px" callback="flotCallback"></flot>',
         scope: {
             check:    '@',
-            variable: '@',
-            variableDisplay: '@',
-            variableUnit: '@',
+            variables: '@',
             graphState: '='
         },
         controller: function($scope){
             var plot, query, maybeRequery, requeryTimer = null;
+
+            $scope.variables = $.parseJSON($scope.variables);
 
             $scope.chartData    = [];
             $scope.chartOptions = {
@@ -42,12 +42,6 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
                 plot = plotObj;
             }
 
-            $scope.$watchGroup(['check', 'variable'], function(){
-                if( $scope.check && $scope.variable ){
-                    query();
-                }
-            });
-
             $scope.$watchGroup(['start', 'end'], function(){
                 $.each(plot.getXAxes(), function(_, axis) {
                     var opts = axis.options;
@@ -61,60 +55,80 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
             });
 
             query = function(){
-                var params = {};
+                var vars = $scope.variables;
+                if( !vars.map ) vars = $.parseJSON(vars);
+                var params = {
+                    check: $scope.check,
+                    variables: vars.map(function(v){ return v.name })
+                };
                 if( $scope.start ) params.start = parseInt($scope.start / 1000, 10);
                 if( $scope.end   ) params.end   = parseInt($scope.end   / 1000, 10);
-                GraphDataService.get_data($scope.check, $scope.variable, params).then(function(result){
-                    var i, data = [];
-                    for( i = 0; i < result.data.length; i++ ){
-                        data.push([ new Date(result.data[i][0]).valueOf(), result.data[i][1] ]);
-                    }
-                    $scope.data_start = new Date(result.data[0][0]).valueOf();
-                    $scope.data_end   = new Date(result.data[i - 1][0]).valueOf()
+                GraphDataService.get_data(params).then(function(response){
+                    var result = response.data, i, v, respdata, data;
+                    var min, max, avg, last, visibleData;
+
+                    $scope.chartData = [];
+
+                    $scope.data_start = new Date(result.data_window.start).valueOf();
+                    $scope.data_end   = new Date(result.data_window.end).valueOf();
                     if( !$scope.start ) $scope.start = $scope.data_start;
                     if( !$scope.end   ) $scope.end   = $scope.data_end;
-
-                    var i = 0, min = null, max = null, avg = null, last, visibleData = [];
-                    for( i = 0; i < data.length; i++ ){
-                        if( data[i][0] < $scope.start ||
-                            data[i][0] > $scope.end   ){
-                            continue;
-                        }
-                        last = data[i][1],
-                        min = (min == null ? last : (last < min ? last : min));
-                        max = (max == null ? last : (last > max ? last : max));
-                        avg += last;
-                        visibleData.push(last);
-                    }
-                    if(visibleData) avg /= visibleData.length;
 
                     $scope.graphState = {
                         start: new Date($scope.start),
                         end:   new Date($scope.end),
                         data_start: new Date($scope.data_start),
                         data_end:   new Date($scope.data_end),
-                        min: min, max: max, avg: avg, last: last,
-                        p95: StatisticsService.get_ntile(95, 100, visibleData),
-                        p05: StatisticsService.get_ntile( 5, 100, visibleData)
+                        stats: []
                     };
 
-                    $scope.chartData = [{
-                        label:  $scope.variableDisplay,
-                        data:   data,
-                        lines:  { show: true, fill: true },
-                        color: '#007400',
-                    }];
-                    if( min != max ){
-                        $scope.chartData[0].threshold = [{
-                            below: $scope.graphState.max + 1,
-                            color: '#740000'
-                        }, {
-                            below: $scope.graphState.p95,
-                            color: '#007400'
-                        }, {
-                            below: $scope.graphState.p05,
-                            color: '#747474'
-                        }];
+                    for( v = 0; v < vars.length; v++ ){
+                        respdata = result.metrics[vars[v].name].data;
+                        min = null;
+                        max = null;
+                        avg = null;
+                        visibleData = [];
+                        data = [];
+
+                        for( i = 0; i < respdata.length; i++ ){
+                            // if( respdata[i][0] < $scope.start ||
+                            //     respdata[i][0] > $scope.end   ){
+                            //     continue;
+                            // }
+                            data.push([ new Date(respdata[i][0]).valueOf(), respdata[i][1] ]);
+                            last = respdata[i][1];
+                            min = (min == null ? last : (last < min ? last : min));
+                            max = (max == null ? last : (last > max ? last : max));
+                            avg += last;
+                            visibleData.push(last);
+                        }
+                        if(visibleData) avg /= visibleData.length;
+
+                        $scope.graphState.stats.push({
+                            variable: vars[v],
+                            min: min, max: max, avg: avg, last: last,
+                            p95: StatisticsService.get_ntile(95, 100, visibleData),
+                            p05: StatisticsService.get_ntile( 5, 100, visibleData)
+                        });
+
+                        $scope.chartData.push({
+                            label:  vars[v].display,
+                            data:   data,
+                            lines:  { show: true, fill: false},
+                            //color: '#007400',
+                        });
+                        if( false && min != max ){
+                            $scope.chartData[0].threshold = [{
+                                below: $scope.graphState.max + 1,
+                                color: '#740000'
+                            }, {
+                                below: $scope.graphState.p95,
+                                color: '#007400'
+                            }, {
+                                below: $scope.graphState.p05,
+                                color: '#747474'
+                            }];
+                        }
                     }
                 });
             }
@@ -128,6 +142,8 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
                     requeryTimer = $timeout(query, 100);
                 }
             }
+
+            query();
         },
         link: function(scope, element, attr){
             var placeholder = $(element).children('flot').children('div');

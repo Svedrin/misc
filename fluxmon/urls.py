@@ -28,8 +28,9 @@ urlpatterns = patterns('',
     url(r'^details/(?P<uuid>[\w\d-]+)/',                   'monitoring.views.check_details'),
     url(r'^render/(?P<uuid>[\w\d-]+)/(?P<ds>[\w_]+).html', 'monitoring.views.render_check_page'),
     url(r'^render/(?P<uuid>[\w\d-]+)/(?P<ds>[\w_]+).png',  'monitoring.views.render_check'),
-    url(r'^check/(?P<uuid>[\w\d-]+)/(?P<ds>[\w_]+).json',  'monitoring.views.get_check_data'),
+    url(r'^check.json',                                    'monitoring.views.get_check_data'),
     url(r'^check/(?P<uuid>[\w\d-]+)/(?P<ds>[\w_]+).html',  'monitoring.views.render_interactive_check_page'),
+    url(r'^view/(?P<uuid>[\w\d-]+)/(?P<view_id>\d+).html', 'monitoring.views.render_view_page'),
 
     url(r'^$',                                             TemplateView.as_view(template_name='index.html'), name="index.html"),
 
