@@ -18,7 +18,7 @@ fluxmon.filter('scalenumber', function() {
     };
 });
 
-fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMobile, StatisticsService){
+fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMobile, StatisticsService, $filter){
     return {
         restrict: 'E',
         template: '<flot dataset="chartData" options="chartOptions" height="300px" callback="flotCallback"></flot>',
@@ -37,6 +37,11 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
                 xaxis: {
                     mode: 'time',
                     timezone: 'browser'
+                },
+                yaxis: {
+                    tickFormatter: function(input, config){
+                        return $filter("scalenumber")(input);
+                    }
                 },
                 selection: {
                     mode: 'x'
