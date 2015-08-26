@@ -127,7 +127,7 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
                         $scope.chartData.push({
                             label:  vars[v].display,
                             data:   data,
-                            lines:  { show: true, fill: false},
+                            lines:  { show: true, fill: true },
                             //color: '#007400',
                         });
                         if( false && min != max ){
