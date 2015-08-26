@@ -103,7 +103,9 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
                         data:   data,
                         lines:  { show: true, fill: true },
                         color: '#007400',
-                        threshold: [{
+                    }];
+                    if( min != max ){
+                        $scope.chartData[0].threshold = [{
                             below: $scope.graphState.max + 1,
                             color: '#740000'
                         }, {
@@ -112,8 +114,8 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
                         }, {
                             below: $scope.graphState.p05,
                             color: '#747474'
-                        }]
-                    }];
+                        }];
+                    }
                 });
             }
 
