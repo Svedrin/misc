@@ -43,11 +43,11 @@
         <table class="table table-hover">
           <tbody>
           {% for variable, alerts in vars %}
-            <tr targetlink="{% url 'monitoring.views.render_check_page' check.uuid variable.name %}" class="checktr {% if alerts %}warning{% else %}success{% endif %}">
+            <tr targetlink="{% url 'monitoring.views.render_interactive_check_page' check.uuid variable.name %}" class="checktr {% if alerts %}warning{% else %}success{% endif %}">
               <td>
                 {{ variable|display }}
               </td>
-              <td><a href="{% url 'monitoring.views.render_check_page' check.uuid variable.name %}" title="View graph" style="text-decoration: none">→</a></td>
+              <td><a href="{% url 'monitoring.views.render_interactive_check_page' check.uuid variable.name %}" title="View graph" style="text-decoration: none">→</a></td>
             </tr>
           {% endfor %}
           </tbody>
