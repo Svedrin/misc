@@ -67,9 +67,9 @@ class SensorVariable(models.Model):
         return "%s: %s" % (self.sensor.name, self.name)
 
     def get_unit(self):
-        if not self.formula:
-            return self.unit
-        return unicode( list(parse(self.formula))[0].get_unit(SensorNamespace(self.sensor)) )
+        if self.formula and not self.unit:
+            return unicode( list(parse(self.formula))[0].get_unit(SensorNamespace(self.sensor)) )
+        return self.unit
 
 
 class View(models.Model):
