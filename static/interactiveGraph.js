@@ -133,7 +133,7 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
                         });
 
                         $scope.chartData.push({
-                            label:  vars[v].display,
+                            label:  vars[v].display || vars[v].name,
                             data:   data,
                             lines:  { show: true, fill: true },
                             //color: '#007400',

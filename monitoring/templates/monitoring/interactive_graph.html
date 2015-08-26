@@ -37,7 +37,7 @@
     </thead>
     <tbody>
       <tr ng-repeat="varstats in graphstate.stats">
-        <td>{[ varstats.variable.display ]}</td>
+        <td>{[ varstats.variable.display || varstats.variable.name ]}</td>
         <td ng-hide="isMobile">{[ varstats.last | scalenumber ]}</td>
         <td>{[ varstats.min  | scalenumber ]}</td>
         <td>{[ varstats.avg  | scalenumber ]}</td>
