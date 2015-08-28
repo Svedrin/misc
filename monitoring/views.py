@@ -214,10 +214,13 @@ def get_check_data(request):
     for ds in request.GET.getlist("variables"):
         response["metrics"][ds] = {
             "data": [(msmt.measured_at, msmt.value)
-                for msmt in check.get_measurements(ds, start, end)]
+                for msmt in check.get_measurements(ds, start, end)],
+            "start": None,
+            "end": None
         }
-        response["metrics"][ds]["start"] = response["metrics"][ds]["data"][ 0][0]
-        response["metrics"][ds]["end"]   = response["metrics"][ds]["data"][-1][0]
+        if response["metrics"][ds]["data"]:
+            response["metrics"][ds]["start"] = response["metrics"][ds]["data"][ 0][0]
+            response["metrics"][ds]["end"]   = response["metrics"][ds]["data"][-1][0]
     end_time = time()
 
     response["data_window"] = {
