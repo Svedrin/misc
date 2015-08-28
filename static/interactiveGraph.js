@@ -56,6 +56,10 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
             }
 
             $scope.$watchGroup(['start', 'end'], function(){
+                if( $scope.graphState ){
+                    $scope.graphState.start = new Date($scope.start);
+                    $scope.graphState.end   = new Date($scope.end);
+                }
                 $.each(plot.getXAxes(), function(_, axis) {
                     var opts = axis.options;
                     opts.min = $scope.start;
