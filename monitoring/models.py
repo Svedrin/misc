@@ -214,31 +214,53 @@ class Check(models.Model):
                     curralert.endtime = make_aware(datetime.now(), get_default_timezone())
                     curralert.save()
 
-    def get_measurements(self, variable, start, end):
+    def get_measurements(self, variable, start=None, end=None):
         var = self.sensor.sensorvariable_set.get(name=variable)
+
+        if start is None:
+            start = make_aware(datetime.now() - timedelta(days=1), get_default_timezone())
+        if end is None:
+            end   = start + timedelta(days=1)
+        dt = end - start
+
         if not var.formula:
-            return self.checkmeasurement_set.filter(variable=var, measured_at__range=(start, end))
+            topnode = list(parse(var.name))[0]
         else:
-            topnode  = list(parse(var.formula))[0]
-            args     = [variable]
-            valuedef = topnode.get_value(args)
-            args.extend([self.id, start, end])
-            return CheckMeasurement.objects.raw("""select
-                  -1 as id,
-                  cm.check_id,
-                  (select id from monitoring_sensorvariable where name=%s) as variable_id,
-                  cm.measured_at,
-                  """ + valuedef + """ as value
-                from
-                  monitoring_checkmeasurement cm
-                  inner join monitoring_sensorvariable sv on variable_id=sv.id
-                where
-                  cm.check_id=%s and
-                  cm.measured_at BETWEEN %s AND %s
-                group by
-                  cm.check_id,
-                  cm.measured_at
-                order by cm.measured_at ;""", args)
+            topnode = list(parse(var.formula))[0]
+
+        resolutions = (
+            ('minute', timedelta(minutes=1)),
+            ('hour',   timedelta(hours=1)),
+            ('day',    timedelta(days=1)),
+            ('month',  timedelta(days=30)),
+            ('year',   timedelta(days=365))
+        )
+        for res_name, res_dt in resolutions:
+            data_res = res_name
+            if dt.total_seconds() / res_dt.total_seconds() <= 250:
+                break
+
+        #print "resolution is now", data_res
+
+        args     = [variable]
+        valuedef = topnode.get_value(args)
+        args.extend([self.id, start, end, data_res])
+        return CheckMeasurement.objects.raw("""select
+                -1 as id,
+                cm.check_id,
+                (select id from monitoring_sensorvariable where name=%s) as variable_id,
+                min(cm.measured_at) as measured_at,
+                """ + valuedef + """ as value
+            from
+                monitoring_checkmeasurement cm
+                inner join monitoring_sensorvariable sv on variable_id=sv.id
+            where
+                cm.check_id=%s and
+                cm.measured_at BETWEEN %s AND %s
+            group by
+                cm.check_id,
+                date_trunc(%s, cm.measured_at)
+            order by measured_at ;""", args)
 
 
 
@@ -272,6 +294,9 @@ class CheckMeasurement(models.Model):
     variable    = models.ForeignKey(SensorVariable)
     measured_at = models.DateTimeField()
     value       = models.FloatField()
+
+    def __unicode__(self):
+        return "%s:\t%.2f" % (self.measured_at, self.value)
 
 
 class Alert(models.Model):

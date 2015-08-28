@@ -6,6 +6,23 @@ fluxmon.service('GraphDataService', function($http){
             return $http.get('/check.json', {
                 params: params
             });
+        },
+        get_resolution: function(start, end){
+            var dt = end - start, data_res, i;
+            resolutions = [
+                {name: 'minute', len: 1000 * 60 * 5            },
+                {name: 'hour',   len: 1000 * 60 * 60           },
+                {name: 'day',    len: 1000 * 60 * 60 * 24      },
+                {name: 'month',  len: 1000 * 60 * 60 * 24 * 30 },
+                {name: 'year',   len: 1000 * 60 * 60 * 24 * 365}
+            ]
+            for( i = 0; i < resolutions.length; i++ ){
+                data_res = resolutions[i].name;
+                if( dt / resolutions[i].len <= 250 ){
+                    break
+                }
+            }
+            return data_res;
         }
     }
 });
@@ -81,7 +98,7 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
                 if( $scope.start ) params.start = parseInt($scope.start / 1000, 10);
                 if( $scope.end   ) params.end   = parseInt($scope.end   / 1000, 10);
                 GraphDataService.get_data(params).then(function(response){
-                    var result = response.data, i, v, respdata, data;
+                    var result = response.data, i, v, respdata, data, resolution;
                     var min, max, avg, last, lastDate, prevDate, visibleData;
 
                     $scope.chartData = [];
@@ -100,6 +117,8 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
                         stats: []
                     };
 
+                    resolution = GraphDataService.get_resolution(new Date($scope.data_start), new Date($scope.data_end));
+
                     for( v = 0; v < vars.length; v++ ){
                         respdata = result.metrics[vars[v].name].data;
                         min = null;
@@ -116,7 +135,7 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
                             // }
                             last = respdata[i][1];
                             lastDate = new Date(respdata[i][0]);
-                            if( prevDate && lastDate - prevDate > 3 * 300 * 1000 ){
+                            if( prevDate && lastDate - prevDate > 3 * resolution ){
                                 // If more than three data points are missing, assume we have a hole in the data
                                 data.push(null);
                             }
@@ -163,7 +182,10 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
                     $timeout.cancel(requeryTimer);
                     requeryTimer = null;
                 }
-                if( $scope.start < $scope.data_start || $scope.end > $scope.data_end ){
+                var view_res = GraphDataService.get_resolution(new Date($scope.start),      new Date($scope.end)),
+                    data_res = GraphDataService.get_resolution(new Date($scope.data_start), new Date($scope.data_end));
+
+                if( $scope.start < $scope.data_start || $scope.end > $scope.data_end || view_res != data_res ){
                     requeryTimer = $timeout(query, 100);
                 }
             }
