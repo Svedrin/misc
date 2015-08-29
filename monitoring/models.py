@@ -15,6 +15,31 @@ from fluxacl.models import ACL
 from monitoring.rrd import RRD
 from monitoring.graphsql import parse, SensorNamespace
 
+
+def get_default_start_end(start, end):
+    if start is None:
+        start = make_aware(datetime.now() - timedelta(days=1), get_default_timezone())
+    if end is None:
+        end   = start + timedelta(days=1)
+    return start, end
+
+
+def get_resolution(start, end):
+    dt = end - start
+    resolutions = (
+        ('minute', timedelta(minutes=5)),
+        ('hour',   timedelta(hours=1)),
+        ('day',    timedelta(days=1)),
+        ('month',  timedelta(days=30)),
+        ('year',   timedelta(days=365))
+    )
+    for res_name, res_dt in resolutions:
+        data_res = res_name
+        if dt.total_seconds() / res_dt.total_seconds() <= 250:
+            break
+    return data_res
+
+
 class Sensor(models.Model):
     name        = models.CharField("Unique sensor name", max_length=255, unique=True)
 
@@ -218,30 +243,14 @@ class Check(models.Model):
     def get_measurements(self, variable, start=None, end=None):
         var = self.sensor.sensorvariable_set.get(name=variable)
 
-        if start is None:
-            start = make_aware(datetime.now() - timedelta(days=1), get_default_timezone())
-        if end is None:
-            end   = start + timedelta(days=1)
-        dt = end - start
+        start, end = get_default_start_end(start, end)
+        data_res = get_resolution(start, end)
+        #print "resolution is now", data_res
 
         if not var.formula:
             topnode = list(parse(var.name))[0]
         else:
             topnode = list(parse(var.formula))[0]
-
-        resolutions = (
-            ('minute', timedelta(minutes=5)),
-            ('hour',   timedelta(hours=1)),
-            ('day',    timedelta(days=1)),
-            ('month',  timedelta(days=30)),
-            ('year',   timedelta(days=365))
-        )
-        for res_name, res_dt in resolutions:
-            data_res = res_name
-            if dt.total_seconds() / res_dt.total_seconds() <= 250:
-                break
-
-        #print "resolution is now", data_res
 
         args     = [variable, self.sensor.id]
         valuedef = topnode.get_value(args)
