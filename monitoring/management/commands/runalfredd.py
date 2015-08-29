@@ -119,15 +119,5 @@ class Command( BaseCommand ):
         sensor_inst = sensor.sensor(Conf())
         domain = Domain.objects.get(name="nodes", parent__name="fffd")
         localhost = Host.objects.get(fqdn__startswith=socket.getfqdn())
+        doit(sensor, sensor_inst, domain, localhost)
 
-        try:
-            while True:
-                now = time()
-                doit(sensor, sensor_inst, domain, localhost)
-                print "I shall return, do not attempt to stop me!"
-                sleep(300 - (time() - now))
-
-        except KeyboardInterrupt:
-            pass
-
-        print "kbai"
