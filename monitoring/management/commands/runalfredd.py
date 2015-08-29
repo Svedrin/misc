@@ -24,6 +24,37 @@ def getloglevel(levelstr):
         raise ValueError('Invalid log level: %s' % levelstr)
     return numeric_level
 
+
+def doit(sensor, sensor_inst, domain, localhost):
+    alf = subprocess.Popen(["alfred-json", "-z", "-r", "158"], stdout=subprocess.PIPE)
+    out, err = alf.communicate()
+    nodeinfo = json.loads(out)
+
+    alf = subprocess.Popen(["alfred-json", "-z", "-r", "159"], stdout=subprocess.PIPE)
+    out, err = alf.communicate()
+    statistics = json.loads(out)
+
+    # 160 = neighbor
+
+    for macaddr, info in nodeinfo.items():
+        try:
+            node = Host.objects.get(fqdn__startswith=info["hostname"], domain=domain)
+        except Host.DoesNotExist:
+            node = Host(fqdn="%s.%s" % (info["hostname"], domain), domain=domain)
+            node.save()
+
+        try:
+            check = Check.objects.get(target_host=node, sensor=sensor)
+        except Check.DoesNotExist:
+            check = Check(target_host=node, exec_host=localhost, sensor=sensor, uuid=str(uuid4()))
+            check.save()
+
+        print "Processing node", node.fqdn
+        check.process_result( sensor_inst.process_data(check, statistics[macaddr]) )
+
+
+
+
 class Command( BaseCommand ):
     help = "Daemon that periodically queries A.L.F.R.E.D. and imports its data."
     option_list = BaseCommand.option_list + (
@@ -81,44 +112,18 @@ class Command( BaseCommand ):
                 logsh.setFormatter( logging.Formatter('%(name)s: %(levelname)s %(message)s') )
                 rootlogger.addHandler(logsh)
 
+        class Conf(object):
+            environ = {"datadir": "/var/lib/fluxmon"}
+
+        sensor = Sensor.objects.get(name="alfrednode")
+        sensor_inst = sensor.sensor(Conf())
+        domain = Domain.objects.get(name="nodes", parent__name="fffd")
+        localhost = Host.objects.get(fqdn__startswith=socket.getfqdn())
+
         try:
             while True:
                 now = time()
-
-                alf = subprocess.Popen(["alfred-json", "-z", "-r", "158"], stdout=subprocess.PIPE)
-                out, err = alf.communicate()
-                nodeinfo = json.loads(out)
-
-                alf = subprocess.Popen(["alfred-json", "-z", "-r", "159"], stdout=subprocess.PIPE)
-                out, err = alf.communicate()
-                statistics = json.loads(out)
-
-                # 160 = neighbor
-
-                class Conf(object):
-                    environ = {"datadir": "/var/lib/fluxmon"}
-
-                sensor = Sensor.objects.get(name="alfrednode")
-                sensor_inst = sensor.sensor(Conf())
-                domain = Domain.objects.get(name="nodes", parent__name="fffd")
-                localhost = Host.objects.get(fqdn__startswith=socket.getfqdn())
-
-                for macaddr, info in nodeinfo.items():
-                    try:
-                        node = Host.objects.get(fqdn__startswith=info["hostname"], domain=domain)
-                    except Host.DoesNotExist:
-                        node = Host(fqdn="%s.%s" % (info["hostname"], domain), domain=domain)
-                        node.save()
-
-                    try:
-                        check = Check.objects.get(target_host=node, sensor=sensor)
-                    except Check.DoesNotExist:
-                        check = Check(target_host=node, exec_host=localhost, sensor=sensor, uuid=str(uuid4()))
-                        check.save()
-
-                    print "Processing node", node.fqdn
-                    check.process_result( sensor_inst.process_data(check, statistics[macaddr]) )
-
+                doit(sensor, sensor_inst, domain, localhost)
                 print "I shall return, do not attempt to stop me!"
                 sleep(300 - (time() - now))
 
