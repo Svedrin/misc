@@ -9,7 +9,7 @@
   {% recursetree nodes %}
     {% if not node.is_root_node %}
       <li>
-        {{ node }} ({{ node.host_set.count }} Host{{ node.host_set.count|pluralize }})
+        <a href="{% url 'hosts.views.domain' node.id %}">{{ node }}</a> ({{ node.host_set.count }} Host{{ node.host_set.count|pluralize }})
         (<a href="{% url 'hosts.views.add_host' node.id %}">+</a>)
         {% if node.host_set.count %}
           <ul>

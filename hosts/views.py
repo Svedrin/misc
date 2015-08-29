@@ -20,6 +20,16 @@ def domains(request):
         'nodes': Domain.objects.all()
         }, context_instance=RequestContext(request))
 
+def domain(request, id):
+    domain = get_object_or_404(Domain, id=id)
+    if not domain.has_perm(request.user, "r"):
+        return redirect_to_login(request.build_absolute_uri())
+    from monitoring.models import SensorVariable
+    return render_to_response("hosts/domain.html", {
+        'domain': domain,
+        'aggregates': SensorVariable.objects.filter(aggregate=True, sensor__check__target_host__domain=domain).distinct()
+        }, context_instance=RequestContext(request))
+
 def host(request, fqdn):
     thehost = get_object_or_404(Host, fqdn=fqdn)
     if not thehost.has_perm(request.user, "r"):
