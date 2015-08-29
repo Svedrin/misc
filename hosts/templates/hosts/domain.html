@@ -27,9 +27,9 @@
   </thead>
   <tbody>
   {% for variable in aggregates %}
-    <tr targetlink="?" class="checktr">
+    <tr targetlink="{% url 'monitoring.views.render_aggregate_page' domain.id variable.sensor.name variable.name %}" class="checktr">
       <td>{{ variable|display }}</td>
-      <td><a href="?" title="View details" style="text-decoration: none">→</a></td>
+      <td><a href="{% url 'monitoring.views.render_aggregate_page' domain.id variable.sensor.name variable.name %}" title="View details" style="text-decoration: none">→</a></td>
     </tr>
   {% endfor %}
   </tbody>

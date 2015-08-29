@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 {% load display_extras %}
 {# kate: space-indent on; indent-width 2; replace-tabs on; hl Django HTML Template; #}
-{% block title %}{{ variable|display }} &mdash; {% for checkparam in check.checkparameter_set.all %}{{ checkparam.parameter|display }}: {{ checkparam.value }} {% endfor %} &mdash; {{ check.target_host|display:"fqdn" }} &mdash; Fluxmon{% endblock %}
+{% block title %}{{ variable|display }} &mdash; {% if check %}{% for checkparam in check.checkparameter_set.all %}{{ checkparam.parameter|display }}: {{ checkparam.value }} {% endfor %} &mdash; {{ check.target_host|display:"fqdn" }} &mdash; {% endif %}Fluxmon{% endblock %}
 {% block content %}
 <div>
   <ol class="breadcrumb">
     <li class="hidden-xs"><a href="{% url 'hosts.views.domains' %}">Hosts</a></li>
+    {% if check %}
     <li class="visible-xs-block visible-sm-inline visible-md-inline visible-lg-inline">
       <a href="{% url 'hosts.views.host' check.target_host.fqdn %}">{{ check.target_host|display:"fqdn" }}</a>
       {% if check.target_host != check.exec_host %}(as seen by <a href="{% url 'hosts.views.host' check.exec_host.fqdn %}">{{ check.exec_host|display:"fqdn" }}</a>){% endif %}
@@ -13,16 +14,21 @@
     <li class="visible-xs-block visible-sm-inline visible-md-inline visible-lg-inline">
       <a href="{% url 'monitoring.views.check_details' check.uuid %}">{{ check|display:"uuid" }}</a>
     </li>
+    {% elif domain %}
+    <li>{{ domain }}</li>
+    {% endif %}
     <li class="hidden-xs active">{{ variable|display }}</li>
   </ol>
 </div>
+{% if check %}
 <div class="hidden-xs">
   {% include "monitoring/checkinfo.inc.html" %}
 </div>
+{% endif %}
 <h3>{{ variable|display }}</h3>
 <div class="container col-xs-12 col-sm-12 col-md-12 col-lg-12 no-padding"
      ng-controller="interactiveGraphCtrl">
-  <interactive-graph check="{{ check.uuid }}" variables="{{ variables }}" graph-state="graphstate" ></interactive-graph>
+  <interactive-graph check="{{ check.uuid }}" domain="{{ domain.id }}" variables="{{ variables }}" graph-state="graphstate" ></interactive-graph>
   <table class="table">
     <thead>
       <tr>

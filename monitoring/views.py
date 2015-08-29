@@ -20,7 +20,7 @@ from django.db.models               import Q
 from django.core.urlresolvers       import reverse
 from django.utils.timezone          import make_aware, get_default_timezone
 
-from hosts.models import Host
+from hosts.models import Domain, Host
 from monitoring.models import Sensor, SensorVariable, Check, Alert, CheckViewcount, View
 from monitoring.forms  import SearchForm
 from monitoring.graphbuilder import Graph
@@ -195,8 +195,17 @@ def render_check(request, uuid, ds):
     return HttpResponse(builder.get_image(), content_type="image/png")
 
 def get_check_data(request):
-    check = Check.objects.get(uuid=request.GET["check"])
-    if not check.has_perm(request.user, "r"):
+    check = None
+    domain = None
+    if request.GET.get("check", ""):
+        check = Check.objects.get(uuid=request.GET["check"])
+        if not check.has_perm(request.user, "r"):
+            return HttpResponseForbidden("I say nay nay")
+    elif request.GET.get("domain", ""):
+        domain = get_object_or_404(Domain, id=request.GET["domain"])
+        if not domain.has_perm(request.user, "r"):
+            return HttpResponseForbidden("I say nay nay")
+    else:
         return HttpResponseForbidden("I say nay nay")
 
     start  = make_aware(datetime.fromtimestamp(int(request.GET.get("start",  time() - 24*60*60))), get_default_timezone())
@@ -212,8 +221,20 @@ def get_check_data(request):
 
     try:
         start_time = time()
+
         for ds in request.GET.getlist("variables"):
-            measurements = check.get_measurements(ds, start, end)
+            if "." in ds:
+                sensorname, varname = ds.split('.', 1)
+            else:
+                sensorname = None
+                varname = ds
+
+            if check:
+                measurements = check.get_measurements(varname, start, end)
+            else:
+                var = get_object_or_404(SensorVariable, sensor__name=sensorname, name=varname, aggregate=True)
+                measurements = var.get_aggregate_over(domain, "sum", start, end)
+
             response["metrics"][ds] = {
                 "data": [(msmt.measured_at, msmt.value)
                     for msmt in measurements],
@@ -221,10 +242,13 @@ def get_check_data(request):
                 "end": None,
                 "resolution": measurements.resolution
             }
+
             if response["metrics"][ds]["data"]:
                 response["metrics"][ds]["start"] = response["metrics"][ds]["data"][ 0][0]
                 response["metrics"][ds]["end"]   = response["metrics"][ds]["data"][-1][0]
+
         end_time = time()
+
     except ProgrammingError:
         import logging
         logging.error("Received exception when executing query")
@@ -249,6 +273,7 @@ def render_interactive_check_page(request, uuid, ds):
         "name": var.name,
         "display": var.display,
         "formula": var.formula,
+        "sensor":  var.sensor.name,
         "unit": var.get_unit()
     }]
     return render_to_response("monitoring/interactive_graph.html", {
@@ -268,6 +293,7 @@ def render_view_page(request, uuid, view_id):
         "name": var.name,
         "display": var.display,
         "formula": var.formula,
+        "sensor":  var.sensor.name,
         "unit": var.get_unit()
     } for var in view.variables.all()]
     return render_to_response("monitoring/interactive_graph.html", {
@@ -276,4 +302,26 @@ def render_view_page(request, uuid, view_id):
         'variable':  view,
         'variables': json.dumps(varinfo)
         }, context_instance=RequestContext(request))
+
+def render_aggregate_page(request, id, sensor, ds):
+    domain = get_object_or_404(Domain,         id=id)
+    if not domain.has_perm(request.user, "r"):
+        return redirect_to_login(request.build_absolute_uri())
+    sensor = get_object_or_404(Sensor,         name=sensor);
+    var    = get_object_or_404(SensorVariable, sensor=sensor, name=ds);
+    varinfo = [{
+        "name": var.name,
+        "display": var.display,
+        "formula": var.formula,
+        "sensor":  var.sensor.name,
+        "unit": var.get_unit()
+    }]
+    return render_to_response("monitoring/interactive_graph.html", {
+        'check':     None,
+        'view':      None,
+        'domain':    domain,
+        'variable':  var,
+        'variables': json.dumps(varinfo)
+        }, context_instance=RequestContext(request))
+
 

@@ -41,6 +41,7 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
         template: '<flot dataset="chartData" options="chartOptions" height="300px" callback="flotCallback"></flot>',
         scope: {
             check:    '@',
+            domain:    '@',
             variables: '@',
             graphState: '='
         },
@@ -97,7 +98,8 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
                 if( !vars.map ) vars = $.parseJSON(vars);
                 var params = {
                     check: $scope.check,
-                    variables: vars.map(function(v){ return v.name })
+                    domain: $scope.domain,
+                    variables: vars.map(function(v){ return v.sensor + '.' + v.name })
                 };
                 if( $scope.start ) params.start = parseInt($scope.start / 1000, 10);
                 if( $scope.end   ) params.end   = parseInt($scope.end   / 1000, 10);
@@ -124,7 +126,7 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
                     resolution = GraphDataService.get_resolution(new Date($scope.data_start), new Date($scope.data_end));
 
                     for( v = 0; v < vars.length; v++ ){
-                        respdata = result.metrics[vars[v].name].data;
+                        respdata = result.metrics[vars[v].sensor + '.' + vars[v].name].data;
                         min = null;
                         max = null;
                         avg = null;
