@@ -35,7 +35,9 @@ class Name(Symbol):
     def get_value(self, args):
         args.append(self.value)
         # http://timothychenallen.blogspot.de/2006/03/sql-calculating-geometric-mean-geomean.html
-        return "(exp(avg(ln(cm.value)) filter (where sv.name = %s)))"
+        # sucks when the data is <= 0
+        #return "(exp(avg(ln(cm.value)) filter (where sv.name = %s)))"
+        return "(avg(cm.value) filter (where sv.name = %s))"
 
     def get_unit(self, namespace):
         print self.value
