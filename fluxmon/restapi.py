@@ -3,7 +3,7 @@
 import logging
 
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from rest_framework import routers, serializers, viewsets, permissions
 
 
@@ -20,6 +20,15 @@ class UserViewSet(viewsets.ModelViewSet):
     #permission_classes = (IsNonAnonymous,)
 
 
+class GroupSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Group
+
+class GroupViewSet(viewsets.ModelViewSet):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+
+
 
 def get_router():
     modules = []
@@ -34,7 +43,8 @@ def get_router():
             modules.append(module)
 
     router = routers.DefaultRouter()
-    router.register(r'users', UserViewSet)
+    router.register(r'users',  UserViewSet)
+    router.register(r'groups', GroupViewSet)
 
     for module in modules:
         for (name, viewset) in getattr(getattr(module, "restapi"), "REST_API_VIEWSETS", []):
