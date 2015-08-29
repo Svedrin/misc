@@ -15,7 +15,7 @@ from django.core.serializers.json   import DjangoJSONEncoder
 from django.views.decorators.csrf   import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views      import redirect_to_login
-from django.db                      import transaction
+from django.db                      import transaction, ProgrammingError
 from django.db.models               import Q
 from django.core.urlresolvers       import reverse
 from django.utils.timezone          import make_aware, get_default_timezone
@@ -210,20 +210,26 @@ def get_check_data(request):
         'metrics': {}
     }
 
-    start_time = time()
-    for ds in request.GET.getlist("variables"):
-        measurements = check.get_measurements(ds, start, end)
-        response["metrics"][ds] = {
-            "data": [(msmt.measured_at, msmt.value)
-                for msmt in measurements],
-            "start": None,
-            "end": None,
-            "resolution": measurements.resolution
-        }
-        if response["metrics"][ds]["data"]:
-            response["metrics"][ds]["start"] = response["metrics"][ds]["data"][ 0][0]
-            response["metrics"][ds]["end"]   = response["metrics"][ds]["data"][-1][0]
-    end_time = time()
+    try:
+        start_time = time()
+        for ds in request.GET.getlist("variables"):
+            measurements = check.get_measurements(ds, start, end)
+            response["metrics"][ds] = {
+                "data": [(msmt.measured_at, msmt.value)
+                    for msmt in measurements],
+                "start": None,
+                "end": None,
+                "resolution": measurements.resolution
+            }
+            if response["metrics"][ds]["data"]:
+                response["metrics"][ds]["start"] = response["metrics"][ds]["data"][ 0][0]
+                response["metrics"][ds]["end"]   = response["metrics"][ds]["data"][-1][0]
+        end_time = time()
+    except ProgrammingError:
+        import logging
+        logging.error("Received exception when executing query")
+        logging.error(measurements.query.sql % tuple(["'%s'" % param for param in measurements.params]))
+        raise
 
     response["data_window"] = {
         "start": min( metric["start"] for metric in response["metrics"].values() ),
