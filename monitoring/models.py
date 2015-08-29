@@ -123,7 +123,8 @@ class SensorVariable(models.Model):
                     cm.variable_id,
                     date_trunc('minute', cm.measured_at)
                 order by measured_at ) as x
-            group by date_trunc(%s, x.measured_at);""", args)
+            group by date_trunc(%s, x.measured_at)
+            order by measured_at; """, args)
         result.resolution = data_res
         return result
 
