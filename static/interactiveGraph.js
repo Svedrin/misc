@@ -73,6 +73,10 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
             }
 
             $scope.$watchGroup(['start', 'end'], function(){
+                if( $scope.start == $scope.end ){
+                    $scope.start -= 1000 * 60 * 60 * 2;
+                    $scope.end   += 1000 * 60 * 60 * 2;
+                }
                 if( $scope.graphState ){
                     $scope.graphState.start = new Date($scope.start);
                     $scope.graphState.end   = new Date($scope.end);
