@@ -47,8 +47,8 @@ def get_router():
     router.register(r'groups', GroupViewSet)
 
     for module in modules:
-        for (name, viewset) in getattr(getattr(module, "restapi"), "REST_API_VIEWSETS", []):
-            router.register(name, viewset)
+        for args in getattr(getattr(module, "restapi"), "REST_API_VIEWSETS", []):
+            router.register(*args)
 
     return router
 
