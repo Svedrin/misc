@@ -3,7 +3,7 @@
 fluxmon.service('GraphDataService', function($http){
     return {
         get_data: function(params){
-            return $http.get('/check.json', {
+            return $http.get('/api/measurements/', {
                 params: params
             });
         },
