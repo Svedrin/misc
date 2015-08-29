@@ -245,7 +245,7 @@ class Check(models.Model):
         args     = [variable]
         valuedef = topnode.get_value(args)
         args.extend([self.id, start, end, data_res])
-        return CheckMeasurement.objects.raw("""select
+        result = CheckMeasurement.objects.raw("""select
                 -1 as id,
                 cm.check_id,
                 (select id from monitoring_sensorvariable where name=%s) as variable_id,
@@ -261,6 +261,8 @@ class Check(models.Model):
                 cm.check_id,
                 date_trunc(%s, cm.measured_at)
             order by measured_at ;""", args)
+        result.resolution = data_res
+        return result
 
 
 
