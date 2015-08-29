@@ -97,6 +97,30 @@ class SensorVariable(models.Model):
             return unicode( list(parse(self.formula))[0].get_unit(SensorNamespace(self.sensor)) )
         return self.unit
 
+    def get_aggregate_over(self, domain, fn="sum", start=None, end=None):
+        if fn not in ("sum", "avg"):
+            raise ValueError("fn needs to be either sum or avg")
+        start, end = get_default_start_end(start, end)
+        #data_res   = get_resolution(start, end)
+        data_res = 'minute'
+        args   = [data_res, self.id, data_res]
+        result = CheckMeasurement.objects.raw("""select distinct
+                -1 as id,
+                NULL as check_id,
+                cm.variable_id,
+                date_trunc(%s, cm.measured_at) as measured_at,
+                """ + fn + """(cm.value) as value
+            from
+                monitoring_checkmeasurement cm
+            where
+                variable_id = %s
+            group by
+                cm.variable_id,
+                date_trunc(%s, cm.measured_at)
+            order by measured_at ;""", args)
+        result.resolution = data_res
+        return result
+
 
 class View(models.Model):
     name        = models.CharField(   "Human-readable view name",  max_length=255)
