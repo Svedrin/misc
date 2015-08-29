@@ -229,7 +229,7 @@ class Check(models.Model):
             topnode = list(parse(var.formula))[0]
 
         resolutions = (
-            ('minute', timedelta(minutes=1)),
+            ('minute', timedelta(minutes=5)),
             ('hour',   timedelta(hours=1)),
             ('day',    timedelta(days=1)),
             ('month',  timedelta(days=30)),
