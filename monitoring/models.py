@@ -104,20 +104,26 @@ class SensorVariable(models.Model):
         #data_res   = get_resolution(start, end)
         data_res = 'minute'
         args   = [data_res, self.id, data_res]
-        result = CheckMeasurement.objects.raw("""select distinct
-                -1 as id,
-                NULL as check_id,
-                cm.variable_id,
-                date_trunc(%s, cm.measured_at) as measured_at,
-                """ + fn + """(cm.value) as value
-            from
-                monitoring_checkmeasurement cm
-            where
-                variable_id = %s
-            group by
-                cm.variable_id,
-                date_trunc(%s, cm.measured_at)
-            order by measured_at ;""", args)
+        result = CheckMeasurement.objects.raw("""select
+            min(x.id) as id, min(x.check_id) as check_id, min(x.variable_id) as variable_id,
+            date_trunc(%s, x.measured_at) as measured_at,
+            avg(x.value) as value
+            from (
+                select distinct
+                    -1 as id,
+                    NULL as check_id,
+                    cm.variable_id,
+                    date_trunc('minute', cm.measured_at) as measured_at,
+                    """ + fn + """(cm.value) as value
+                from
+                    monitoring_checkmeasurement cm
+                where
+                    variable_id = %s
+                group by
+                    cm.variable_id,
+                    date_trunc('minute', cm.measured_at)
+                order by measured_at ) as x
+            group by date_trunc(%s, x.measured_at);""", args)
         result.resolution = data_res
         return result
 
