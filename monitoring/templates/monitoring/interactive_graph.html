@@ -15,7 +15,7 @@
       <a href="{% url 'monitoring.views.check_details' check.uuid %}">{{ check|display:"uuid" }}</a>
     </li>
     {% elif domain %}
-    <li>{{ domain }}</li>
+    <li><a href="{% url 'hosts.views.domain' domain.id %}">{{ domain }}</a></li>
     {% endif %}
     <li class="hidden-xs active">{{ variable|display }}</li>
   </ol>
