@@ -15,7 +15,7 @@ class AlfredNodeSensor(AbstractSensor):
     def check(self, checkinst):
         pass
 
-    def process_data(self, checkinst, stats):
+    def process_data(self, checkinst, stats, timestamp):
         # Read the state file (if possible).
         storetime, storedata = self._load_store(checkinst.uuid)
         havestate = (storedata is not None)
@@ -45,16 +45,20 @@ class AlfredNodeSensor(AbstractSensor):
             "mgmt_tx_bytes":    stats["traffic"]["mgmt_tx"]["bytes"],
             "mgmt_rx_packets":  stats["traffic"]["mgmt_rx"]["packets"],
             "mgmt_rx_bytes":    stats["traffic"]["mgmt_rx"]["bytes"],
-            "timestamp":  time()
+            "timestamp":        timestamp
             })
 
         if havestate:
-            reldiff = relstats - storedata["relstats"]
-            reldiff /= reldiff["timestamp"]
-            del reldiff["timestamp"]
-            merged = {}
-            merged.update(absstats)
-            merged.update(reldiff)
+            try:
+                reldiff = relstats - storedata["relstats"]
+                reldiff /= reldiff["timestamp"]
+                del reldiff["timestamp"]
+            except ZeroDivisionError:
+                merged = None
+            else:
+                merged = {}
+                merged.update(absstats)
+                merged.update(reldiff)
         else:
             merged = None
 
@@ -63,7 +67,7 @@ class AlfredNodeSensor(AbstractSensor):
         })
 
         return {
-            "timestamp":  int(time()),
+            "timestamp":  timestamp,
             "data":       merged,
             "errmessage": None
         }
