@@ -36,6 +36,8 @@ def doit(sensor, sensor_inst, domain, localhost):
 
     # 160 = neighbor
 
+    timestamp = int(time())
+
     for macaddr, info in nodeinfo.items():
         try:
             node = Host.objects.get(fqdn__startswith=info["hostname"], domain=domain)
@@ -50,7 +52,14 @@ def doit(sensor, sensor_inst, domain, localhost):
             check.save()
 
         print "Processing node", node.fqdn
-        check.process_result( sensor_inst.process_data(check, statistics[macaddr]) )
+        try:
+            check.process_result( sensor_inst.process_data(check, statistics[macaddr], timestamp) )
+        except OSError:
+            # we want to crash on those
+            raise
+        except Exception, err:
+            import traceback
+            logging.error(traceback.format_exc())
 
 
 
