@@ -1,7 +1,7 @@
 #!/bin/bash
 
 while true; do
-    ./manage.py runalfredd
+    time ./manage.py runalfredd
     echo "sleeping for 5m..."
     sleep 5m
 done
