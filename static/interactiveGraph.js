@@ -46,7 +46,7 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
             graphState: '='
         },
         controller: function($scope){
-            var plot, query, maybeRequery, requeryTimer = null;
+            var plot, query, maybeRequery, requeryTimer = null, refreshTimer = null;
 
             $scope.variables = $.parseJSON($scope.variables);
 
@@ -178,6 +178,20 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
                                 below: $scope.graphState.p05,
                                 color: '#747474'
                             }];
+                        }
+                    }
+                    if( new Date() - $scope.graphState.data_end <= 600 * 1000 ){
+                        if( $scope.graphState.data_end <= $scope.graphState.end ){
+                            var timeUntilUpdate = (300000 - (new Date() - $scope.graphState.data_end) + 10000);
+                            if( timeUntilUpdate < 10000 ){
+                                timeUntilUpdate = 10000;
+                            }
+                            console.log([new Date() - $scope.graphState.data_end, "should update in", timeUntilUpdate]);
+                            if( refreshTimer ){
+                                $timeout.cancel(refreshTimer);
+                                refreshTimer = null;
+                            }
+                            refreshTimer = $timeout(query, timeUntilUpdate);
                         }
                     }
                 });
