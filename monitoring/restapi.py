@@ -19,7 +19,7 @@ from rest_framework.filters  import BaseFilterBackend, DjangoFilterBackend
 from hosts.models import Host, Domain
 
 from monitoring.models import Sensor, SensorVariable, SensorParameter
-from monitoring.models import Check,  CheckParameter, CheckMeasurement
+from monitoring.models import Check,  CheckParameter
 
 
 class DomainSerializer(serializers.HyperlinkedModelSerializer):
@@ -153,11 +153,6 @@ class CheckViewSet(viewsets.ModelViewSet):
         ser = CheckSerializer([cv.check_inst for cv in most_viewed], many=True, read_only=True, context={'request': request})
         return Response(ser.data)
 
-
-class CheckMeasurementSerializer(serializers.ModelSerializer):
-    class Meta:
-        model   = CheckMeasurement
-        exclude = ["pk", "url"]
 
 class MeasurementsViewSet(viewsets.ViewSet):
     def list(self, request, format=None):
