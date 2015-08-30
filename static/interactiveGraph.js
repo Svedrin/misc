@@ -1,6 +1,13 @@
 // kate: space-indent on; indent-width 4; replace-tabs on; hl JavaScript;
 
 fluxmon.service('GraphDataService', function($http){
+    var resolutions = [
+        {name: 'minute', len: 1000 * 60 * 5            },
+        {name: 'hour',   len: 1000 * 60 * 60           },
+        {name: 'day',    len: 1000 * 60 * 60 * 24      },
+        {name: 'month',  len: 1000 * 60 * 60 * 24 * 30 },
+        {name: 'year',   len: 1000 * 60 * 60 * 24 * 365}
+    ];
     return {
         get_data: function(params){
             return $http.get('/api/measurements/', {
@@ -9,13 +16,6 @@ fluxmon.service('GraphDataService', function($http){
         },
         get_resolution: function(start, end){
             var dt = end - start, data_res, i;
-            resolutions = [
-                {name: 'minute', len: 1000 * 60 * 5            },
-                {name: 'hour',   len: 1000 * 60 * 60           },
-                {name: 'day',    len: 1000 * 60 * 60 * 24      },
-                {name: 'month',  len: 1000 * 60 * 60 * 24 * 30 },
-                {name: 'year',   len: 1000 * 60 * 60 * 24 * 365}
-            ]
             for( i = 0; i < resolutions.length; i++ ){
                 data_res = resolutions[i].name;
                 if( dt / resolutions[i].len <= 250 ){
@@ -23,6 +23,14 @@ fluxmon.service('GraphDataService', function($http){
                 }
             }
             return data_res;
+        },
+        get_milliseconds: function(resolution){
+            for( var i = 0; i < resolutions.length; i++ ){
+                if( resolutions[i].name == resolution ){
+                    return resolutions[i].len;
+                }
+            }
+            return null;
         }
     }
 });
@@ -141,7 +149,7 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
                             // }
                             last = respdata[i][1];
                             lastDate = new Date(respdata[i][0]);
-                            if( prevDate && lastDate - prevDate > 3 * resolution ){
+                            if( prevDate && lastDate - prevDate > 3 * GraphDataService.get_milliseconds(resolution) ){
                                 // If more than three data points are missing, assume we have a hole in the data
                                 data.push(null);
                             }
