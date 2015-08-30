@@ -190,9 +190,9 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
                     }
                     if( new Date() - $scope.graphState.data_end <= 600 * 1000 ){
                         if( $scope.graphState.data_end <= $scope.graphState.end ){
-                            var timeUntilUpdate = (300000 - (new Date() - $scope.graphState.data_end) + 10000);
-                            if( timeUntilUpdate < 10000 ){
-                                timeUntilUpdate = 10000;
+                            var timeUntilUpdate = (300000 - (new Date() - $scope.graphState.data_end) + 30000);
+                            if( timeUntilUpdate <   30000 ){
+                                timeUntilUpdate =   30000;
                             }
                             console.log([new Date() - $scope.graphState.data_end, "should update in", timeUntilUpdate]);
                             if( refreshTimer ){
