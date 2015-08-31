@@ -1,10 +1,60 @@
 // kate: space-indent on; indent-width 4; replace-tabs on; hl JavaScript;
 
-var fluxmon = angular.module('FluxmonApp', ['angular-flot']);
+var fluxmon = angular.module('FluxmonApp', ['ui.router', 'angular-flot']);
 
-fluxmon.config(function($interpolateProvider) {
+fluxmon.config(function($interpolateProvider, $stateProvider, $urlRouterProvider) {
     $interpolateProvider.startSymbol('{[');
     $interpolateProvider.endSymbol(']}');
+
+    $urlRouterProvider.otherwise("/index");
+
+    $stateProvider
+        .state('index', {
+            url: "/index",
+            template: "&nbsp;"
+        })
+        .state('search', {
+            url: "/search",
+            templateUrl: "static/templates/search.html"
+        })
+        .state('tree', {
+            url: "/tree",
+            templateUrl: "static/templates/tree.html"
+        })
+        .state('domain', {
+            url: "/domain/:fqdn",
+            templateUrl: "static/templates/domain.html"
+        })
+        .state('domain.add-host', {
+            url: "/add",
+            templateUrl: "static/templates/domain-addhost.html"
+        })
+        .state('domain.aggregate', {
+            url: "/aggr/:variable",
+            templateUrl: "static/templates/domain-aggregate.html"
+        })
+        .state('node', {
+            url: "/node/:fqdn",
+            templateUrl: "static/templates/node.html"
+        })
+        .state('node.check', {
+            url: "/:check",
+            templateUrl: "static/templates/node-check.html"
+        })
+        .state('node.check.view', {
+            url: "/view/:name",
+            templateUrl: "static/templates/node-check-view.html"
+        })
+        .state('node.check.variable', {
+            url: "/var/:name",
+            templateUrl: "static/templates/node-check-var.html"
+        });
+});
+
+fluxmon.run(function($rootScope, $state){
+  $rootScope.showIndex = function(){
+    return $state.is('index');
+  };
 });
 
 fluxmon.service("isMobile", function(){
@@ -109,4 +159,4 @@ fluxmon.controller("GraphCtrl", function($scope, $interval){
     }
     $scope.set_active_profile($scope.profiles[1]); //24h
 
-})
+});

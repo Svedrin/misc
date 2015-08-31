@@ -10,6 +10,7 @@
     <script type="text/javascript" src="/static/bower_components/hammerjs/hammer.min.js"></script>
     <script type="text/javascript" src="/static/bower_components/jquery/dist/jquery.min.js"></script>
     <script type="text/javascript" src="/static/bower_components/angularjs/angular.min.js"></script>
+    <script type="text/javascript" src="/static/bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
     <script type="text/javascript" src="/static/bower_components/jquery-flot/jquery.flot.js"></script>
     <script type="text/javascript" src="/static/bower_components/jquery-flot/jquery.flot.time.js"></script>
     <script type="text/javascript" src="/static/bower_components/jquery-flot/jquery.flot.selection.js"></script>
@@ -72,9 +73,12 @@
     </div>
 
     <!-- Begin page content -->
-    <div class="container">
+    <div class="container" ng-show="showIndex()">
       {% block content %}
       {% endblock %}
+    </div>
+
+    <div ui-view="main" ng-hide="showIndex()">
     </div>
 
     <div id="footer">
