@@ -17,7 +17,7 @@
       </td>
       <td>{[ check.uuid ]}</td>
       <td>{[ check.sensor.name ]}</td>
-      <td>{[ check.checkparameter_set[0].value ]}</td>
+      <td><span ng-repeat="param in check.checkparameter_set">{[ param.parameter ]}={[ param.value ]}</span></td>
     </tr>
   </tbody>
 </table>

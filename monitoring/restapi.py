@@ -89,8 +89,10 @@ class SensorViewSet(viewsets.ModelViewSet):
 
 
 class CheckParameterSerializer(serializers.ModelSerializer):
+    parameter = serializers.CharField(source="parameter.name")
     class Meta:
         model = CheckParameter
+        fields = ("parameter", "value")
 
 class CheckSerializer(serializers.HyperlinkedModelSerializer):
     url                = serializers.HyperlinkedIdentityField(view_name="check-detail", lookup_field="uuid")
