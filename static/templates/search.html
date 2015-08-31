@@ -1,0 +1,41 @@
+<h2>Search</h2>
+
+<div>
+  <div class="input-group fieldWrapper">
+    <input type="text" class="form-control" name="query" id="id_query" ng-model="query" placeholder="Query" ng-enter="submit()" />
+    <span class="input-group-btn">
+      <button class="btn btn-default" ng-click="submit()" >Go!</button>
+    </span>
+  </div>
+</div>
+
+<script type="text/javascript">
+  setTimeout(function(){
+    document.getElementById('id_query').focus();
+  }, 500);
+</script>
+
+
+<table class="table table-hover">
+  <thead>
+    <tr>
+      <th>Host</th>
+      <th>Check Label</th>
+      <th>Sensor</th>
+      <th>Parameters</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="checktr {% if check.current_alert %}warning{% else %}success{% endif %}"
+        ui-sref="node.check.varlist({nodeId: check.target_host.id, check: check.uuid})"
+        ng-repeat="check in foundChecks" >
+      <td>
+        {[ check.target_host.fqdn ]}
+        <span ng-if="check.target_host.id != check.exec_host.id">(as seen by {[ check.exec_host.fqdn ]})</span>
+      </td>
+      <td>{[ check.uuid ]}</td>
+      <td>{[ check.sensor.name ]}</td>
+      <td>{[ check.checkparameter_set[0].value ]}</td>
+    </tr>
+  </tbody>
+</table>

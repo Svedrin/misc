@@ -20,6 +20,9 @@
     <script type="text/javascript" src="/static/ng.app.js"></script>
     <script type="text/javascript" src="/static/ng.zoomable.js"></script>
     <script type="text/javascript" src="/static/interactiveGraph.js"></script>
+    <script type="text/javascript" src="/static/scripts/SearchCtrl.js"></script>
+    <script type="text/javascript" src="/static/scripts/NodeCtrl.js"></script>
+    <script type="text/javascript" src="/static/scripts/NodeCheckCtrl.js"></script>
     <script type="text/javascript" src="/static/statistics.js"></script>
   </head>
   <body>
@@ -39,7 +42,7 @@
             {% if not user.is_anonymous %}
             <li><a href="{% url 'monitoring.views.profile' %}">{{ user }}</a></li>
             <li><a href="{% url 'hosts.views.domains' %}">Hosts</a></li>
-            <li><a href="{% url 'monitoring.views.search' %}" id="searchlink">Search</a></li>
+            <li><a href="#" ui-sref="search" id="searchlink">Search</a></li>
             <li><a href="{% url 'django.contrib.auth.views.logout' %}">Logout</a></li>
             <script type="text/javascript">
               $(function(){
@@ -78,7 +81,7 @@
       {% endblock %}
     </div>
 
-    <div ui-view="main" ng-hide="showIndex()">
+    <div class="container" ui-view ng-hide="showIndex()">
     </div>
 
     <div id="footer">

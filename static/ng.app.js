@@ -15,7 +15,8 @@ fluxmon.config(function($interpolateProvider, $stateProvider, $urlRouterProvider
         })
         .state('search', {
             url: "/search",
-            templateUrl: "static/templates/search.html"
+            templateUrl: "static/templates/search.html",
+            controller:  "SearchCtrl"
         })
         .state('tree', {
             url: "/tree",
@@ -34,12 +35,24 @@ fluxmon.config(function($interpolateProvider, $stateProvider, $urlRouterProvider
             templateUrl: "static/templates/domain-aggregate.html"
         })
         .state('node', {
-            url: "/node/:fqdn",
-            templateUrl: "static/templates/node.html"
+            url: "/node/:nodeId",
+            templateUrl: "static/templates/node.html",
+            controller:  "NodeCtrl"
+        })
+        .state('node.checklist', {
+            url: '/list',
+            templateUrl: "static/templates/node-checklist.html",
+            controller:  "NodeCheckListCtrl"
         })
         .state('node.check', {
             url: "/:check",
-            templateUrl: "static/templates/node-check.html"
+            templateUrl: "static/templates/node-check.html",
+            controller:  "NodeCheckCtrl"
+        })
+        .state('node.check.varlist', {
+            url: "/list",
+            templateUrl: "static/templates/node-check-varlist.html",
+            controller:  "NodeCheckCtrl"
         })
         .state('node.check.view', {
             url: "/view/:name",
@@ -56,6 +69,20 @@ fluxmon.run(function($rootScope, $state){
     return $state.is('index');
   };
 });
+
+fluxmon.directive('ngEnter', function () {
+  return function (scope, element, attrs) {
+    element.bind("keydown keypress", function (event) {
+      if(event.which === 13) {
+        scope.$apply(function (){
+          scope.$eval(attrs.ngEnter);
+        });
+        event.preventDefault();
+      }
+    });
+  };
+});
+
 
 fluxmon.service("isMobile", function(){
     var isMobile = {

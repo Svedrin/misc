@@ -1,0 +1,20 @@
+<dl class="dl-horizontal">
+  <dt>Check:</dt>
+  <dd>{[ check.uuid ]}</dd>
+  <dt>Sensor:</dt>
+  <dd>{[ check.sensor.name ]}</dd>
+  <dt>Executed on host:</dt>
+  <dd><a href="#" ui-sref="node.checklist({nodeId: check.exec_host.id})">{[ check.exec_host.fqdn ]}</a></dd>
+  <dt>Target host:</dt>
+  <dd><a href="#" ui-sref="node.checklist({nodeId: check.target_host.id})">{[ check.target_host.fqdn ]}</a></dd>
+  <dt>Parameters:</dt>
+  <dd>
+    <ul class="list-unstyled">
+      <li ng-repeat="checkparam in check.checkparameter_set"><i>{[ checkparam.parameter ]}:</i> {[ checkparam.value ]}</li>
+    </ul>
+  </dd>
+  <dt>Last update:</dt>
+  <dd>{[ check.last_update ]}</dd>
+</dl>
+
+<div ui-view></div>

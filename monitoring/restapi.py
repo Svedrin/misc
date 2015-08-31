@@ -13,8 +13,8 @@ from django.db                  import ProgrammingError
 
 from rest_framework import serializers, views, viewsets, status
 from rest_framework.decorators import list_route, detail_route
-from rest_framework.response import Response
-from rest_framework.filters  import BaseFilterBackend, DjangoFilterBackend
+from rest_framework.response   import Response
+from rest_framework.filters    import BaseFilterBackend, DjangoFilterBackend
 
 from hosts.models import Host, Domain
 
@@ -41,6 +41,7 @@ class DomainViewSet(viewsets.ModelViewSet):
 
 
 class HostSerializer(serializers.HyperlinkedModelSerializer):
+    id          = serializers.Field()
     config      = serializers.HyperlinkedIdentityField(view_name="host-config")
 
     class Meta:
@@ -92,15 +93,19 @@ class CheckParameterSerializer(serializers.ModelSerializer):
         model = CheckParameter
 
 class CheckSerializer(serializers.HyperlinkedModelSerializer):
+    url                = serializers.HyperlinkedIdentityField(view_name="check-detail", lookup_field="uuid")
+    sensor             = SensorSerializer()
+    target_host        = HostSerializer()
+    exec_host          = HostSerializer()
     checkparameter_set = CheckParameterSerializer(many=True, read_only=True)
 
     class Meta:
         model = Check
 
 class CheckFilter(django_filters.FilterSet):
-    target_host = django_filters.CharFilter(name="target_host__fqdn", lookup_type="icontains")
-    exec_host   = django_filters.CharFilter(name="exec_host__fqdn",   lookup_type="icontains")
-    sensor      = django_filters.CharFilter(name="sensor__name",      lookup_type="iexact")
+    target_host = django_filters.CharFilter(name="target_host__id", lookup_type="exact")
+    exec_host   = django_filters.CharFilter(name="exec_host__id",   lookup_type="exact")
+    sensor      = django_filters.CharFilter(name="sensor__name",    lookup_type="iexact")
 
     class Meta:
         model  = Check
@@ -146,6 +151,8 @@ class CheckViewSet(viewsets.ModelViewSet):
     serializer_class = CheckSerializer
     filter_backends  = (DjangoFilterBackend, CheckSearchFilter)
     filter_class     = CheckFilter
+    paginate_by      = 10
+    lookup_field     = "uuid"
 
     @list_route()
     def most_viewed(self, request, *args, **kwargs):

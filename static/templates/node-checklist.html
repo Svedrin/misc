@@ -1,0 +1,24 @@
+<table class="table table-hover">
+  <thead>
+    <tr>
+      <th>Host</th>
+      <th>Check Label</th>
+      <th>Sensor</th>
+      <th>Parameters</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="checktr {% if check.current_alert %}warning{% else %}success{% endif %}"
+        ui-sref="node.check.varlist({check: check.uuid})"
+        ng-repeat="check in hostChecks" >
+      <td>
+        {[ check.target_host.fqdn ]}
+        <span ng-if="check.target_host.fqdn != check.exec_host.fqdn">(as seen by {[ check.exec_host.fqdn ]})</span>
+      </td>
+      <td>{[ check.uuid ]}</td>
+      <td>{[ check.sensor.name ]}</td>
+      <td>{[ check.checkparameter_set[0].value ]}</td>
+    </tr>
+  </tbody>
+</table>
+
