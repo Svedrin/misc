@@ -4,6 +4,7 @@ syntax: glob
 *.pyc
 *.orig
 *.bkp
+*.swp
 
 fluxd.conf
 MANIFEST
