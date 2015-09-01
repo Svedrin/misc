@@ -105,7 +105,8 @@ class HostViewSet(viewsets.ModelViewSet):
 
 
 class SensorVariableSerializer(serializers.ModelSerializer):
-    sensor = serializers.CharField(source="sensor.name")
+    sensor  = serializers.CharField(source="sensor.name")
+    unit    = serializers.CharField(source="get_unit")
     class Meta:
         model = SensorVariable
 
