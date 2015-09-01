@@ -24,7 +24,6 @@ fluxmon.controller("DomainAggregateCtrl", function($scope, $stateParams, $http){
                 return true;
             }
         });
-        console.log($scope.variables);
     });
     $scope.graphState = {};
 });

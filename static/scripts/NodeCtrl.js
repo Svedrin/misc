@@ -54,7 +54,6 @@ fluxmon.controller("NodeCheckViewCtrl", function($scope, $stateParams, $http){
             }
             return prev;
         }, []);
-        console.log($scope.variables);
     });
     $scope.graphState = {};
 });

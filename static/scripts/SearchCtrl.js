@@ -1,6 +1,4 @@
 fluxmon.controller("SearchCtrl", function($scope, $state, $stateParams, $http, $location){
-    console.log("SearchCtrl");
-
     $scope.submit = function(initial){
         if( !initial ){
             $state.go("search", {query: $scope.query});
@@ -13,7 +11,6 @@ fluxmon.controller("SearchCtrl", function($scope, $state, $stateParams, $http, $
         });
     };
 
-    console.log($stateParams);
     if($stateParams.query){
         $scope.query = $stateParams.query;
         $scope.submit(true);
