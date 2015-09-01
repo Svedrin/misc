@@ -20,7 +20,7 @@ from hosts.models import Host, Domain
 
 from monitoring.models import Sensor, SensorVariable, SensorParameter
 from monitoring.models import Check,  CheckParameter
-
+from monitoring.models import View
 
 class DomainSerializer(serializers.HyperlinkedModelSerializer):
     id          = serializers.Field()
@@ -126,7 +126,10 @@ class SensorViewSet(viewsets.ModelViewSet):
     serializer_class = SensorSerializer
 
 
-
+class ViewSerializer(serializers.ModelSerializer):
+    variables          = SensorVariableSerializer(many=True, read_only=True)
+    class Meta:
+        model = View
 
 class CheckParameterSerializer(serializers.ModelSerializer):
     parameter = serializers.CharField(source="parameter.name")
@@ -140,6 +143,11 @@ class CheckSerializer(serializers.HyperlinkedModelSerializer):
     target_host        = HostSerializer()
     exec_host          = HostSerializer()
     checkparameter_set = CheckParameterSerializer(many=True, read_only=True)
+    views_set          = serializers.SerializerMethodField('get_views_set')
+
+    def get_views_set(self, obj):
+        ser = ViewSerializer(View.objects.filter(variables__sensor__check=obj).distinct(), many=True, read_only=True)
+        return ser.data
 
     class Meta:
         model = Check
