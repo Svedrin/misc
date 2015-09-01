@@ -12,3 +12,19 @@ fluxmon.controller("NodeCheckCtrl", function($scope, $stateParams, $http){
         $scope.check = response.data;
     });
 });
+
+fluxmon.controller("NodeCheckVarCtrl", function($scope, $stateParams, $http){
+    $scope.domain = null;
+    $scope.$watch("check", function(){
+        if(!$scope.check) return;
+        $scope.variables = $scope.check.sensor.sensorvariable_set.filter(function(item){
+            if(item.name == $stateParams.name){
+                return true;
+            }
+        }).map(function(item){
+            item.sensor = $scope.check.sensor.name;
+            return item;
+        });
+    });
+    $scope.graphState = {};
+});
