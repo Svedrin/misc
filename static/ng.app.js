@@ -1,6 +1,6 @@
 // kate: space-indent on; indent-width 4; replace-tabs on; hl JavaScript;
 
-var fluxmon = angular.module('FluxmonApp', ['ui.router', 'angular-flot', 'ui.tree']);
+var fluxmon = angular.module('FluxmonApp', ['ui.router', 'angular-flot', 'ui.tree', 'ui.gravatar']);
 
 fluxmon.config(function($interpolateProvider, $stateProvider, $urlRouterProvider) {
     $interpolateProvider.startSymbol('{[');
@@ -12,6 +12,11 @@ fluxmon.config(function($interpolateProvider, $stateProvider, $urlRouterProvider
         .state('index', {
             url: "/index",
             template: "&nbsp;"
+        })
+        .state('profile', {
+            url: "/profile",
+            templateUrl: "static/templates/profile.html",
+            controller:  "ProfileCtrl"
         })
         .state('search', {
             url: "/search/:query",

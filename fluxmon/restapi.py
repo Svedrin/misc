@@ -14,7 +14,7 @@ from rest_framework.response   import Response
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = User
-        fields = ('url', 'username', 'email', 'is_staff')
+        fields = ('url', 'username', 'email', 'is_staff', 'first_name', 'last_name', 'date_joined')
 
 # ViewSets define the view behavior.
 class UserViewSet(viewsets.ModelViewSet):
