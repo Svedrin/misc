@@ -48,6 +48,12 @@ fluxmon.directive('searchbox', function($compile){
               ev.preventDefault();
               $(this).popover('toggle');
             });
+            $(document).keypress(function(ev){
+                if(ev.key == '.'){
+                    ev.preventDefault();
+                    $(element).popover('toggle');
+                }
+            });
         }
     };
 });
