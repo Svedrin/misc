@@ -5,8 +5,8 @@
     <thead>
       <tr>
         <th> </th>
-        <th ng-hide="isMobile">Cur</th>
-        <th>Min</th>
+        <th>Cur</th>
+        <th ng-hide="isMobile">Min</th>
         <th>Avg</th>
         <th>Max</th>
         <th ng-hide="isMobile">95%l</th>
@@ -17,8 +17,8 @@
     <tbody>
       <tr ng-repeat="varstats in graphstate.stats">
         <td>{[ varstats.variable.display || varstats.variable.name ]}</td>
-        <td ng-hide="isMobile">{[ varstats.last | scalenumber ]}</td>
-        <td>{[ varstats.min  | scalenumber ]}</td>
+        <td>{[ varstats.last | scalenumber ]}</td>
+        <td ng-hide="isMobile">{[ varstats.min  | scalenumber ]}</td>
         <td>{[ varstats.avg  | scalenumber ]}</td>
         <td>{[ varstats.max  | scalenumber ]}</td>
         <td ng-hide="isMobile">{[ varstats.p95  | scalenumber ]}</td>
