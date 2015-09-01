@@ -58,10 +58,12 @@ class DomainViewSet(viewsets.ModelViewSet):
             except StopIteration:
                 break
             # serialize it
+            hosts = HostSerializer(currdom.host_set.all(), many=True, read_only=True, context={"request": request})
             res = {
                 'id':   currdom.id,
                 'name': currdom.name,
-                'children': []
+                'children': [],
+                'hosts': hosts.data
             }
             # now find the node in the stack we need to attach the domain to
             if currdom.parent is not None:
