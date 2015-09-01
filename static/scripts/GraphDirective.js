@@ -43,20 +43,18 @@ fluxmon.filter('scalenumber', function() {
     };
 });
 
-fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMobile, StatisticsService, $filter){
+fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, StatisticsService, $filter){
     return {
         restrict: 'E',
         template: '<flot dataset="chartData" options="chartOptions" height="300px" callback="flotCallback"></flot>',
         scope: {
-            check:    '@',
-            domain:    '@',
-            variables: '@',
+            check:      '=',
+            domain:     '=',
+            variables:  '=',
             graphState: '='
         },
         controller: function($scope){
             var plot, query, maybeRequery, requeryTimer = null, refreshTimer = null;
-
-            $scope.variables = $.parseJSON($scope.variables);
 
             $scope.chartData    = [];
             $scope.chartOptions = {
@@ -102,10 +100,10 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
             });
 
             query = function(){
+                if(!$scope.check || !$scope.variables) return;
                 var vars = $scope.variables;
-                if( !vars.map ) vars = $.parseJSON(vars);
                 var params = {
-                    check: $scope.check,
+                    check: $scope.check.uuid,
                     domain: $scope.domain,
                     variables: vars.map(function(v){ return v.sensor + '.' + v.name })
                 };
@@ -218,7 +216,7 @@ fluxmon.directive('interactiveGraph', function($timeout, GraphDataService, isMob
                 }
             }
 
-            query();
+            $scope.$watch("variables", query);
         },
         link: function(scope, element, attr){
             var placeholder = $(element).children('flot').children('div');
