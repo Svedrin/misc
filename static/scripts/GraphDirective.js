@@ -100,11 +100,11 @@ fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, Statis
             });
 
             query = function(){
-                if(!$scope.check || !$scope.variables) return;
+                if(!$scope.variables && !($scope.check || $scope.domain)) return;
                 var vars = $scope.variables;
                 var params = {
-                    check: $scope.check.uuid,
-                    domain: $scope.domain,
+                    check:  $scope.check  && $scope.check.uuid,
+                    domain: $scope.domain && $scope.domain.id,
                     variables: vars.map(function(v){ return v.sensor + '.' + v.name })
                 };
                 if( $scope.start ) params.start = parseInt($scope.start / 1000, 10);

@@ -17,4 +17,14 @@ fluxmon.controller("DomainAggregateListCtrl", function($scope, $stateParams, $ht
 });
 
 fluxmon.controller("DomainAggregateCtrl", function($scope, $stateParams, $http){
+    $scope.check = null;
+    $http.get("/api/domains/" + $stateParams.domId + "/aggregates/").then(function(response){
+        $scope.variables = response.data.filter(function(item){
+            if(item.name == $stateParams.name){
+                return true;
+            }
+        });
+        console.log($scope.variables);
+    });
+    $scope.graphState = {};
 });

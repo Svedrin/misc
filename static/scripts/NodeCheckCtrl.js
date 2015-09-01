@@ -21,9 +21,6 @@ fluxmon.controller("NodeCheckVarCtrl", function($scope, $stateParams, $http){
             if(item.name == $stateParams.name){
                 return true;
             }
-        }).map(function(item){
-            item.sensor = $scope.check.sensor.name;
-            return item;
         });
     });
     $scope.graphState = {};

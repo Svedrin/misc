@@ -23,6 +23,7 @@ from monitoring.models import Check,  CheckParameter
 
 
 class DomainSerializer(serializers.HyperlinkedModelSerializer):
+    id          = serializers.Field()
     aggregates  = serializers.HyperlinkedIdentityField(view_name="domain-aggregates")
 
     class Meta:
@@ -104,6 +105,7 @@ class HostViewSet(viewsets.ModelViewSet):
 
 
 class SensorVariableSerializer(serializers.ModelSerializer):
+    sensor = serializers.CharField(source="sensor.name")
     class Meta:
         model = SensorVariable
 
