@@ -261,6 +261,7 @@ fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, Statis
             }
             // Bind wheel for standard mouse wheel scrolling
             placeholder.bind('wheel', function(ev){
+                ev.preventDefault();
                 var target = $(ev.target),
                     zoomX  = (ev.originalEvent.pageX - target.offset().left) / target.width();
                 if(ev.originalEvent.deltaY < 0){
