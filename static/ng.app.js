@@ -1,6 +1,6 @@
 // kate: space-indent on; indent-width 4; replace-tabs on; hl JavaScript;
 
-var fluxmon = angular.module('FluxmonApp', ['ui.router', 'angular-flot']);
+var fluxmon = angular.module('FluxmonApp', ['ui.router', 'angular-flot', 'ui.tree']);
 
 fluxmon.config(function($interpolateProvider, $stateProvider, $urlRouterProvider) {
     $interpolateProvider.startSymbol('{[');
@@ -20,10 +20,11 @@ fluxmon.config(function($interpolateProvider, $stateProvider, $urlRouterProvider
         })
         .state('tree', {
             url: "/tree",
-            templateUrl: "static/templates/tree.html"
+            templateUrl: "static/templates/domain-tree.html",
+            controller: "DomainTreeCtrl"
         })
         .state('domain', {
-            url: "/domain/:fqdn",
+            url: "/domain/:domId",
             templateUrl: "static/templates/domain.html"
         })
         .state('domain.add-host', {

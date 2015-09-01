@@ -1,0 +1,15 @@
+<h1>Tree!</h1>
+<script type="text/ng-template" id="domain-tree-node.html">
+  <div ui-tree-handle>
+    {[ node.fqdn ]}
+  </div>
+  <ol ui-tree-nodes="" ng-model="node.children">
+    <li ng-repeat="node in node.children" ui-tree-node ng-include="'domain-tree-node.html'">
+    </li>
+  </ol>
+</script>
+<div ui-tree>
+  <ol ui-tree-nodes="" ng-model="tree" id="tree-root">
+    <li ng-repeat="node in tree.children" ui-tree-node ng-include="'domain-tree-node.html'"></li>
+  </ol>
+</div>
