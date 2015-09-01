@@ -59,8 +59,7 @@ fluxmon.config(function($interpolateProvider, $stateProvider, $urlRouterProvider
         })
         .state('node.check.varlist', {
             url: "/list",
-            templateUrl: "static/templates/node-check-varlist.html",
-            controller:  "NodeCheckCtrl"
+            templateUrl: "static/templates/node-check-varlist.html"
         })
         .state('node.check.view', {
             url: "/view/:name",
