@@ -3,7 +3,7 @@
   <dd>
     <span ng-hide="editing">
       {[ check.display || check.uuid ]}
-      <button type="button" class="btn btn-default btn-xs" ng-click="startEdit()"><span class="glyphicon glyphicon-pencil" title="Edit..."></span></button>
+      <button type="button" class="btn btn-default btn-xs" ng-click="startEdit()" title="Edit (or hit e)"><span class="glyphicon glyphicon-pencil"></span></button>
     </span>
     <div ng-show="editing" class="input-group fieldWrapper">
       <input type="text" class="form-control" name="display" id="id_display" ng-model="check.display" placeholder="{[ check.uuid ]}" ng-enter="submit()" />
