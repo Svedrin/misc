@@ -4,7 +4,10 @@ import logging
 
 from django.conf import settings
 from django.contrib.auth.models import User, Group
+
 from rest_framework import routers, serializers, viewsets, permissions
+from rest_framework.decorators import list_route
+from rest_framework.response   import Response
 
 
 # Serializers define the API representation.
@@ -19,6 +22,10 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     #permission_classes = (IsNonAnonymous,)
 
+    @list_route()
+    def self(self, request, *args, **kwargs):
+        ser = UserSerializer(request.user, many=False, context={"request": request})
+        return Response(ser.data)
 
 class GroupSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
