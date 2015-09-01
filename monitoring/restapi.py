@@ -58,7 +58,7 @@ class DomainViewSet(viewsets.ModelViewSet):
             except StopIteration:
                 break
             # serialize it
-            hosts = HostSerializer(currdom.host_set.all(), many=True, read_only=True, context={"request": request})
+            hosts = HostSerializer(currdom.host_set.all().order_by('fqdn'), many=True, read_only=True, context={"request": request})
             res = {
                 'id':   currdom.id,
                 'name': currdom.name,
