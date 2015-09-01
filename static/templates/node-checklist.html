@@ -15,7 +15,7 @@
         {[ check.target_host.fqdn ]}
         <span ng-if="check.target_host.fqdn != check.exec_host.fqdn">(as seen by {[ check.exec_host.fqdn ]})</span>
       </td>
-      <td>{[ check.uuid ]}</td>
+      <td>{[ check.display ]}</td>
       <td>{[ check.sensor.name ]}</td>
       <td><span ng-repeat="param in check.checkparameter_set">{[ param.parameter ]}={[ param.value ]}</span></td>
     </tr>
