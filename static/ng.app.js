@@ -25,7 +25,8 @@ fluxmon.config(function($interpolateProvider, $stateProvider, $urlRouterProvider
         })
         .state('domain', {
             url: "/domain/:domId",
-            templateUrl: "static/templates/domain.html"
+            templateUrl: "static/templates/domain.html",
+            controller:  "DomainCtrl"
         })
         .state('domain.add-host', {
             url: "/add",
@@ -38,7 +39,8 @@ fluxmon.config(function($interpolateProvider, $stateProvider, $urlRouterProvider
         })
         .state('domain.aggregate', {
             url: "/aggr/:variable",
-            templateUrl: "static/templates/domain-aggregate.html"
+            templateUrl: "static/templates/domain-aggregate.html",
+            controller:  "DomainAggregateCtrl"
         })
         .state('node', {
             url: "/node/:nodeId",
