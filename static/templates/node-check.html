@@ -1,6 +1,17 @@
 <dl class="dl-horizontal">
   <dt>Check:</dt>
-  <dd>{[ check.display || check.uuid ]}</dd>
+  <dd>
+    <span ng-hide="editing">
+      {[ check.display || check.uuid ]}
+      <button type="button" class="btn btn-default btn-xs" ng-click="startEdit()"><span class="glyphicon glyphicon-pencil" title="Edit..."></span></button>
+    </span>
+    <div ng-show="editing" class="input-group fieldWrapper">
+      <input type="text" class="form-control" name="display" id="id_display" ng-model="check.display" placeholder="{[ check.uuid ]}" ng-enter="submit()" />
+      <span class="input-group-btn">
+        <button class="btn btn-default" ng-click="submit()" >Submit</button>
+      </span>
+    </div>
+  </dd>
   <dt>Sensor:</dt>
   <dd>{[ check.sensor.name ]}</dd>
   <dt>Executed on host:</dt>

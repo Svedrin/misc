@@ -12,9 +12,22 @@ fluxmon.controller("NodeCheckListCtrl", function($scope, $stateParams, $http){
     });
 });
 
-fluxmon.controller("NodeCheckCtrl", function($scope, $stateParams, $http){
+fluxmon.controller("NodeCheckCtrl", function($scope, $stateParams, $http, $timeout){
     $http.get("/api/checks/" + $stateParams.check + "/").then(function(response){
         $scope.check = response.data;
+        $scope.editing = false;
+        $scope.startEdit = function(){
+          $scope.editing = true;
+          $timeout(function(){
+            $('#id_display').focus();
+          }, 50);
+        };
+        $scope.submit = function(){
+          $http.patch("/api/checks/" + $stateParams.check + "/", {
+            display: $scope.check.display
+          });
+          $scope.editing = false;
+        };
     });
 });
 
