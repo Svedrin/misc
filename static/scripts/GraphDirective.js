@@ -290,7 +290,3 @@ fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, Statis
     };
 });
 
-fluxmon.controller('interactiveGraphCtrl', function($scope, isMobile){
-    $scope.isMobile = isMobile.any();
-});
-
