@@ -44,7 +44,7 @@
             <li><a href="/">Home</a></li>
             {% if not user.is_anonymous %}
             <li><a href="{% url 'monitoring.views.profile' %}">{{ user }}</a></li>
-            <li><a href="{% url 'hosts.views.domains' %}">Hosts</a></li>
+            <li><a href="#" ui-sref="tree">Hosts</a></li>
             <li><a href="#" ui-sref="search" id="searchlink">Search</a></li>
             <li><a href="{% url 'django.contrib.auth.views.logout' %}">Logout</a></li>
             <script type="text/javascript">
