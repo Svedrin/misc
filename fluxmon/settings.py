@@ -148,7 +148,6 @@ INSTALLED_APPS = (
     'hosts',
     'fluxacl',
     'monitoring',
-    'display',
     'msgsign',
 )
 
