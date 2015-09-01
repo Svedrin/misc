@@ -39,6 +39,41 @@ class DomainViewSet(viewsets.ModelViewSet):
         ser = SensorVariableSerializer(aggrs, many=True, read_only=True, context={'request': request})
         return Response(ser.data)
 
+    @list_route()
+    def tree(self, request, *args, **kwargs):
+        stack   = []
+        queryset = iter(Domain.objects.all())
+        currdom = queryset.next()
+        stack.append({
+            'id':   currdom.id,
+            'name': currdom.name,
+            'fqdn': '',
+            'children': []
+        })
+
+        while stack:
+            # Get the next domain
+            try:
+                currdom = queryset.next()
+            except StopIteration:
+                break
+            # serialize it
+            res = {
+                'id':   currdom.id,
+                'name': currdom.name,
+                'children': []
+            }
+            # now find the node in the stack we need to attach the domain to
+            if currdom.parent is not None:
+                while stack[-1]["id"] != currdom.parent.id:
+                    stack.pop()
+            topdom = stack[-1]
+            res["fqdn"] = "%s.%s" % (res["name"], topdom["fqdn"])
+            topdom["children"].append(res)
+            stack.append(res)
+
+        return Response(stack[0])
+
 
 class HostSerializer(serializers.HyperlinkedModelSerializer):
     id          = serializers.Field()
