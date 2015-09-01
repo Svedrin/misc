@@ -25,3 +25,18 @@ fluxmon.controller("NodeCheckVarCtrl", function($scope, $stateParams, $http){
     });
     $scope.graphState = {};
 });
+
+fluxmon.controller("NodeCheckViewCtrl", function($scope, $stateParams, $http){
+    $scope.domain = null;
+    $scope.$watch("check", function(){
+        if(!$scope.check) return;
+        $scope.variables = $scope.check.views_set.reduce(function(prev, item){
+            if(item.name == $stateParams.name){
+                return item.variables;
+            }
+            return prev;
+        }, []);
+        console.log($scope.variables);
+    });
+    $scope.graphState = {};
+});

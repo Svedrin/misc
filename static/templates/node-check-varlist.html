@@ -2,6 +2,22 @@
   <div class="panel-body">
     <table class="table table-hover">
       <tbody>
+        <tr class="checktr"
+            ng-repeat="view in check.views_set"
+            ui-sref="node.check.view({name: view.name})">
+          <td>
+            {[ view.name ]}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="panel panel-default">
+  <div class="panel-body">
+    <table class="table table-hover">
+      <tbody>
         <tr class="checktr {% if alerts %}warning{% else %}success{% endif %}"
             ng-repeat="variable in check.sensor.sensorvariable_set"
             ui-sref="node.check.variable({name: variable.name})">
