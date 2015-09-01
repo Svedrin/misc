@@ -14,7 +14,7 @@ fluxmon.config(function($interpolateProvider, $stateProvider, $urlRouterProvider
             template: "&nbsp;"
         })
         .state('search', {
-            url: "/search",
+            url: "/search/:query",
             templateUrl: "static/templates/search.html",
             controller:  "SearchCtrl"
         })
