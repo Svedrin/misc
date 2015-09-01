@@ -61,6 +61,16 @@
 
     <!-- Begin page content -->
     <div class="container" ng-show="showIndex()">
+      <div class="panel panel-warning" ng-hide="true">
+        <div class="panel-heading">
+          <h3 class="panel-title">Please enable JavaScript</h3>
+        </div>
+        <div class="panel-body">
+          <p>You seem to have JavaScript disabled. Unfortunately, without it, this page won't be much fun, so please enable it.</p>
+          <p>We won't do anything shady. Promise!</p>
+        </div>
+      </div>
+
       {% block content %}
       {% endblock %}
     </div>
