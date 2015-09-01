@@ -19,7 +19,9 @@ fluxmon.controller("NodeCheckCtrl", function($scope, $stateParams, $http, $timeo
         $scope.startEdit = function(){
           $scope.editing = true;
           $timeout(function(){
-            $('#id_display').focus();
+            var inp = $('#id_display');
+            inp.focus();
+            inp.get(0).setSelectionRange($scope.check.display.length, $scope.check.display.length)
           }, 50);
         };
         $scope.submit = function(){
