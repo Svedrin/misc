@@ -31,6 +31,11 @@ fluxmon.config(function($interpolateProvider, $stateProvider, $urlRouterProvider
             url: "/add",
             templateUrl: "static/templates/domain-addhost.html"
         })
+        .state('domain.aggregatelist', {
+            url: "/aggr/list",
+            templateUrl: "static/templates/domain-aggregatelist.html",
+            controller:  "DomainAggregateListCtrl"
+        })
         .state('domain.aggregate', {
             url: "/aggr/:variable",
             templateUrl: "static/templates/domain-aggregate.html"

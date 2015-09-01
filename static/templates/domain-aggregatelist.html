@@ -1,0 +1,14 @@
+<table class="table table-hover">
+  <thead>
+    <tr>
+      <th>Variable</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="checktr {% if check.current_alert %}warning{% else %}success{% endif %}"
+        ui-sref="domain.aggregate({variable: aggregate.name})"
+        ng-repeat="aggregate in domainAggregates" >
+      <td>{[ aggregate.display || aggregate.name ]}</td>
+    </tr>
+  </tbody>
+</table>

@@ -1,6 +1,6 @@
 <script type="text/ng-template" id="domain-tree-node.html">
   <div ui-tree-handle>
-    {[ node.fqdn ]} ({[ node.hosts.length ]} Hosts)
+    <a href="#" ui-sref="domain.aggregatelist({domId: node.id})">{[ node.fqdn ]}</a> ({[ node.hosts.length ]} Hosts)
   </div>
   <ol ui-tree-nodes="" ng-model="node.children">
     <li ng-repeat="node in node.children" ui-tree-node ng-include="'domain-tree-node.html'">
