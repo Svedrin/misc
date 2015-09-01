@@ -2,9 +2,12 @@
 
 var fluxmon = angular.module('FluxmonApp', ['ui.router', 'angular-flot', 'ui.tree', 'ui.gravatar']);
 
-fluxmon.config(function($interpolateProvider, $stateProvider, $urlRouterProvider) {
+fluxmon.config(function($interpolateProvider, $httpProvider, $stateProvider, $urlRouterProvider) {
     $interpolateProvider.startSymbol('{[');
     $interpolateProvider.endSymbol(']}');
+
+    $httpProvider.defaults.xsrfHeaderName = "X-CSRFToken";
+    $httpProvider.defaults.xsrfCookieName = "csrftoken";
 
     $urlRouterProvider.otherwise("/index");
 
