@@ -11,7 +11,7 @@
     <pre>{[ exception.traceback ]}</pre>
   </div>
 </div>
-<div ng-show="state == 'display'" style="width: 100%">
+<div ng-class="{invisible: state != 'display'}">
   <flot dataset="chartData" options="chartOptions" height="300px" callback="flotCallback"></flot>
   <table class="table">
     <thead>
