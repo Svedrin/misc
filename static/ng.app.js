@@ -78,6 +78,11 @@ fluxmon.config(function($interpolateProvider, $httpProvider, $stateProvider, $ur
             url: "/var/:name",
             templateUrl: "static/templates/node-check-var.html",
             controller:  "NodeCheckVarCtrl"
+        })
+        .state('token', {
+            url: "/token/:token",
+            templateUrl: "static/templates/token.html",
+            controller:  "TokenCtrl"
         });
 });
 
