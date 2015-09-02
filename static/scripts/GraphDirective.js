@@ -56,6 +56,7 @@ fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, Statis
         controller: function($scope){
             var plot, query, maybeRequery, requeryTimer = null, refreshTimer = null;
 
+            $scope.state = "init";
             $scope.chartData    = [];
             $scope.chartOptions = {
                 xaxis: {
@@ -113,6 +114,13 @@ fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, Statis
                     var result = response.data, i, v, respdata, data, resolution;
                     var min, max, avg, last, lastDate, prevDate, visibleData;
 
+                    if( response.data.type == "exception" ){
+                        $scope.state = "exception";
+                        $scope.exception = response.data.exception;
+                        return;
+                    }
+
+                    $scope.state = "display";
                     $scope.chartData = [];
 
                     $scope.data_start = new Date(result.data_window.start).valueOf();
@@ -219,7 +227,7 @@ fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, Statis
             $scope.$watch("variables", query);
         },
         link: function(scope, element, attr){
-            var placeholder = $(element).children('flot').children('div');
+            var placeholder = $(element).find('flot').children('div');
             var zoomIn = function(zoomX, dirIn){
                 var intv = scope.end - scope.start;
                 dirIn = dirIn || 1;
