@@ -2,7 +2,7 @@
   <dt>Check:</dt>
   <dd>
     <span ng-hide="editing">
-      {[ check.display || check.uuid ]}
+      <a href="#" ui-sref="node.check.varlist">{[ check.display || check.uuid ]}</a>
       <button type="button" class="btn btn-default btn-xs" ng-click="startEdit()" title="Edit (or hit e)"><span class="glyphicon glyphicon-pencil"></span></button>
     </span>
     <div ng-show="editing" class="input-group fieldWrapper">
@@ -16,8 +16,6 @@
   <dd>{[ check.sensor.name ]}</dd>
   <dt>Executed on host:</dt>
   <dd><a href="#" ui-sref="node.checklist({nodeId: check.exec_host.id})">{[ check.exec_host.fqdn ]}</a></dd>
-  <dt>Target host:</dt>
-  <dd><a href="#" ui-sref="node.checklist({nodeId: check.target_host.id})">{[ check.target_host.fqdn ]}</a></dd>
   <dt>Parameters:</dt>
   <dd>
     <ul class="list-unstyled">
