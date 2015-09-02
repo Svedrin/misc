@@ -297,7 +297,7 @@ class MeasurementsViewSet(viewsets.ViewSet):
         token  = None
         variables = []
 
-        if False and request.user.is_anonymous():
+        if request.user.is_anonymous():
             token  = get_object_or_404(GraphAuthToken, token=request.user.username)
             check  = token.check_inst
             domain = token.domain
