@@ -317,10 +317,44 @@ class MeasurementsViewSet(viewsets.ViewSet):
         return Response(response)
 
 
+class GraphAuthTokenSerializer(serializers.ModelSerializer):
+    check   = CheckSerializer(source="check_inst")
+    variable = SensorVariableSerializer()
+    view    = ViewSerializer()
+    domain  = DomainSerializer()
+
+    class Meta:
+        model = GraphAuthToken
+
+
+class GraphAuthTokenViewSet(viewsets.ViewSet):
+    def create(self, request):
+        token = GraphAuthToken()
+        if "check" in request.DATA:
+            token.check_inst = get_object_or_404(Check,  uuid=request.DATA["check"])
+        if "domain" in request.DATA:
+            token.domain     = get_object_or_404(Domain, id=request.DATA["domain"])
+        if "variable" in request.DATA:
+            sensorname, varname = request.DATA["variable"].split(1)
+            token.variable   = get_object_or_404(SensorVariable, sensor__name=sensorname, name=varname)
+        if "view" in request.DATA:
+            token.view       = get_object_or_404(View,   name=request.DATA["view"])
+        token.full_clean()
+        token.save()
+        ser = GraphAuthTokenSerializer(token, context={"request": request})
+        return Response(ser.data, status=status.HTTP_201_CREATED)
+
+    def retrieve(self, request, pk):
+        token = get_object_or_404(GraphAuthToken, token=pk)
+        ser = GraphAuthTokenSerializer(token, context={"request": request})
+        return Response(ser.data)
+
+
 REST_API_VIEWSETS = [
     ('domains', DomainViewSet, 'domain'),
     ('hosts',   HostViewSet,   'host'),
     ('sensors', SensorViewSet, 'sensor'),
     ('checks',  CheckViewSet,  'check'),
+    ('tokens',  GraphAuthTokenViewSet,  'token'),
     ('measurements',  MeasurementsViewSet,  'msmt'),
 ]
