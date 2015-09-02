@@ -6,12 +6,13 @@ import django_filters
 from datetime import datetime
 from time import time
 
+from django.contrib.auth.models import AnonymousUser
 from django.shortcuts           import get_object_or_404
 from django.utils.timezone      import make_aware, get_default_timezone
 from django.http                import HttpResponse, HttpResponseForbidden
 from django.db                  import ProgrammingError, DataError
 
-from rest_framework import serializers, views, viewsets, status
+from rest_framework import serializers, views, viewsets, status, authentication, permissions
 from rest_framework.decorators import list_route, detail_route
 from rest_framework.response   import Response
 from rest_framework.filters    import BaseFilterBackend, DjangoFilterBackend
@@ -212,7 +213,79 @@ class CheckViewSet(viewsets.ModelViewSet):
         return Response(ser.data)
 
 
+def has_valid_token(request):
+    header = authentication.get_authorization_header(request)
+    if not header.lower().startswith("token "):
+        return False
+    _, token = header.split(" ", 1)
+    try:
+        GraphAuthToken.objects.get(token=token)
+    except GraphAuthToken.DoesNotExist:
+        return False
+    else:
+        return True
+
+class GraphAuthTokenAuthentication(authentication.BaseAuthentication):
+    def authenticate(self, request):
+        if has_valid_token(request):
+            return (AnonymousUser(), None)
+        return None
+
+class HasValidGraphAuthToken(permissions.BasePermission):
+    """ Require users to present a valid token. """
+
+    def has_permission(self, request, view):
+        if request.method not in permissions.SAFE_METHODS:
+            # not a read-only request -> no token auth
+            return False
+        return has_valid_token(request)
+
+class GraphAuthTokenSerializer(serializers.ModelSerializer):
+    check   = CheckSerializer(source="check_inst")
+    variable = SensorVariableSerializer()
+    view    = ViewSerializer()
+    domain  = DomainSerializer()
+
+    class Meta:
+        model = GraphAuthToken
+
+class GraphAuthTokenViewSet(viewsets.ViewSet):
+    authentication_classes = (
+        authentication.BasicAuthentication,
+        authentication.SessionAuthentication,
+        GraphAuthTokenAuthentication)
+    permission_classes = (HasValidGraphAuthToken,)
+
+    def create(self, request):
+        token = GraphAuthToken()
+        if "check" in request.DATA:
+            token.check_inst = get_object_or_404(Check,  uuid=request.DATA["check"])
+        if "domain" in request.DATA:
+            token.domain     = get_object_or_404(Domain, id=request.DATA["domain"])
+        if "variable" in request.DATA:
+            sensorname, varname = request.DATA["variable"].split(1)
+            token.variable   = get_object_or_404(SensorVariable, sensor__name=sensorname, name=varname)
+        if "view" in request.DATA:
+            token.view       = get_object_or_404(View,   name=request.DATA["view"])
+        token.full_clean()
+        token.save()
+        ser = GraphAuthTokenSerializer(token, context={"request": request})
+        return Response(ser.data, status=status.HTTP_201_CREATED)
+
+    def retrieve(self, request, pk):
+        token = get_object_or_404(GraphAuthToken, token=pk)
+        ser = GraphAuthTokenSerializer(token, context={"request": request})
+        return Response(ser.data)
+
+
+
 class MeasurementsViewSet(viewsets.ViewSet):
+    authentication_classes = (
+        authentication.BasicAuthentication,
+        authentication.SessionAuthentication,
+        GraphAuthTokenAuthentication)
+    permission_classes = (HasValidGraphAuthToken,)
+
     def list(self, request, format=None):
         check  = None
         domain = None
@@ -221,12 +294,8 @@ class MeasurementsViewSet(viewsets.ViewSet):
 
         if request.GET.get("check", ""):
             check = get_object_or_404(Check, uuid=request.GET["check"])
-            if not check.has_perm(request.user, "r"):
-                return HttpResponseForbidden("I say nay nay")
         elif request.GET.get("domain", ""):
             domain = get_object_or_404(Domain, id=request.GET["domain"])
-            if not domain.has_perm(request.user, "r"):
-                return HttpResponseForbidden("I say nay nay")
         elif request.GET.get("token", ""):
             token  = get_object_or_404(GraphAuthToken, token=request.GET["token"])
             check  = token.check_inst
@@ -317,37 +386,6 @@ class MeasurementsViewSet(viewsets.ViewSet):
         return Response(response)
 
 
-class GraphAuthTokenSerializer(serializers.ModelSerializer):
-    check   = CheckSerializer(source="check_inst")
-    variable = SensorVariableSerializer()
-    view    = ViewSerializer()
-    domain  = DomainSerializer()
-
-    class Meta:
-        model = GraphAuthToken
-
-
-class GraphAuthTokenViewSet(viewsets.ViewSet):
-    def create(self, request):
-        token = GraphAuthToken()
-        if "check" in request.DATA:
-            token.check_inst = get_object_or_404(Check,  uuid=request.DATA["check"])
-        if "domain" in request.DATA:
-            token.domain     = get_object_or_404(Domain, id=request.DATA["domain"])
-        if "variable" in request.DATA:
-            sensorname, varname = request.DATA["variable"].split(1)
-            token.variable   = get_object_or_404(SensorVariable, sensor__name=sensorname, name=varname)
-        if "view" in request.DATA:
-            token.view       = get_object_or_404(View,   name=request.DATA["view"])
-        token.full_clean()
-        token.save()
-        ser = GraphAuthTokenSerializer(token, context={"request": request})
-        return Response(ser.data, status=status.HTTP_201_CREATED)
-
-    def retrieve(self, request, pk):
-        token = get_object_or_404(GraphAuthToken, token=pk)
-        ser = GraphAuthTokenSerializer(token, context={"request": request})
-        return Response(ser.data)
 
 
 REST_API_VIEWSETS = [
