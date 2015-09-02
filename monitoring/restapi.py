@@ -274,9 +274,13 @@ class MeasurementsViewSet(viewsets.ViewSet):
             logging.error(traceback.format_exc())
 
             response["exception"] = {
-                'str': unicode(err),
-                'traceback': traceback.format_exc()
+                'str': unicode(err)
             }
+            if request.user.is_superuser:
+                response["exception"].update({
+                    'traceback': traceback.format_exc(),
+                    'query':     (measurements.query.sql % tuple(["'%s'" % param for param in measurements.params]))
+                })
             response["type"] = "exception"
 
         else:
