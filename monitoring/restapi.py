@@ -265,7 +265,7 @@ class GraphAuthTokenViewSet(viewsets.ViewSet):
         if "domain" in request.DATA:
             token.domain     = get_object_or_404(Domain, id=request.DATA["domain"])
         if "variable" in request.DATA:
-            sensorname, varname = request.DATA["variable"].split(1)
+            sensorname, varname = request.DATA["variable"].split('.', 1)
             token.variable   = get_object_or_404(SensorVariable, sensor__name=sensorname, name=varname)
         if "view" in request.DATA:
             token.view       = get_object_or_404(View,   name=request.DATA["view"])
