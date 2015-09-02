@@ -40,7 +40,6 @@ class Name(Symbol):
         return "(avg(cm.value) filter (where sv.name = %s))"
 
     def get_unit(self, namespace):
-        print self.value
         return namespace.get_unit(self.value)
 
 class EndMarker(Symbol):
