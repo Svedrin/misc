@@ -1,8 +1,13 @@
 fluxmon.controller("TokenCtrl", function($scope, $stateParams, $http){
     $scope.domain = null;
     $scope.check  = null;
+    $scope.token  = $stateParams.token;
     $scope.graphState = {};
-    $http.get("/api/tokens/" + $stateParams.token + "/").then(function(response){
+    $http.get("/api/tokens/" + $stateParams.token + "/", {
+        headers: {
+            "Authorization": "Token " + $stateParams.token
+        }
+    }).then(function(response){
         $scope.check = response.data.check;
         $scope.domain = response.data.domain;
         if(response.data.view != null){

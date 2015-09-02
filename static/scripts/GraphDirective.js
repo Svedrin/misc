@@ -9,10 +9,15 @@ fluxmon.service('GraphDataService', function($http){
         {name: 'year',   len: 1000 * 60 * 60 * 24 * 365}
     ];
     return {
-        get_data: function(params){
-            return $http.get('/api/measurements/', {
+        get_data: function(params, token){
+            var config = {
                 params: params
-            });
+            }
+            if(token)
+                config.headers = {
+                    'Authorization': 'Token ' + token
+                };
+            return $http.get('/api/measurements/', config);
         },
         get_resolution: function(start, end){
             var dt = end - start, data_res, i;
@@ -50,6 +55,7 @@ fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, Statis
         scope: {
             check:      '=',
             domain:     '=',
+            token:      '=',
             variables:  '=',
             graphState: '='
         },
@@ -111,7 +117,7 @@ fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, Statis
                 };
                 if( $scope.start ) params.start = parseInt($scope.start / 1000, 10);
                 if( $scope.end   ) params.end   = parseInt($scope.end   / 1000, 10);
-                GraphDataService.get_data(params).then(function(response){
+                GraphDataService.get_data(params, $scope.token).then(function(response){
                     var result = response.data, i, v, respdata, data, resolution;
                     var min, max, avg, last, lastDate, prevDate, visibleData;
 
