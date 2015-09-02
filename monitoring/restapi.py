@@ -228,7 +228,9 @@ def has_valid_token(request):
 class GraphAuthTokenAuthentication(authentication.BaseAuthentication):
     def authenticate(self, request):
         if has_valid_token(request):
-            return (AnonymousUser(), None)
+            anon = AnonymousUser()
+            anon.username = authentication.get_authorization_header(request).split(" ", 1)[1]
+            return (anon, None)
         return None
 
 class HasValidGraphAuthToken(permissions.BasePermission):
@@ -294,18 +296,18 @@ class MeasurementsViewSet(viewsets.ViewSet):
         token  = None
         variables = []
 
-        if request.GET.get("check", ""):
-            check = get_object_or_404(Check, uuid=request.GET["check"])
-        elif request.GET.get("domain", ""):
-            domain = get_object_or_404(Domain, id=request.GET["domain"])
-        elif request.GET.get("token", ""):
-            token  = get_object_or_404(GraphAuthToken, token=request.GET["token"])
+        if False and request.user.is_anonymous():
+            token  = get_object_or_404(GraphAuthToken, token=request.user.username)
             check  = token.check_inst
             domain = token.domain
             if token.view is None:
                 variables = [token.variable]
             else:
                 variables = token.view.variables.all()
+        elif request.GET.get("check", ""):
+            check = get_object_or_404(Check, uuid=request.GET["check"])
+        elif request.GET.get("domain", ""):
+            domain = get_object_or_404(Domain, id=request.GET["domain"])
         else:
             return HttpResponseForbidden("I say nay nay")
 
