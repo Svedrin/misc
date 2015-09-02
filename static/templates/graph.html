@@ -39,6 +39,9 @@
       </tr>
     </tbody>
   </table>
+  <button type="button" class="btn btn-default btn-xs pull-right" ng-click="shareGraph()" title="Share" ng-hide="token">
+    <img style="width: 14px;" src="/static/share.png" />
+  </button>
   <dl class="dl-horizontal">
     <dt>Start:</dt>
     <dd>{[ graphState.start | date:'medium' ]}

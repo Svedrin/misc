@@ -48,7 +48,7 @@ fluxmon.filter('scalenumber', function() {
     };
 });
 
-fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, StatisticsService, $filter){
+fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, StatisticsService, $filter, TokenService){
     return {
         restrict: 'E',
         templateUrl: '/static/templates/graph.html',
@@ -59,7 +59,7 @@ fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, Statis
             variables:  '=',
             graphState: '='
         },
-        controller: function($scope){
+        controller: function($scope, $state){
             var plot, query, maybeRequery, requeryTimer = null, refreshTimer = null;
 
             $scope.isMobile = isMobile.any();
@@ -232,6 +232,18 @@ fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, Statis
             }
 
             $scope.$watch("variables", query);
+
+            $scope.shareGraph = function(){
+                if( $scope.variables.length == 1 ){
+                    TokenService.create($scope.check, $scope.domain, $scope.variables[0]).then(function(response){
+                        prompt("Here is your token URL!",
+                               window.location.origin + window.location.pathname + $state.href('token', {token: response.data.token}));
+                    });
+                }
+                else{
+                    alert("Sorry, views are currently not supported");
+                }
+            };
         },
         link: function(scope, element, attr){
             var placeholder = $(element).find('flot').children('div');

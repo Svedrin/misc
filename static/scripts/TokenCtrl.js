@@ -18,3 +18,16 @@ fluxmon.controller("TokenCtrl", function($scope, $stateParams, $http){
         }
     });
 });
+
+fluxmon.service("TokenService", function($http){
+    return {
+        create: function(check, domain, variable, view){
+            params = {};
+            if( check    ) params.check    = check.uuid;
+            if( domain   ) params.domain   = domain.id;
+            if( variable ) params.variable = variable.sensor + '.' + variable.name;
+            if( view     ) params.view     = view;
+            return $http.post('/api/tokens/', params);
+        }
+    }
+});
