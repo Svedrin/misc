@@ -235,6 +235,8 @@ class HasValidGraphAuthToken(permissions.BasePermission):
     """ Require users to present a valid token. """
 
     def has_permission(self, request, view):
+        if not request.user.is_anonymous():
+            return True
         if request.method not in permissions.SAFE_METHODS:
             # not a read-only request -> no token auth
             return False
