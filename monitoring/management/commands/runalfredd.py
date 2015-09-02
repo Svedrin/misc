@@ -39,10 +39,11 @@ def doit(sensor, sensor_inst, domain, localhost):
     timestamp = int(time())
 
     for macaddr, info in nodeinfo.items():
+        fqdn = "%s.%s" % (info["hostname"], domain)
         try:
-            node = Host.objects.get(fqdn__startswith=info["hostname"], domain=domain)
+            node = Host.objects.get(fqdn=fqdn, domain=domain)
         except Host.DoesNotExist:
-            node = Host(fqdn="%s.%s" % (info["hostname"], domain), domain=domain)
+            node = Host(fqdn=fqdn, domain=domain)
             node.save()
 
         try:
