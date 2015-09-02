@@ -9,7 +9,7 @@ from time import time
 from django.shortcuts           import get_object_or_404
 from django.utils.timezone      import make_aware, get_default_timezone
 from django.http                import HttpResponse, HttpResponseForbidden
-from django.db                  import ProgrammingError
+from django.db                  import ProgrammingError, DataError
 
 from rest_framework import serializers, views, viewsets, status
 from rest_framework.decorators import list_route, detail_route
@@ -233,13 +233,13 @@ class MeasurementsViewSet(viewsets.ViewSet):
             'request_window': {
                 'start': start,
                 'end':   end
-            },
-            'metrics': {}
+            }
         }
 
-        try:
-            start_time = time()
+        start_time = time()
+        metrics = {}
 
+        try:
             for ds in request.GET.getlist("variables"):
                 if "." in ds:
                     sensorname, varname = ds.split('.', 1)
@@ -253,7 +253,7 @@ class MeasurementsViewSet(viewsets.ViewSet):
                     var = get_object_or_404(SensorVariable, sensor__name=sensorname, name=varname, aggregate=True)
                     measurements = var.get_aggregate_over(domain, "sum", start, end)
 
-                response["metrics"][ds] = {
+                metrics[ds] = {
                     "data": [(msmt.measured_at, msmt.value)
                         for msmt in measurements],
                     "start": None,
@@ -261,22 +261,33 @@ class MeasurementsViewSet(viewsets.ViewSet):
                     "resolution": measurements.resolution
                 }
 
-                if response["metrics"][ds]["data"]:
-                    response["metrics"][ds]["start"] = response["metrics"][ds]["data"][ 0][0]
-                    response["metrics"][ds]["end"]   = response["metrics"][ds]["data"][-1][0]
+                if  metrics[ds]["data"]:
+                    metrics[ds]["start"] = metrics[ds]["data"][ 0][0]
+                    metrics[ds]["end"]   = metrics[ds]["data"][-1][0]
 
-            end_time = time()
-
-        except ProgrammingError:
+        except (ProgrammingError, DataError), err:
             import logging
+            import traceback
+
             logging.error("Received exception when executing query")
             logging.error(measurements.query.sql, *["'%s'" % param for param in measurements.params])
-            raise
+            logging.error(traceback.format_exc())
 
-        response["data_window"] = {
-            "start": min( metric["start"] for metric in response["metrics"].values() ),
-            "end":   max( metric["end"]   for metric in response["metrics"].values() ),
-        }
+            response["exception"] = {
+                'str': unicode(err),
+                'traceback': traceback.format_exc()
+            }
+            response["type"] = "exception"
+
+        else:
+            response["data_window"] = {
+                "start": min( metric["start"] for metric in metrics.values() ),
+                "end":   max( metric["end"]   for metric in metrics.values() ),
+            }
+            response["metrics"] = metrics
+            response["type"]    = "result"
+
+        end_time = time()
 
         response["query_time"] = end_time - start_time
 
