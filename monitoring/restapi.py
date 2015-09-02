@@ -26,6 +26,7 @@ from monitoring.models import GraphAuthToken
 
 class DomainSerializer(serializers.HyperlinkedModelSerializer):
     id          = serializers.Field()
+    fqdn        = serializers.CharField()
     aggregates  = serializers.HyperlinkedIdentityField(view_name="domain-aggregates")
 
     class Meta:
