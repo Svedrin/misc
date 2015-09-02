@@ -39,7 +39,7 @@ fluxmon.controller("NodeCheckCtrl", function($scope, $stateParams, $http, $timeo
     });
 });
 
-fluxmon.controller("NodeCheckVarCtrl", function($scope, $stateParams, $http, isMobile){
+fluxmon.controller("NodeCheckVarCtrl", function($scope, $stateParams, $http){
     $scope.domain = null;
     $scope.$watch("check", function(){
         if(!$scope.check) return;
@@ -50,10 +50,9 @@ fluxmon.controller("NodeCheckVarCtrl", function($scope, $stateParams, $http, isM
         });
     });
     $scope.graphState = {};
-    $scope.isMobile = isMobile.any();
 });
 
-fluxmon.controller("NodeCheckViewCtrl", function($scope, $stateParams, $http, isMobile){
+fluxmon.controller("NodeCheckViewCtrl", function($scope, $stateParams, $http){
     $scope.domain = null;
     $scope.$watch("check", function(){
         if(!$scope.check) return;
@@ -65,5 +64,4 @@ fluxmon.controller("NodeCheckViewCtrl", function($scope, $stateParams, $http, is
         }, []);
     });
     $scope.graphState = {};
-    $scope.isMobile = isMobile.any();
 });

@@ -16,7 +16,7 @@ fluxmon.controller("DomainAggregateListCtrl", function($scope, $stateParams, $ht
     });
 });
 
-fluxmon.controller("DomainAggregateCtrl", function($scope, $stateParams, $http, isMobile){
+fluxmon.controller("DomainAggregateCtrl", function($scope, $stateParams, $http){
     $scope.check = null;
     $http.get("/api/domains/" + $stateParams.domId + "/aggregates/").then(function(response){
         $scope.variables = response.data.filter(function(item){
@@ -26,5 +26,4 @@ fluxmon.controller("DomainAggregateCtrl", function($scope, $stateParams, $http, 
         });
     });
     $scope.graphState = {};
-    $scope.isMobile = isMobile.any();
 });

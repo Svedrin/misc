@@ -56,6 +56,7 @@ fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, Statis
         controller: function($scope){
             var plot, query, maybeRequery, requeryTimer = null, refreshTimer = null;
 
+            $scope.isMobile = isMobile.any();
             $scope.state = "init";
             $scope.chartData    = [];
             $scope.chartOptions = {
