@@ -97,6 +97,39 @@ class SensorVariable(models.Model):
             return unicode( list(parse(self.formula))[0].get_unit(SensorNamespace(self.sensor)) )
         return self.unit
 
+    def get_measurements(self, check, start=None, end=None):
+        start, end = get_default_start_end(start, end)
+        data_res = get_resolution(start, end)
+        #print "resolution is now", data_res
+
+        if not self.formula:
+            topnode = list(parse(self.name))[0]
+        else:
+            topnode = list(parse(self.formula))[0]
+
+        args     = [self.name, self.sensor.id]
+        valuedef = topnode.get_value(args)
+        args.extend([check.id, self.sensor.id, start, end, data_res])
+        result = CheckMeasurement.objects.raw("""select
+                -1 as id,
+                cm.check_id,
+                (select id from monitoring_sensorvariable where name=%s and sensor_id=%s) as variable_id,
+                min(cm.measured_at) as measured_at,
+                """ + valuedef + """ as value
+            from
+                monitoring_checkmeasurement cm
+                inner join monitoring_sensorvariable sv on variable_id=sv.id
+            where
+                cm.check_id=%s and
+                sv.sensor_id=%s and
+                cm.measured_at BETWEEN %s AND %s
+            group by
+                cm.check_id,
+                date_trunc(%s, cm.measured_at)
+            order by measured_at ;""", args)
+        result.resolution = data_res
+        return result
+
     def get_aggregate_over(self, domain, fn="sum", start=None, end=None):
         if fn not in ("sum", "avg"):
             raise ValueError("fn needs to be either sum or avg")
@@ -271,42 +304,6 @@ class Check(models.Model):
                     curralert.endtime = make_aware(datetime.now(), get_default_timezone())
                     curralert.save()
 
-    def get_measurements(self, variable, start=None, end=None):
-        var = self.sensor.sensorvariable_set.get(name=variable)
-
-        start, end = get_default_start_end(start, end)
-        data_res = get_resolution(start, end)
-        #print "resolution is now", data_res
-
-        if not var.formula:
-            topnode = list(parse(var.name))[0]
-        else:
-            topnode = list(parse(var.formula))[0]
-
-        args     = [variable, self.sensor.id]
-        valuedef = topnode.get_value(args)
-        args.extend([self.id, self.sensor.id, start, end, data_res])
-        result = CheckMeasurement.objects.raw("""select
-                -1 as id,
-                cm.check_id,
-                (select id from monitoring_sensorvariable where name=%s and sensor_id=%s) as variable_id,
-                min(cm.measured_at) as measured_at,
-                """ + valuedef + """ as value
-            from
-                monitoring_checkmeasurement cm
-                inner join monitoring_sensorvariable sv on variable_id=sv.id
-            where
-                cm.check_id=%s and
-                sv.sensor_id=%s and
-                cm.measured_at BETWEEN %s AND %s
-            group by
-                cm.check_id,
-                date_trunc(%s, cm.measured_at)
-            order by measured_at ;""", args)
-        result.resolution = data_res
-        return result
-
-
 
 def __check_pre_delete(instance, **kwargs):
     instance.rrd.delete()
@@ -341,6 +338,32 @@ class CheckMeasurement(models.Model):
 
     def __unicode__(self):
         return "%s:\t%.2f" % (self.measured_at, self.value)
+
+
+class GraphAuthToken(models.Model):
+    token       = models.CharField(max_length=50)
+    domain      = models.ForeignKey(hosts.Domain,   null=True, blank=True)
+    check_inst  = models.ForeignKey(Check,          null=True, blank=True)
+    variable    = models.ForeignKey(SensorVariable, null=True, blank=True)
+    view        = models.ForeignKey(View,           null=True, blank=True)
+
+    def full_clean(self):
+        from django.core.exceptions import ValidationError
+        if not self.token:
+            self.token = str(uuid.uuid4())
+        if self.domain is not None and self.check_inst is not None:
+            raise ValidationError("cannot have both a domain and a check")
+        if self.domain is None and self.check_inst is None:
+            raise ValidationError("need either a domain or a check")
+        if self.variable is not None and self.view is not None:
+            raise ValidationError("cannot have both a variable and a view")
+        if self.variable is None and self.view is None:
+            raise ValidationError("need either a variable or a view")
+        if self.domain is not None and self.view is not None:
+            raise ValidationError({"view": "Views cannot currently be aggregated"})
+        if self.domain is not None and self.variable is not None and not self.variable.aggregate:
+            raise ValidationError({"variable": "This variable is not an aggregate"})
+
 
 
 class Alert(models.Model):

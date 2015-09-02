@@ -21,6 +21,7 @@ from hosts.models import Host, Domain
 from monitoring.models import Sensor, SensorVariable, SensorParameter
 from monitoring.models import Check,  CheckParameter
 from monitoring.models import View
+from monitoring.models import GraphAuthToken
 
 class DomainSerializer(serializers.HyperlinkedModelSerializer):
     id          = serializers.Field()
@@ -213,8 +214,11 @@ class CheckViewSet(viewsets.ModelViewSet):
 
 class MeasurementsViewSet(viewsets.ViewSet):
     def list(self, request, format=None):
-        check = None
+        check  = None
         domain = None
+        token  = None
+        variables = []
+
         if request.GET.get("check", ""):
             check = get_object_or_404(Check, uuid=request.GET["check"])
             if not check.has_perm(request.user, "r"):
@@ -223,8 +227,29 @@ class MeasurementsViewSet(viewsets.ViewSet):
             domain = get_object_or_404(Domain, id=request.GET["domain"])
             if not domain.has_perm(request.user, "r"):
                 return HttpResponseForbidden("I say nay nay")
+        elif request.GET.get("token", ""):
+            token  = get_object_or_404(GraphAuthToken, token=request.GET["token"])
+            check  = token.check_inst
+            domain = token.domain
+            if token.view is None:
+                variables = [token.variable]
+            else:
+                variables = token.view.variables.all()
         else:
             return HttpResponseForbidden("I say nay nay")
+
+        if not token:
+            for ds in request.GET.getlist("variables"):
+                if "." in ds:
+                    sensorname, varname = ds.split('.', 1)
+                    var = get_object_or_404(SensorVariable, sensor__name=sensorname, name=varname)
+                    variables.append(var)
+                elif check:
+                    var = get_object_or_404(SensorVariable, sensor=check.sensor, name=ds)
+                    variables.append(var)
+                else:
+                    return HttpResponseForbidden("I say nay nay")
+
 
         start  = make_aware(datetime.fromtimestamp(int(request.GET.get("start",  time() - 24*60*60))), get_default_timezone())
         end    = make_aware(datetime.fromtimestamp(int(request.GET.get("end",    time()))), get_default_timezone())
@@ -240,17 +265,11 @@ class MeasurementsViewSet(viewsets.ViewSet):
         metrics = {}
 
         try:
-            for ds in request.GET.getlist("variables"):
-                if "." in ds:
-                    sensorname, varname = ds.split('.', 1)
-                else:
-                    sensorname = None
-                    varname = ds
-
+            for var in variables:
+                ds = "%s.%s" % (var.sensor.name, var.name)
                 if check:
-                    measurements = check.get_measurements(varname, start, end)
+                    measurements = var.get_measurements(check, start, end)
                 else:
-                    var = get_object_or_404(SensorVariable, sensor__name=sensorname, name=varname, aggregate=True)
                     measurements = var.get_aggregate_over(domain, "sum", start, end)
 
                 metrics[ds] = {
