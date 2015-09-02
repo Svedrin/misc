@@ -1,0 +1,40 @@
+<flot dataset="chartData" options="chartOptions" height="300px" callback="flotCallback"></flot>
+<table class="table">
+  <thead>
+    <tr>
+      <th> </th>
+      <th>Cur</th>
+      <th ng-hide="isMobile">Min</th>
+      <th>Avg</th>
+      <th>Max</th>
+      <th ng-hide="isMobile">95%l</th>
+      <th> </th>
+      <th ng-hide="isMobile"> </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr ng-repeat="varstats in graphState.stats">
+      <td>{[ varstats.variable.display || varstats.variable.name ]}</td>
+      <td>{[ varstats.last | scalenumber ]}</td>
+      <td ng-hide="isMobile">{[ varstats.min  | scalenumber ]}</td>
+      <td>{[ varstats.avg  | scalenumber ]}</td>
+      <td>{[ varstats.max  | scalenumber ]}</td>
+      <td ng-hide="isMobile">{[ varstats.p95  | scalenumber ]}</td>
+      <td>{[ varstats.variable.unit ]}</td>
+      <td ng-hide="isMobile"><span ng-show="varstats.variable.formula" class="glyphicon glyphicon-info-sign" title="{[ varstats.variable.name ]} = {[ varstats.variable.formula ]}"></span></td>
+    </tr>
+  </tbody>
+</table>
+<dl class="dl-horizontal">
+  <dt>Start:</dt>
+  <dd>{[ graphState.start | date:'medium' ]}
+    <span ng-show="graphState.start < graphState.data_start">(data starts {[ graphState.data_start | date:'medium' ]})</span>
+  </dd>
+  <dt>End:</dt>
+  <dd>{[ graphState.end   | date:'medium' ]}
+    <span ng-show="graphState.end   > graphState.data_end"  >(data ends {[ graphState.data_end   | date:'medium' ]})
+  </dd>
+  <dt>Query time:</dt>
+  <dd>{[ graphState.query_time | number:2 ]} seconds</dd>
+</dl>
+

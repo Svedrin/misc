@@ -1,42 +1,4 @@
 <h3>{[ variable.display || variable.name ]}</h3>
 <div class="container col-xs-12 col-sm-12 col-md-12 col-lg-12 no-padding">
   <graph check="check" domain="domain" variables="variables" graph-state="graphstate" ></graph>
-  <table class="table">
-    <thead>
-      <tr>
-        <th> </th>
-        <th>Cur</th>
-        <th ng-hide="isMobile">Min</th>
-        <th>Avg</th>
-        <th>Max</th>
-        <th ng-hide="isMobile">95%l</th>
-        <th> </th>
-        <th ng-hide="isMobile"> </th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr ng-repeat="varstats in graphstate.stats">
-        <td>{[ varstats.variable.display || varstats.variable.name ]}</td>
-        <td>{[ varstats.last | scalenumber ]}</td>
-        <td ng-hide="isMobile">{[ varstats.min  | scalenumber ]}</td>
-        <td>{[ varstats.avg  | scalenumber ]}</td>
-        <td>{[ varstats.max  | scalenumber ]}</td>
-        <td ng-hide="isMobile">{[ varstats.p95  | scalenumber ]}</td>
-        <td>{[ varstats.variable.unit ]}</td>
-        <td ng-hide="isMobile"><span ng-show="varstats.variable.formula" class="glyphicon glyphicon-info-sign" title="{[ varstats.variable.name ]} = {[ varstats.variable.formula ]}"></span></td>
-      </tr>
-    </tbody>
-  </table>
-  <dl class="dl-horizontal">
-    <dt>Start:</dt>
-    <dd>{[ graphstate.start | date:'medium' ]}
-      <span ng-show="graphstate.start < graphstate.data_start">(data starts {[ graphstate.data_start | date:'medium' ]})</span>
-    </dd>
-    <dt>End:</dt>
-    <dd>{[ graphstate.end   | date:'medium' ]}
-      <span ng-show="graphstate.end   > graphstate.data_end"  >(data ends {[ graphstate.data_end   | date:'medium' ]})
-    </dd>
-    <dt>Query time:</dt>
-    <dd>{[ graphstate.query_time | number:2 ]} seconds</dd>
-  </dl>
 </div>

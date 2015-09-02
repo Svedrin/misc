@@ -46,7 +46,7 @@ fluxmon.filter('scalenumber', function() {
 fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, StatisticsService, $filter){
     return {
         restrict: 'E',
-        template: '<flot dataset="chartData" options="chartOptions" height="300px" callback="flotCallback"></flot>',
+        templateUrl: '/static/templates/graph.html',
         scope: {
             check:      '=',
             domain:     '=',
