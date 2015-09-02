@@ -50,8 +50,6 @@
             <li><a href="#" ui-sref="tree">Hosts</a></li>
             <li><a href="#" ui-sref="search" searchbox>Search</a></li>
             <li><a href="{% url 'django.contrib.auth.views.logout' %}">Logout</a></li>
-            {% elif user.is_authenticated %}
-            <li><a href="{% url 'django.contrib.auth.views.login' %}">Guest</a></li>
             {% else %}
             <li><a href="{% url 'django.contrib.auth.views.login' %}">Login</a></li>
             {% endif %}
