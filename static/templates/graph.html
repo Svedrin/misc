@@ -44,13 +44,9 @@
   </button>
   <dl class="dl-horizontal">
     <dt>Start:</dt>
-    <dd>{[ graphState.start | i18ndate ]}
-      <span ng-show="graphState.start < graphState.data_start">(data starts {[ graphState.data_start | i18ndate ]})</span>
-    </dd>
+    <dd>{[ graphState.data_start | i18ndate ]}</dd>
     <dt>End:</dt>
-    <dd>{[ graphState.end   | i18ndate ]}
-      <span ng-show="graphState.end   > graphState.data_end"  >(data ends {[ graphState.data_end   | i18ndate ]})
-    </dd>
+    <dd>{[ graphState.data_end   | i18ndate ]}</dd>
     <dt>Query time:</dt>
     <dd>{[ graphState.query_time | number:2 ]} seconds</dd>
   </dl>
