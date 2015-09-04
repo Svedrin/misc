@@ -68,7 +68,18 @@ fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, Statis
             $scope.chartOptions = {
                 xaxis: {
                     mode: 'time',
-                    timezone: 'browser'
+                    timezone: 'browser',
+                    tickFormatter: function(input, config){
+                        var res = GraphDataService.get_resolution($scope.graphState.start, $scope.graphState.end);
+                        var fmt = {
+                            'minute': 'HH:mm',
+                            'hour':   'EEE HH:mm',
+                            'day':    'ww EEE',
+                            'month':  'MMM',
+                            'year':   'yyyy'
+                        }
+                        return $filter('date')(input, fmt[res]);
+                    }
                 },
                 yaxis: {
                     tickFormatter: function(input, config){
