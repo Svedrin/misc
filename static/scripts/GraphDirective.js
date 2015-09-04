@@ -118,7 +118,7 @@ fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, Statis
                 if( $scope.start ) params.start = parseInt($scope.start / 1000, 10);
                 if( $scope.end   ) params.end   = parseInt($scope.end   / 1000, 10);
                 GraphDataService.get_data(params, $scope.token).then(function(response){
-                    var result = response.data, i, v, respdata, data, resolution;
+                    var result = response.data, i, v, respvar, data, resolution;
                     var min, max, avg, last, lastDate, prevDate, visibleData;
 
                     if( response.data.type == "exception" ){
@@ -147,7 +147,7 @@ fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, Statis
                     resolution = GraphDataService.get_resolution(new Date($scope.data_start), new Date($scope.data_end));
 
                     for( v = 0; v < vars.length; v++ ){
-                        respdata = result.metrics[vars[v].sensor + '.' + vars[v].name].data;
+                        respvar = result.metrics[vars[v].sensor + '.' + vars[v].name];
                         min = null;
                         max = null;
                         avg = null;
@@ -155,14 +155,14 @@ fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, Statis
                         data = [];
                         lastDate = null;
 
-                        for( i = 0; i < respdata.length; i++ ){
-                            // if( respdata[i][0] < $scope.start ||
-                            //     respdata[i][0] > $scope.end   ){
+                        for( i = 0; i < respvar.data.length; i++ ){
+                            // if( respvar.data[i][0] < $scope.start ||
+                            //     respvar.data[i][0] > $scope.end   ){
                             //     continue;
                             // }
-                            last = respdata[i][1];
-                            lastDate = new Date(respdata[i][0]);
-                            if( prevDate && lastDate - prevDate > 3 * GraphDataService.get_milliseconds(resolution) ){
+                            last = respvar.data[i][1];
+                            lastDate = new Date(respvar.data[i][0]);
+                            if( prevDate && lastDate - prevDate > 3 * GraphDataService.get_milliseconds(respvar.resolution) ){
                                 // If more than three data points are missing, assume we have a hole in the data
                                 data.push(null);
                             }
