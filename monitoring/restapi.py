@@ -358,7 +358,7 @@ class MeasurementsViewSet(viewsets.ViewSet):
                     metrics[ds]["start"] = metrics[ds]["data"][ 0][0]
                     metrics[ds]["end"]   = metrics[ds]["data"][-1][0]
 
-        except (ProgrammingError, DataError), err:
+        except Exception, err:
             import logging
             import traceback
 
