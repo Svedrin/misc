@@ -134,9 +134,8 @@ class SensorVariable(models.Model):
         if fn not in ("sum", "avg"):
             raise ValueError("fn needs to be either sum or avg")
         start, end = get_default_start_end(start, end)
-        #data_res   = get_resolution(start, end)
-        data_res = 'minute'
-        args   = [data_res, self.id, data_res]
+        data_res   = get_resolution(start, end)
+        args   = [data_res, self.id, start, end, data_res]
         result = CheckMeasurement.objects.raw("""select
             min(x.id) as id, min(x.check_id) as check_id, min(x.variable_id) as variable_id,
             date_trunc(%s, x.measured_at) as measured_at,
@@ -151,7 +150,8 @@ class SensorVariable(models.Model):
                 from
                     monitoring_checkmeasurement cm
                 where
-                    variable_id = %s
+                    variable_id = %s AND
+                    cm.measured_at BETWEEN %s AND %s
                 group by
                     cm.variable_id,
                     date_trunc('minute', cm.measured_at)
