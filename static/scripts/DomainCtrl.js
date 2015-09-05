@@ -11,15 +11,13 @@ fluxmon.controller("DomainCtrl", function($scope, $stateParams, $http){
 });
 
 fluxmon.controller("DomainAggregateListCtrl", function($scope, $stateParams, $http){
-    $http.get("/api/domains/" + $stateParams.domId + "/aggregates/").then(function(response){
-        $scope.domainAggregates = response.data;
-    });
 });
 
 fluxmon.controller("DomainAggregateCtrl", function($scope, $stateParams, $http){
     $scope.check = null;
-    $http.get("/api/domains/" + $stateParams.domId + "/aggregates/").then(function(response){
-        $scope.variables = response.data.filter(function(item){
+    $scope.$watch('domain', function(){
+        if(!$scope.domain) return;
+        $scope.variables = $scope.domain.aggregates_set.filter(function(item){
             if(item.name == $stateParams.name){
                 return true;
             }

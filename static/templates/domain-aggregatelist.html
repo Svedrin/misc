@@ -7,7 +7,7 @@
   <tbody>
     <tr class="checktr {% if check.current_alert %}warning{% else %}success{% endif %}"
         ui-sref="domain.aggregate({name: aggregate.name})"
-        ng-repeat="aggregate in domainAggregates" >
+        ng-repeat="aggregate in domain.aggregates_set" >
       <td>{[ aggregate.display || aggregate.name ]}</td>
     </tr>
   </tbody>
