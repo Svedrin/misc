@@ -66,6 +66,7 @@ class Host(models.Model):
     subscribers = models.ManyToManyField(auth.User, blank=True)
     acl         = models.ForeignKey(ACL, null=True, blank=True)
     last_update = models.DateTimeField(  null=True, blank=True)
+    added_at    = models.DateTimeField(auto_now_add=True, editable=False)
 
     @property
     def config(self):
