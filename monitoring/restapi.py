@@ -28,12 +28,20 @@ class DomainSerializer(serializers.HyperlinkedModelSerializer):
     id          = serializers.Field()
     fqdn        = serializers.CharField()
     aggregates  = serializers.HyperlinkedIdentityField(view_name="domain-aggregates")
+    aggregates_set = serializers.SerializerMethodField('get_aggregates_set')
     views_set   = serializers.SerializerMethodField('get_views_set')
+
+    def get_aggregates_set(self, obj):
+        # Find all variables checked somewhere in this domain which can be aggregated.
+        aggrs = SensorVariable.objects.filter(aggregate=True, sensor__check__target_host__domain=obj).distinct()
+        ser = SensorVariableSerializer(aggrs, many=True, read_only=True)
+        return ser.data
 
     def get_views_set(self, obj):
         # Find all Views using variables that are checked somewhere in this domain,
         # excluding those that use variables which cannot be aggregated.
-        ser = ViewSerializer(View.objects.filter(variables__sensor__check__target_host__domain=obj).exclude(variables__aggregate=False).distinct(), many=True, read_only=True)
+        views = View.objects.filter(variables__sensor__check__target_host__domain=obj).exclude(variables__aggregate=False).distinct()
+        ser = ViewSerializer(views, many=True, read_only=True)
         return ser.data
 
     class Meta:
