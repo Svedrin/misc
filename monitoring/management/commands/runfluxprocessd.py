@@ -16,7 +16,7 @@ from optparse import make_option
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models  import User
 
-from hosts.models import Host
+from hosts.models import Domain, Host
 from msgsign.models import PublicKey
 from monitoring.models import Sensor, Check
 
@@ -25,8 +25,30 @@ def add_check(params, user):
         check = Check.objects.get(uuid=params["uuid"])
     except Check.DoesNotExist:
         exec_host   = Host.objects.get(fqdn=params["node"])
-        target_host = Host.objects.get(fqdn=params["target"])
         sensor      = Sensor.objects.get(name=params["sensor"])
+
+        if not params["target"].endswith("."):
+            params["target"] += "."
+
+        try:
+            target_host = Host.objects.get(fqdn=params["target"])
+        except Host.DoesNotExist:
+            try:
+                hostname, domainname, tld, rest = params["target"].split('.', 3)
+            except ValueError:
+                logging.warning("%s doesn't look like an FQDN, not adding this host", params["target"])
+                return
+
+            try:
+                domain = Domain.objects.get(name=domainname, parent__name=tld)
+            except Domain.DoesNotExist:
+                logging.warning("domain %s.%s is unknown, not adding this host", domainname, tld)
+                return
+
+            target_host = Host(fqdn=params["target"], domain=domain)
+            target_host.save()
+            logging.info("added new target host %s", params["target"])
+
         logging.info("Creating check %s (%s)", params["uuid"], target_host.fqdn)
         check = Check(uuid=params["uuid"], sensor=sensor, exec_host=exec_host, target_host=target_host)
         check.save()
