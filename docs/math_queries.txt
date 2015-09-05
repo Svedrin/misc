@@ -422,3 +422,39 @@ fluxmon=>
   inner join monitoring_check cc on (f).check_id = cc.id
   inner join hosts_host hh on cc.target_host_id = hh.id;
 
+
+
+--------------------------------
+
+Wieviele Checkresults haben wir verarbeitet?
+
+
+fluxmon=> explain analyze select count(*) from monitoring_checkmeasurement where measured_at between '2015-09-05 10:18:00+02:00' and '2015-09-05 10:23:00+02:00';
+
+                                                                          QUERY PLAN
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=379182.13..379182.14 rows=1 width=0) (actual time=2722.942..2722.942 rows=1 loops=1)
+   ->  Seq Scan on monitoring_checkmeasurement  (cost=0.00..379182.12 rows=1 width=0) (actual time=2721.091..2722.648 rows=1740 loops=1)
+         Filter: ((measured_at >= '2015-09-05 10:18:00+02'::timestamp with time zone) AND (measured_at <= '2015-09-05 10:23:00+02'::timestamp with time zone))
+         Rows Removed by Filter: 16650279
+ Planning time: 0.134 ms
+ Execution time: 2723.003 ms
+(6 rows)
+
+
+fluxmon=> explain analyze select count(*) from monitoring_checkmeasurement where measured_at between '2015-09-05 10:23:00+02:00' and '2015-09-05 10:28:00+02:00';
+
+                                                                          QUERY PLAN
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=379182.13..379182.14 rows=1 width=0) (actual time=2437.768..2437.768 rows=1 loops=1)
+   ->  Seq Scan on monitoring_checkmeasurement  (cost=0.00..379182.12 rows=1 width=0) (actual time=2436.293..2437.473 rows=1740 loops=1)
+         Filter: ((measured_at >= '2015-09-05 10:23:00+02'::timestamp with time zone) AND (measured_at <= '2015-09-05 10:28:00+02'::timestamp with time zone))
+         Rows Removed by Filter: 16650279
+ Planning time: 0.225 ms
+ Execution time: 2437.863 ms
+(6 rows)
+
+
+Seh ich das richtig dass er zwar 2.437 sekunden braucht (tut er tatsächlich bis die Shell den Query Plan anzeigt), davon aber 2.436 Sekunden lang nichts macht? Was macht er solange?
+* iotop zeigt in der Zeit nichts an...
+* htop zeigt einen postgres-Prozess an der zwar 80% user-CPU verbrät, aber "idle" im Prozessnamen stehen hat..?
