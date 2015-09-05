@@ -28,15 +28,17 @@ class Symbol(object):
         """ Left Denotation """
         return self
 
-    def get_value(self):
+    def get_value(self, args, null=False):
         raise NotImplementedError("get_value")
 
 class Name(Symbol):
-    def get_value(self, args):
+    def get_value(self, args, null=False):
         args.append(self.value)
         # http://timothychenallen.blogspot.de/2006/03/sql-calculating-geometric-mean-geomean.html
         # sucks when the data is <= 0
         #return "(exp(avg(ln(cm.value)) filter (where sv.name = %s)))"
+        if null:
+            return "(avg(CASE WHEN cm.value = 0 THEN NULL ELSE cm.value END) filter (where sv.name = %s))"
         return "(avg(cm.value) filter (where sv.name = %s))"
 
     def get_unit(self, namespace):
@@ -46,7 +48,7 @@ class EndMarker(Symbol):
     pass
 
 class Literal(Symbol):
-    def get_value(self, args):
+    def get_value(self, args, null=False):
         args.append(self.value)
         return "%s"
 
@@ -71,7 +73,7 @@ class OpPlus(Infix):
     lbp = 50
     rbp = 50
 
-    def get_value(self, args):
+    def get_value(self, args, null=False):
         return "(%s + %s)" % (self.first.get_value(args), self.second.get_value(args))
 
     def get_unit(self, namespace):
@@ -86,7 +88,7 @@ class OpMinus(Infix):
         self.second = None
         return self
 
-    def get_value(self, args):
+    def get_value(self, args, null=False):
         if self.second is None:
             return "(- %s)" % (self.first.get_value(args))
         return "(%s - %s)" % (self.first.get_value(args), self.second.get_value(args))
@@ -98,7 +100,7 @@ class OpMult(Infix):
     lbp = 60
     rbp = 60
 
-    def get_value(self, args):
+    def get_value(self, args, null=False):
         return "(%s * %s)" % (self.first.get_value(args), self.second.get_value(args))
 
     def get_unit(self, namespace):
@@ -108,8 +110,8 @@ class OpDiv(Infix):
     lbp = 60
     rbp = 60
 
-    def get_value(self, args):
-        return "(%s / %s)" % (self.first.get_value(args), self.second.get_value(args))
+    def get_value(self, args, null=False):
+        return "(%s / %s)" % (self.first.get_value(args), self.second.get_value(args, null=True))
 
     def get_unit(self, namespace):
         return self.first.get_unit(namespace) / self.second.get_unit(namespace)
@@ -138,8 +140,8 @@ class LeftBracket(Infix):
         self.parser.advance() # skip the ]
         return self
 
-    def get_value(self, args):
-        return self.value.get_value(args)
+    def get_value(self, args, null=False):
+        return self.value.get_value(args, null)
 
     def get_unit(self, namespace):
         return self.unit.get_unit(LiteralNamespace())
