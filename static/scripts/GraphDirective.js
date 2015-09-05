@@ -74,7 +74,7 @@ fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, Statis
                         var fmt = {
                             'minute': 'HH:mm',
                             'hour':   'EEE HH:mm',
-                            'day':    'ww EEE',
+                            'day':    "'w'ww EEE",
                             'month':  'MMM',
                             'year':   'yyyy'
                         }
