@@ -27,7 +27,6 @@ from monitoring.models import GraphAuthToken
 class DomainSerializer(serializers.HyperlinkedModelSerializer):
     id          = serializers.Field()
     fqdn        = serializers.CharField()
-    aggregates  = serializers.HyperlinkedIdentityField(view_name="domain-aggregates")
     aggregates_set = serializers.SerializerMethodField('get_aggregates_set')
     views_set   = serializers.SerializerMethodField('get_views_set')
 
@@ -50,13 +49,6 @@ class DomainSerializer(serializers.HyperlinkedModelSerializer):
 class DomainViewSet(viewsets.ModelViewSet):
     queryset         = Domain.objects.all()
     serializer_class = DomainSerializer
-
-    @detail_route()
-    def aggregates(self, request, *args, **kwargs):
-        domain = self.get_object()
-        aggrs = SensorVariable.objects.filter(aggregate=True, sensor__check__target_host__domain=domain).distinct()
-        ser = SensorVariableSerializer(aggrs, many=True, read_only=True, context={'request': request})
-        return Response(ser.data)
 
     @list_route()
     def tree(self, request, *args, **kwargs):
