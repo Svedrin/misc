@@ -6,9 +6,5 @@ syntax: glob
 *.bkp
 *.swp
 
-fluxd.conf
-MANIFEST
-dist/
 htdocs/
 static/bower_components/
-.keys/
