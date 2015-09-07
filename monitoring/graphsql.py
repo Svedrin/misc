@@ -160,6 +160,8 @@ class SensorNamespace(object):
 
     def get_unit(self, name):
         unitstr = self.sensor.sensorvariable_set.get(name=name).unit
+        if not unitstr:
+            return Unit([], [])
         return list(parse(unitstr))[0].get_unit(LiteralNamespace())
 
 # UNIT SEMANTICS
