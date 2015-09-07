@@ -55,7 +55,7 @@ class MeshpingSensor(AbstractSensor):
 
     def check(self, checkinst):
         for targetinfo in self.cache(reset=True).values():
-            if targetinfo["name"] == target.name:
+            if targetinfo["name"] == checkinst.target.name:
                 avg = 0
                 if targetinfo["recv"]:
                     avg = targetinfo["sum"] / targetinfo["recv"] * 1000
