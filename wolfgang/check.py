@@ -45,7 +45,7 @@ class Check(WolfObject):
             res["data"], res["max"] = self.sensor.check(self)
         except Exception, err:
             import traceback
-            traceback.print_exc()
+            logging.error(traceback.format_exc())
             res["errmessage"] = unicode(type(err)) + ": " + unicode(err),
         else:
             if res["data"] is None:
