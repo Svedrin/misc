@@ -21,8 +21,8 @@ class Sensor(WolfObject):
     def can_activate(self, checkinst):
         return self.sensor.can_activate(checkinst)
 
-    def discover(self):
-        return self.sensor.discover()
+    def discover(self, target):
+        return self.sensor.discover(target)
 
     def check(self, checkinst):
         return self.sensor.check(checkinst)
