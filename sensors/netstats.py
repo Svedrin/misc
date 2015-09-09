@@ -82,6 +82,9 @@ class NetstatsSensor(AbstractSensor):
         ]
 
     def can_activate(self, checkinst):
+        if "ssh_username" in checkinst.target and "ssh_password" in checkinst.target:
+            return checkinst["interface"] in self.cache(checkinst.target)
+
         try:
             ctx = Context()
             dev = Device.from_name(ctx, "net", checkinst["interface"])
