@@ -62,7 +62,7 @@ class NetstatsSensor(AbstractSensor):
         return result
 
     def cache(self, target):
-        if target.name not in self._cache or time() - self._cachetime[target] > 280:
+        if target.name not in self._cache or time() - self._cachetime[target.name] > 280:
             self._cache[target.name]     = self._get_via_ssh(target)
             self._cachetime[target.name] = time()
         return self._cache[target.name]
