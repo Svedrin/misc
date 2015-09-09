@@ -101,7 +101,7 @@ def main():
                 sensortype)
             continue
 
-        sensor = SensorMeta.sensortypes[sensortype](wc)
+        sensor = wc.objects[sensortype]
 
         for confobj in wc.objects.values():
             if confobj.objtype not in ("node", "target"):
