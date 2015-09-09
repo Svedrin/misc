@@ -44,6 +44,11 @@ class WolfObject(object):
             self.args[key] = val
         self.params[key] = val
 
+    def __contains__(self, key):
+        if isinstance(key, int):
+            return len(self.args) > key
+        return key in self.params
+
     def _cmp_kws(self, a, b):
         if a == "uuid":
             return -1
