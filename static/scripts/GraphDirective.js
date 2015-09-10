@@ -42,8 +42,9 @@ fluxmon.service('GraphDataService', function($http){
 
 fluxmon.filter('scalenumber', function() {
     return function(input, base){
-        var exp, mult = ['', 'k', 'M', 'G', 'T', 'P', 'E'], base = base || 1000, factor = 1;
-        for( exp = 0; input / factor > base; exp++ ) factor *= base;
+        var exp, mult = ['', 'k', 'M', 'G', 'T', 'P', 'E'], base = base || 1000, factor = 1,
+            absInput = (input < 0 ? -input : input);
+        for( exp = 0; absInput / factor > base; exp++ ) factor *= base;
         return (input / factor).toFixed(2) + mult[exp];
     };
 });
