@@ -1,2 +1,3 @@
-fluxmon.controller("IndexCtrl", function($scope){
+fluxmon.controller("IndexCtrl", function($scope, $rootScope){
+    $rootScope.titlePrefix = "";
 });

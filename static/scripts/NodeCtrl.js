@@ -1,6 +1,7 @@
-fluxmon.controller("NodeCtrl", function($scope, $stateParams, $http){
+fluxmon.controller("NodeCtrl", function($scope, $stateParams, $http, $rootScope){
     $http.get("/api/hosts/" + $stateParams.nodeId + "/").then(function(response){
         $scope.host = response.data;
+        $rootScope.titlePrefix = $scope.host.fqdn.split('.')[0];
     });
 });
 

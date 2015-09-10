@@ -1,12 +1,14 @@
-fluxmon.controller("DomainTreeCtrl", function($scope, $stateParams, $http){
+fluxmon.controller("DomainTreeCtrl", function($scope, $stateParams, $http, $rootScope){
+    $rootScope.titlePrefix = "Hosts";
     $http.get("/api/domains/tree/").then(function(response){
         $scope.tree = response.data;
     });
 });
 
-fluxmon.controller("DomainCtrl", function($scope, $stateParams, $http){
+fluxmon.controller("DomainCtrl", function($scope, $stateParams, $http, $rootScope){
     $http.get("/api/domains/" + $stateParams.domId + "/").then(function(response){
         $scope.domain = response.data;
+        $rootScope.titlePrefix = $scope.domain.fqdn;
     });
 });
 

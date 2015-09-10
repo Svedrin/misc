@@ -87,6 +87,14 @@ fluxmon.config(function($interpolateProvider, $httpProvider, $stateProvider, $ur
 });
 
 fluxmon.run(function($rootScope, $state){
+  $rootScope.title = "Fluxmon";
+  $rootScope.titlePrefix = "";
+  $rootScope.$watch("titlePrefix", function(){
+    if($rootScope.titlePrefix)
+      $rootScope.title = $rootScope.titlePrefix + " - Fluxmon";
+    else
+      $rootScope.title = "Fluxmon";
+  });
   $rootScope.showIndex = function(){
     return $state.is('index');
   };
