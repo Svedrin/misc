@@ -152,6 +152,7 @@ fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, Statis
                 GraphDataService.get_data(params, $scope.token).then(function(response){
                     var result = response.data, i, v, respvar, data, resolution;
                     var min, max, avg, last, lastDate, prevDate, visibleData;
+                    var have_rx = false, have_tx = false, namePrefix;
 
                     if( response.data.type == "exception" ){
                         $scope.state = "exception";
@@ -179,6 +180,19 @@ fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, Statis
                     resolution = GraphDataService.get_resolution(new Date($scope.data_start), new Date($scope.data_end));
 
                     for( v = 0; v < vars.length; v++ ){
+                        // do we got a problem^wpair of read/write or rx/tx vars? if so, invert read/rx
+                        vars[v].invert = false;
+                        namePrefix = vars[v].name.split("_")[0];
+                        if( namePrefix == "rx" || namePrefix == "rd" || namePrefix == "read" ){
+                            vars[v].invert = true;
+                            have_rx = true;
+                        }
+                        if( namePrefix == "tx" || namePrefix == "wr" || namePrefix == "write" ){
+                            have_tx = true;
+                        }
+                    }
+
+                    for( v = 0; v < vars.length; v++ ){
                         respvar = result.metrics[vars[v].sensor + '.' + vars[v].name];
                         min = null;
                         max = null;
@@ -198,11 +212,19 @@ fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, Statis
                                 // If more than three data points are missing, assume we have a hole in the data
                                 data.push(null);
                             }
-                            data.push([ lastDate.valueOf(), last ]);
+
                             min = (min == null ? last : (last < min ? last : min));
                             max = (max == null ? last : (last > max ? last : max));
                             avg += last;
                             visibleData.push(last);
+
+                            if( have_rx && have_tx && vars[v].invert && last != null ){
+                                data.push([ lastDate.valueOf(), -last ]);
+                            }
+                            else{
+                                data.push([ lastDate.valueOf(),  last ]);
+                            }
+
                             prevDate = lastDate;
                         }
                         if(visibleData) avg /= visibleData.length;
