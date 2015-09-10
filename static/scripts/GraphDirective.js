@@ -61,6 +61,7 @@ fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, Statis
         },
         controller: function($scope, $state){
             var plot, query, maybeRequery, requeryTimer = null, refreshTimer = null;
+            var graphYaxes = {};
 
             $scope.isMobile = isMobile.any();
             $scope.state = "init";
@@ -81,11 +82,7 @@ fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, Statis
                         return $filter('date')(input, fmt[res]);
                     }
                 }],
-                yaxes: [{
-                    tickFormatter: function(input, config){
-                        return $filter("scalenumber")(input);
-                    }
-                }],
+                yaxes: [],
                 selection: {
                     mode: 'x'
                 },
@@ -93,6 +90,29 @@ fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, Statis
                     hoverable: true
                 }
             };
+
+            $scope.$watch("variables", function(){
+                var v, nextYaxis = 1, nextYaxisPos = 'left', yaxes = [];
+                var vars = $scope.variables;
+                if(!vars) return;
+                for( v = 0; v < vars.length; v++ ){
+                    if( !(vars[v].unit in graphYaxes) ){
+                        yaxes.push({
+                            position: nextYaxisPos,
+                            alignTicksWithAxis: nextYaxis > 1 ? nextYaxis - 1 : null,
+                            tickFormatter: (function(unit){
+                                return function(input, config){
+                                    return $filter("scalenumber")(input) + unit;
+                                };
+                            }(vars[v].unit))
+                        });
+                        nextYaxisPos = 'right';
+                        graphYaxes[ vars[v].unit ] = nextYaxis;
+                        nextYaxis += 1;
+                    }
+                }
+                $scope.chartOptions.yaxes = yaxes;
+            });
 
             $scope.flotCallback = function(plotObj){
                 plot = plotObj;
@@ -195,6 +215,7 @@ fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, Statis
 
                         $scope.chartData.push({
                             label:  vars[v].display || vars[v].name,
+                            yaxis:  graphYaxes[ vars[v].unit ],
                             data:   data,
                             lines:  { show: true, fill: true },
                             //color: '#007400',
