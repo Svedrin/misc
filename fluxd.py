@@ -73,7 +73,6 @@ def main():
         return 255
 
     wc = WolfConfig(options.config)
-    wc.parse()
 
     if not options.fqdn.endswith("."):
         options.fqdn += '.'
@@ -82,6 +81,8 @@ def main():
 
     if not os.path.exists(options.datadir):
         return "The data directory (%s) does not exist, please create it." % options.datadir
+
+    wc.parse()
 
     myhostname = options.fqdn
 
