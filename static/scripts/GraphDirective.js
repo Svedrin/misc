@@ -66,7 +66,7 @@ fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, Statis
             $scope.state = "init";
             $scope.chartData    = [];
             $scope.chartOptions = {
-                xaxis: {
+                xaxes: [{
                     mode: 'time',
                     timezone: 'browser',
                     tickFormatter: function(input, config){
@@ -80,12 +80,12 @@ fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, Statis
                         }
                         return $filter('date')(input, fmt[res]);
                     }
-                },
-                yaxis: {
+                }],
+                yaxes: [{
                     tickFormatter: function(input, config){
                         return $filter("scalenumber")(input);
                     }
-                },
+                }],
                 selection: {
                     mode: 'x'
                 },
