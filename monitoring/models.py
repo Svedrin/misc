@@ -107,13 +107,13 @@ class SensorVariable(models.Model):
         else:
             topnode = list(parse(self.formula))[0]
 
-        args     = [self.name, self.sensor.id]
+        args     = [self.id]
         valuedef = topnode.get_value(args)
         args.extend([check.id, self.sensor.id, start, end, data_res])
         result = CheckMeasurement.objects.raw("""select
                 -1 as id,
                 cm.check_id,
-                (select id from monitoring_sensorvariable where name=%s and sensor_id=%s) as variable_id,
+                %s as variable_id,
                 min(cm.measured_at) as measured_at,
                 """ + valuedef + """ as value
             from
