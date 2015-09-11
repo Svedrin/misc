@@ -13,7 +13,11 @@ fluxmon.controller("NodeCheckListCtrl", function($scope, $stateParams, $http){
     });
 });
 
-fluxmon.controller("NodeCheckCtrl", function($scope, $stateParams, $http, $timeout){
+fluxmon.controller("NodeCheckCtrl", function($scope, $state, $stateParams, $http, $timeout, $rootScope, isMobile){
+    $scope.showDetails = !isMobile.any() || $state.is("node.check.varlist");
+    $rootScope.$on('$stateChangeSuccess', function(ev, toState, toParams, frState, frParams){
+        $scope.showDetails = !isMobile.any() || toState.name == "node.check.varlist";
+    });
     $http.get("/api/checks/" + $stateParams.check + "/").then(function(response){
         $scope.check = response.data;
         $scope.editing = false;

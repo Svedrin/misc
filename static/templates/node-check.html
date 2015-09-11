@@ -1,4 +1,4 @@
-<dl class="dl-horizontal">
+<dl class="dl-horizontal" ng-show="showDetails">
   <dt>Check:</dt>
   <dd>
     <span ng-hide="editing">
@@ -24,6 +24,11 @@
   </dd>
   <dt>Last update:</dt>
   <dd>{[ check.last_update ]}</dd>
+</dl>
+
+<dl class="dl-horizontal" ng-hide="showDetails">
+  <dt>Check:</dt>
+  <dd><a href="#" ui-sref="node.check.varlist">{[ check.display || check.uuid ]}</a></dd>
 </dl>
 
 <div ui-view></div>
