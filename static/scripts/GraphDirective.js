@@ -152,7 +152,7 @@ fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, Statis
                 GraphDataService.get_data(params, $scope.token).then(function(response){
                     var result = response.data, i, v, respvar, data, resolution;
                     var min, max, avg, last, lastDate, prevDate, visibleData;
-                    var have_rx = false, have_tx = false, namePrefix;
+                    var have_rx = false, have_tx = false, nameSplit, namePrefix;
 
                     if( response.data.type == "exception" ){
                         $scope.state = "exception";
@@ -182,7 +182,8 @@ fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, Statis
                     for( v = 0; v < vars.length; v++ ){
                         // do we got a problem^wpair of read/write or rx/tx vars? if so, invert read/rx
                         vars[v].invert = false;
-                        namePrefix = vars[v].name.split("_")[0];
+                        nameSplit = vars[v].name.split("_");
+                        namePrefix = nameSplit[nameSplit.length - 2];
                         if( namePrefix == "rx" || namePrefix == "rd" || namePrefix == "read" ){
                             vars[v].invert = true;
                             have_rx = true;
