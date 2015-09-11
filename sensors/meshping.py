@@ -32,7 +32,7 @@ class MeshpingSensor(AbstractSensor):
         return None
 
     def cache(self, reset=False):
-        if time() - self._cachetime > 280:
+        if time() - self._cachetime > 280 or (reset and not self._cachereset):
             self._cache = self._cmd("list", reset=reset)
             self._cachetime = time()
             self._cachereset = reset
