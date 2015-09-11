@@ -1,0 +1,28 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }} | {% trans 'HG admin' %}{% endblock %}
+
+{% block extrahead %}
+<style type="text/css">
+.selector {
+    width: 1050px;
+}
+
+select[multiple="multiple"] {
+    width:  500px;
+    height: 300px;
+}
+
+.selector-available, .selector-chosen, .selector select {
+    width: 500px;
+}
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">{% trans 'HG administration' %}</h1>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
