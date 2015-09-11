@@ -211,7 +211,7 @@ class CheckViewSet(viewsets.ModelViewSet):
     serializer_class = CheckSerializer
     filter_backends  = (DjangoFilterBackend, CheckSearchFilter)
     filter_class     = CheckFilter
-    paginate_by      = 50
+    paginate_by      = 200
     lookup_field     = "uuid"
 
     @list_route()
