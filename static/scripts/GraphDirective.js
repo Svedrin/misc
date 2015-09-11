@@ -63,6 +63,7 @@ fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, Statis
         controller: function($scope, $state){
             var plot, query, maybeRequery, requeryTimer = null, refreshTimer = null;
             var graphYaxes = {};
+            var have_rx = false, have_tx = false;
 
             $scope.isMobile = isMobile.any();
             $scope.state = "init";
@@ -95,7 +96,29 @@ fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, Statis
             $scope.$watch("variables", function(){
                 var v, nextYaxis = 1, nextYaxisPos = 'left', yaxes = [];
                 var vars = $scope.variables;
+                var nameSplit, namePrefix;
                 if(!vars) return;
+                for( v = 0; v < vars.length; v++ ){
+                    // do we got a problem^wpair of read/write or rx/tx vars? if so, invert read/rx
+                    nameSplit = vars[v].name.split("_");
+                    namePrefix = nameSplit[nameSplit.length - 2];
+                    vars[v].is_rx = false;
+                    vars[v].is_tx = false;
+                    if( namePrefix == "rx" || namePrefix == "rd" || namePrefix == "read" ){
+                        vars[v].is_rx = true;
+                        have_rx = true;
+                    }
+                    if( namePrefix == "tx" || namePrefix == "wr" || namePrefix == "write" ){
+                        vars[v].is_tx = true;
+                        have_tx = true;
+                    }
+                }
+                // Sort the vars so that rx/tx pairs are always inserted first into the chart.
+                vars.sort(function(a, b){
+                    // To compare numbers a and b, simply return a - b.
+                    // We need that reversed for descending order.
+                    return (b.is_rx + b.is_tx) - (a.is_rx + a.is_tx);
+                });
                 for( v = 0; v < vars.length; v++ ){
                     if( !(vars[v].unit in graphYaxes) ){
                         yaxes.push({
@@ -152,7 +175,6 @@ fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, Statis
                 GraphDataService.get_data(params, $scope.token).then(function(response){
                     var result = response.data, i, v, respvar, data, resolution;
                     var min, max, avg, last, lastDate, prevDate, visibleData;
-                    var have_rx = false, have_tx = false, nameSplit, namePrefix;
 
                     if( response.data.type == "exception" ){
                         $scope.state = "exception";
@@ -180,20 +202,6 @@ fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, Statis
                     resolution = GraphDataService.get_resolution(new Date($scope.data_start), new Date($scope.data_end));
 
                     for( v = 0; v < vars.length; v++ ){
-                        // do we got a problem^wpair of read/write or rx/tx vars? if so, invert read/rx
-                        vars[v].invert = false;
-                        nameSplit = vars[v].name.split("_");
-                        namePrefix = nameSplit[nameSplit.length - 2];
-                        if( namePrefix == "rx" || namePrefix == "rd" || namePrefix == "read" ){
-                            vars[v].invert = true;
-                            have_rx = true;
-                        }
-                        if( namePrefix == "tx" || namePrefix == "wr" || namePrefix == "write" ){
-                            have_tx = true;
-                        }
-                    }
-
-                    for( v = 0; v < vars.length; v++ ){
                         respvar = result.metrics[vars[v].sensor + '.' + vars[v].name];
                         min = null;
                         max = null;
@@ -219,7 +227,7 @@ fluxmon.directive('graph', function($timeout, GraphDataService, isMobile, Statis
                             avg += last;
                             visibleData.push(last);
 
-                            if( have_rx && have_tx && vars[v].invert && last != null ){
+                            if( have_rx && have_tx && vars[v].is_rx && last != null ){
                                 data.push([ lastDate.valueOf(), -last ]);
                             }
                             else{
