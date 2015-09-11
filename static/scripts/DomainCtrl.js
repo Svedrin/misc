@@ -27,3 +27,17 @@ fluxmon.controller("DomainAggregateCtrl", function($scope, $stateParams, $http){
     });
     $scope.graphState = {};
 });
+
+fluxmon.controller("DomainViewCtrl", function($scope, $stateParams, $http){
+    $scope.check = null;
+    $scope.$watch('domain', function(){
+        if(!$scope.domain) return;
+        $scope.variables = $scope.domain.views_set.reduce(function(prev, item){
+            if(item.name == $stateParams.name){
+                return item.variables;
+            }
+            return prev;
+        }, []);
+    });
+    $scope.graphState = {};
+});

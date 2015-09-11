@@ -50,6 +50,11 @@ fluxmon.config(function($interpolateProvider, $httpProvider, $stateProvider, $ur
             templateUrl: "static/templates/domain-aggregate.html",
             controller:  "DomainAggregateCtrl"
         })
+        .state('domain.view', {
+            url: "/view/:name",
+            templateUrl: "static/templates/domain-view.html",
+            controller:  "DomainViewCtrl"
+        })
         .state('node', {
             url: "/node/:nodeId",
             templateUrl: "static/templates/node.html",
