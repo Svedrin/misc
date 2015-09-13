@@ -35,12 +35,12 @@ fluxmon.controller("NodeCheckCtrl", function($scope, $state, $stateParams, $http
           });
           $scope.editing = false;
         };
-        $(document).keypress(function(ev){
-            if(ev.key == 'e'){
-                ev.preventDefault();
-                $timeout($scope.startEdit, 10);
-            }
-        });
+//         $(document).keypress(function(ev){
+//             if(ev.key == 'e'){
+//                 ev.preventDefault();
+//                 $timeout($scope.startEdit, 10);
+//             }
+//         });
     });
 });
 
