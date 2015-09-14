@@ -12,7 +12,6 @@ from django.contrib.auth.models import User
 from hosts import models as hosts
 from sensors.sensor import SensorMeta
 from fluxacl.models import ACL
-from monitoring.rrd import RRD
 from monitoring.graphsql import parse, SensorNamespace
 
 
@@ -216,9 +215,7 @@ class Check(models.Model):
 
     @property
     def last_update(self):
-        if self.rrd.last_update is None:
-            return None
-        return make_aware(self.rrd.last_update, utc)
+        return None
 
     @property
     def config(self):
@@ -229,10 +226,6 @@ class Check(models.Model):
             self.exec_host.fqdn,
             self.target_host.fqdn,
             self.paramstring)
-
-    @property
-    def rrd(self):
-        return RRD(self)
 
     @property
     def current_alert(self):
@@ -281,34 +274,6 @@ class Check(models.Model):
                     self.checkmeasurement_set.create(variable=self.sensor.sensorvariable_set.get(name=key),
                                                      measured_at=timestamp, value=result["data"][key])
 
-            self.rrd.update(result)
-            confintervals = self.rrd.get_confidence_intervals(result["data"].keys())
-            curralert = self.current_alert
-            if max([info["fail"] and not (info["lower"] <= result["data"][varname] <= info["upper"])
-                    for varname, info in confintervals.items() ]):
-                # if we have any failed values, update alerts
-                if curralert is None:
-                    curralert = Alert(check_inst=self, starttime=make_aware(datetime.now(), get_default_timezone()), endtime=None, failcount=0)
-                curralert.failcount += 1
-                curralert.save()
-                for varname, info in confintervals.items():
-                    curralert.alertvariable_set.create(
-                        variable  = self.sensor.sensorvariable_set.get(name=varname),
-                        timestamp = make_aware(datetime.now(), get_default_timezone()),
-                        fail      = info["fail"],
-                        exp_lower = info["lower"],
-                        exp_upper = info["upper"],
-                        value     = result["data"][varname])
-            else:
-                if curralert is not None:
-                    curralert.endtime = make_aware(datetime.now(), get_default_timezone())
-                    curralert.save()
-
-
-def __check_pre_delete(instance, **kwargs):
-    instance.rrd.delete()
-
-models.signals.pre_delete.connect(__check_pre_delete, sender=Check)
 
 
 class CheckParameter(models.Model):

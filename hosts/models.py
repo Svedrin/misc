@@ -76,19 +76,7 @@ class Host(models.Model):
         return self.fqdn
 
     def get_last_update(self):
-        """ Probe our checks' RRDs to determine the last time we received
-            any updates, update last_update accordingly and return the
-            value.
-        """
-        altered = False
-        for check in self.check_target_set.filter(is_active=True):
-            if check.last_update is not None and \
-               (self.last_update is None or check.last_update > self.last_update):
-                self.last_update = check.last_update
-                altered = True
-        if altered:
-            self.save()
-        return self.last_update
+        return None
 
     @property
     def all_acls(self):
