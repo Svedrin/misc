@@ -14,7 +14,8 @@ fluxmon.config(function($interpolateProvider, $httpProvider, $stateProvider, $ur
     $stateProvider
         .state('index', {
             url: "/index",
-            template: "&nbsp;"
+            template: "&nbsp;",
+            controller:  "IndexCtrl"
         })
         .state('profile', {
             url: "/profile",
