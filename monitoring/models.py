@@ -193,6 +193,8 @@ class Check(models.Model):
     display     = models.CharField("Human-readable name", max_length=255, default='', blank=True)
     is_active   = models.BooleanField(default=True, blank=True)
     acl         = models.ForeignKey(ACL, null=True, blank=True)
+    updated_at  = models.DateTimeField(default=None, null=True, blank=True)
+    created_at  = models.DateTimeField(auto_now_add=True)
 
     objects     = CheckManager()
 
@@ -273,6 +275,8 @@ class Check(models.Model):
                 for key in result["data"]:
                     self.checkmeasurement_set.create(variable=self.sensor.sensorvariable_set.get(name=key),
                                                      measured_at=timestamp, value=result["data"][key])
+                self.updated_at = timestamp
+                self.save()
 
 
 
