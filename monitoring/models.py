@@ -109,7 +109,7 @@ class SensorVariable(models.Model):
         args     = [self.id]
         valuedef = topnode.get_value(args)
         args.extend([check.id, self.sensor.id, start, end, data_res])
-        result = CheckMeasurement.objects.raw("""select
+        result = CheckMeasurement.objects.raw(("""select
                 -1 as id,
                 cm.check_id,
                 %s as variable_id,
@@ -125,7 +125,7 @@ class SensorVariable(models.Model):
             group by
                 cm.check_id,
                 date_trunc(%s, cm.measured_at)
-            order by measured_at ;""", args)
+            order by measured_at ;""").replace("            ", ""), args)
         result.resolution = data_res
         return result
 
@@ -135,10 +135,10 @@ class SensorVariable(models.Model):
         start, end = get_default_start_end(start, end)
         data_res   = get_resolution(start, end)
         args   = [data_res, self.id, start, end, data_res]
-        result = CheckMeasurement.objects.raw("""select
-            min(x.id) as id, min(x.check_id) as check_id, min(x.variable_id) as variable_id,
-            date_trunc(%s, x.measured_at) as measured_at,
-            avg(x.value) as value
+        result = CheckMeasurement.objects.raw(("""select
+                min(x.id) as id, min(x.check_id) as check_id, min(x.variable_id) as variable_id,
+                date_trunc(%s, x.measured_at) as measured_at,
+                avg(x.value) as value
             from (
                 select distinct
                     -1 as id,
@@ -156,7 +156,7 @@ class SensorVariable(models.Model):
                     date_trunc('minute', cm.measured_at)
                 order by measured_at ) as x
             group by date_trunc(%s, x.measured_at)
-            order by measured_at; """, args)
+            order by measured_at; """).replace("            ", ""), args)
         result.resolution = data_res
         return result
 
