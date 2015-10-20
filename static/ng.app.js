@@ -144,3 +144,19 @@ fluxmon.service("isMobile", function(){
     return isMobile;
 });
 
+fluxmon.factory('authHttpResponseInterceptor', function($q, $location){
+    return {
+        response: function(response){
+            return response;
+        },
+        responseError: function(rejection) {
+            if(rejection.status === 403){
+                location.href = "/accounts/login?next=/%23" + $location.path();
+            }
+            return $q.reject(rejection);
+        }
+    }
+})
+.config(['$httpProvider',function($httpProvider) {
+    $httpProvider.interceptors.push('authHttpResponseInterceptor');
+}]);
