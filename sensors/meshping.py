@@ -62,7 +62,7 @@ class MeshpingSensor(AbstractSensor):
                 return {
                     "sent": targetinfo["sent"],
                     "recv": targetinfo["recv"],
-                    "errs": targetinfo["errs"],
+                    "errs": 0,
                     "avg":  avg,
                 }, {}
         raise ValueError("target not found in data")
