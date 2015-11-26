@@ -2,6 +2,7 @@
 # kate: space-indent on; indent-width 4; replace-tabs on;
 
 import os
+import logging
 
 from time import time, mktime
 from datetime import datetime, timedelta
@@ -32,8 +33,12 @@ class NetstatsSensor(AbstractSensor):
         #   "wlan0":  { stats }
         # }
 
-        with spur.SshShell(hostname=target.name, username=target["ssh_username"], password=target["ssh_password"]) as sh:
-            grepresult = sh.run(["sh", "-c", "grep . /proc/uptime /sys/class/net/*/statistics/* /sys/class/net/*/speed"], allow_error=True)
+        try:
+            with spur.SshShell(hostname=target.name, username=target["ssh_username"], password=target["ssh_password"]) as sh:
+                grepresult = sh.run(["sh", "-c", "grep . /proc/uptime /sys/class/net/*/statistics/* /sys/class/net/*/speed"], allow_error=True)
+        except:
+            logging.exception("Could not connect to host '%s'", target.name)
+            return {}
 
         result = {}
 
