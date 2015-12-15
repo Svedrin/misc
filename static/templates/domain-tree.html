@@ -8,6 +8,7 @@
     <ol>
         <li ng-repeat="host in node.hosts">
             <a href="#" ui-sref="node.checklist({nodeId: host.id})">{[ host.fqdn ]}</a>
+            <span ng-show="host.last_update > 600">outdated</span>
         </li>
     </ol>
   </ol>

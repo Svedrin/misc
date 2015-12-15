@@ -75,9 +75,6 @@ class Host(models.Model):
     def __unicode__(self):
         return self.fqdn
 
-    def get_last_update(self):
-        return None
-
     @property
     def all_acls(self):
         inh = self.domain.all_acls

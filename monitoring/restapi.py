@@ -3,7 +3,7 @@
 
 import django_filters
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from time import time
 
 from django.contrib.auth.models import AnonymousUser
@@ -62,6 +62,8 @@ class DomainViewSet(viewsets.ModelViewSet):
             'children': []
         })
 
+        one_hour_ago = make_aware(datetime.now(), get_default_timezone()) - timedelta(hours=1)
+
         while stack:
             # Get the next domain
             try:
@@ -69,7 +71,9 @@ class DomainViewSet(viewsets.ModelViewSet):
             except StopIteration:
                 break
             # serialize it
-            hosts = HostSerializer(currdom.host_set.all().order_by('fqdn'), many=True, read_only=True, context={"request": request})
+            hosts = HostSerializer(
+                currdom.host_set.filter( check_target_set__updated_at__gt=one_hour_ago ).distinct().order_by('fqdn'),
+                many=True, read_only=True, context={"request": request})
             res = {
                 'id':   currdom.id,
                 'name': currdom.name,
@@ -91,6 +95,14 @@ class DomainViewSet(viewsets.ModelViewSet):
 class HostSerializer(serializers.HyperlinkedModelSerializer):
     id          = serializers.Field()
     config      = serializers.HyperlinkedIdentityField(view_name="host-config")
+    last_update = serializers.SerializerMethodField('get_last_update')
+
+    def get_last_update(self, obj):
+        last = obj.check_target_set.all().order_by("-updated_at")[0].updated_at
+        if last is None:
+            return None
+        now  = make_aware(datetime.now(), get_default_timezone())
+        return (now - last).total_seconds()
 
     class Meta:
         model = Host
