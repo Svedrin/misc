@@ -5,8 +5,8 @@ fluxmon.service('GraphDataService', function($http){
         {name: 'minute', len: 1000 * 60 * 5            },
         {name: 'hour',   len: 1000 * 60 * 60           },
         {name: 'day',    len: 1000 * 60 * 60 * 24      },
-        {name: 'month',  len: 1000 * 60 * 60 * 24 * 30 },
-        {name: 'year',   len: 1000 * 60 * 60 * 24 * 365}
+//         {name: 'month',  len: 1000 * 60 * 60 * 24 * 30 },
+//         {name: 'year',   len: 1000 * 60 * 60 * 24 * 365}
     ];
     return {
         get_data: function(params, token){

@@ -29,8 +29,8 @@ def get_resolution(start, end):
         ('minute', timedelta(minutes=5)),
         ('hour',   timedelta(hours=1)),
         ('day',    timedelta(days=1)),
-        ('month',  timedelta(days=30)),
-        ('year',   timedelta(days=365))
+        #('month',  timedelta(days=30)),
+        #('year',   timedelta(days=365))
     )
     for res_name, res_dt in resolutions:
         data_res = res_name
