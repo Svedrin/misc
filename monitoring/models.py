@@ -278,6 +278,18 @@ class Check(models.Model):
                 self.updated_at = timestamp
                 self.save()
 
+            import pymongo
+            mng = pymongo.MongoClient(host=["127.0.0.1"])
+            mng.fluxmon.raw.insert({
+                "measured_at": make_aware(datetime.fromtimestamp(int(result["timestamp"])), get_default_timezone()),
+                "stored_at":   make_aware(datetime.now(), get_default_timezone()),
+                "check_id":    self.id,
+                "check_uuid":  self.uuid,
+                "sensor":      self.sensor.name,
+                "target_host": self.target_host.fqdn,
+                "exec_host":   self.exec_host.fqdn,
+                "data":        result["data"]
+            })
 
 
 class CheckParameter(models.Model):
