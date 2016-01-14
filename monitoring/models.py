@@ -108,12 +108,12 @@ class SensorVariable(models.Model):
 
         args     = [self.id]
         valuedef = topnode.get_value(args)
-        args.extend([check.id, self.sensor.id, start, end, data_res])
+        args.extend([check.id, self.sensor.id, data_res, start, end, data_res])
         result = CheckMeasurement.objects.raw(("""select
                 -1 as id,
                 cm.check_id,
                 %s as variable_id,
-                min(cm.measured_at) as measured_at,
+                min(cm.measured_at at time zone 'UTC') as measured_at,
                 """ + valuedef + """ as value
             from
                 monitoring_checkmeasurement cm
@@ -121,10 +121,10 @@ class SensorVariable(models.Model):
             where
                 cm.check_id=%s and
                 sv.sensor_id=%s and
-                cm.measured_at BETWEEN %s AND %s
+                date_trunc(%s, cm.measured_at at time zone 'UTC') BETWEEN %s AND %s
             group by
                 cm.check_id,
-                date_trunc(%s, cm.measured_at)
+                date_trunc(%s, cm.measured_at at time zone 'UTC')
             order by measured_at ;""").replace("            ", ""), args)
         result.resolution = data_res
         return result
@@ -144,7 +144,7 @@ class SensorVariable(models.Model):
                     -1 as id,
                     NULL as check_id,
                     cm.variable_id,
-                    date_trunc('minute', cm.measured_at) as measured_at,
+                    date_trunc('minute', cm.measured_at at time zone 'UTC') as measured_at,
                     """ + fn + """(cm.value) as value
                 from
                     monitoring_checkmeasurement cm
@@ -153,7 +153,7 @@ class SensorVariable(models.Model):
                     cm.measured_at BETWEEN %s AND %s
                 group by
                     cm.variable_id,
-                    date_trunc('minute', cm.measured_at)
+                    date_trunc('minute', cm.measured_at at time zone 'UTC')
                 order by measured_at ) as x
             group by date_trunc(%s, x.measured_at)
             order by measured_at; """).replace("            ", ""), args)
