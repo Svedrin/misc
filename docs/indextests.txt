@@ -1,0 +1,114 @@
+select
+    -1 as id,
+    cm.check_id,
+    '118' as variable_id,
+    min(cm.measured_at at time zone 'UTC') as measured_at,
+    (avg(cm.value) filter (where sv.name = 'clients_wifi')) as value
+from
+    monitoring_checkmeasurement cm
+    inner join monitoring_sensorvariable sv on variable_id=sv.id
+where
+    cm.check_id='1593' and
+    sv.sensor_id='12' and
+    date_trunc('minute', cm.measured_at at time zone 'UTC') BETWEEN '2016-01-06 12:02:17+01:00' AND '2016-01-06 15:03:55+01:00'
+group by
+    cm.check_id,
+    date_trunc('minute', cm.measured_at at time zone 'UTC')
+order by measured_at ;
+
+
+---
+
+                                                      QUERY PLAN
+
+ Sort  (cost=2053.13..2053.36 rows=92 width=29) (actual time=4.431..4.434 rows=35 loops=1)
+   Sort Key: (min(timezone('UTC'::text, cm.measured_at)))
+   Sort Method: quicksort  Memory: 27kB
+   ->  HashAggregate  (cost=2048.52..2050.13 rows=92 width=29) (actual time=4.354..4.364 rows=35 loops=1)
+         Group Key: cm.check_id, date_trunc('minute'::text, timezone('UTC'::text, cm.measured_at))
+         ->  Nested Loop  (cost=0.57..2045.98 rows=169 width=29) (actual time=0.249..3.675 rows=735 loops=1)
+               ->  Seq Scan on monitoring_sensorvariable sv  (cost=0.00..3.76 rows=26 width=13) (actual time=0.027..0.046 rows=26 loops=1)
+                     Filter: (sensor_id = 12)
+                     Rows Removed by Filter: 115
+               ->  Index Scan using monitoring_checkmeasurement_check_id_date_trunc_variable_id_idx on monitoring_checkmeasurement cm  (cost=0.57..78.41 rows=10 width=24) (actual time=0.024..0.111 rows=28 loops=26)
+                     Index Cond: ((check_id = 1593) AND (date_trunc('minute'::text, timezone('UTC'::text, measured_at)) >= '2016-01-06 12:02:17'::timestamp without time zone) AND (date_trunc('minute'::text, timezone('UTC'::text, measured_at)) <= '2016-01-06 15:03:55'::timestamp without time zone) AND (variable_id = sv.id))
+ Planning time: 0.525 ms
+ Execution time: 4.551 ms
+(13 rows)
+
+ohne date_trunc im where:
+
+
+                                                      QUERY PLAN
+
+ Sort  (cost=4509.26..4509.32 rows=24 width=29) (actual time=12.385..12.390 rows=36 loops=1)
+   Sort Key: (min(timezone('UTC'::text, cm.measured_at)))
+   Sort Method: quicksort  Memory: 27kB
+   ->  HashAggregate  (cost=4508.29..4508.71 rows=24 width=29) (actual time=12.339..12.353 rows=36 loops=1)
+         Group Key: cm.check_id, date_trunc('minute'::text, timezone('UTC'::text, cm.measured_at))
+         ->  Hash Join  (cost=4.65..4507.63 rows=44 width=29) (actual time=0.287..11.579 rows=756 loops=1)
+               Hash Cond: (cm.variable_id = sv.id)
+               ->  Index Scan using monitoring_checkmeasurement_measured_at_check_id_idx on monitoring_checkmeasurement cm  (cost=0.56..4501.98 rows=240 width=24) (actual time=0.214..10.390 rows=756 loops=1)
+                     Index Cond: ((measured_at >= '2016-01-06 12:02:17+01'::timestamp with time zone) AND (measured_at <= '2016-01-06 15:03:55+01'::timestamp with time zone) AND (check_id = 1593))
+               ->  Hash  (cost=3.76..3.76 rows=26 width=13) (actual time=0.050..0.050 rows=26 loops=1)
+                     Buckets: 1024  Batches: 1  Memory Usage: 2kB
+                     ->  Seq Scan on monitoring_sensorvariable sv  (cost=0.00..3.76 rows=26 width=13) (actual time=0.029..0.038 rows=26 loops=1)
+                           Filter: (sensor_id = 12)
+                           Rows Removed by Filter: 115
+ Planning time: 0.724 ms
+ Execution time: 12.515 ms
+(16 rows)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ohne date_trunc im where:
+                                                                                             QUERY PLAN                                                                                              
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=5433.53..5433.60 rows=29 width=29)
+   Sort Key: (min(timezone('UTC'::text, cm.measured_at)))
+   ->  HashAggregate  (cost=5432.32..5432.83 rows=29 width=29)
+         Group Key: cm.check_id, date_trunc('minute'::text, timezone('UTC'::text, cm.measured_at))
+         ->  Hash Join  (cost=4.65..5431.52 rows=53 width=29)
+               Hash Cond: (cm.variable_id = sv.id)
+               ->  Index Scan using monitoring_checkmeasurement_measured_at_check_id_idx on monitoring_checkmeasurement cm  (cost=0.56..5425.56 rows=289 width=24)
+                     Index Cond: ((measured_at >= '2016-01-06 12:02:17+01'::timestamp with time zone) AND (measured_at <= '2016-01-06 15:03:55+01'::timestamp with time zone) AND (check_id = 1593))
+               ->  Hash  (cost=3.76..3.76 rows=26 width=13)
+                     ->  Seq Scan on monitoring_sensorvariable sv  (cost=0.00..3.76 rows=26 width=13)
+                           Filter: (sensor_id = 12)
+(11 rows)
+
+                                                                                             QUERY PLAN                                                                                              
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=5433.53..5433.60 rows=29 width=29)
+   Sort Key: (min(timezone('UTC'::text, cm.measured_at)))
+   ->  HashAggregate  (cost=5432.32..5432.83 rows=29 width=29)
+         Group Key: cm.check_id, date_trunc('hour'::text, timezone('UTC'::text, cm.measured_at))
+         ->  Hash Join  (cost=4.65..5431.52 rows=53 width=29)
+               Hash Cond: (cm.variable_id = sv.id)
+               ->  Index Scan using monitoring_checkmeasurement_measured_at_check_id_idx on monitoring_checkmeasurement cm  (cost=0.56..5425.56 rows=289 width=24)
+                     Index Cond: ((measured_at >= '2016-01-06 12:02:17+01'::timestamp with time zone) AND (measured_at <= '2016-01-06 15:03:55+01'::timestamp with time zone) AND (check_id = 1593))
+               ->  Hash  (cost=3.76..3.76 rows=26 width=13)
+                     ->  Seq Scan on monitoring_sensorvariable sv  (cost=0.00..3.76 rows=26 width=13)
+                           Filter: (sensor_id = 12)
+(11 rows)
+
