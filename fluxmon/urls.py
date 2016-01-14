@@ -20,6 +20,8 @@ urlpatterns = patterns('',
 
     url(r'^jsi18n/$',                                      'django.views.i18n.javascript_catalog', {}),
 
+    url(r'^latency.png$',                                  'monitoring.views.latency_histogram'),
+
     url(r'^$',                                             TemplateView.as_view(template_name='index.html'), name="index.html"),
 
 )
