@@ -94,49 +94,55 @@ def main():
     account = wc.find_objects_by_type("fluxaccount")[0]
     logging.info("Using account %s.", account.name)
 
-    # Discover checkable objects
-    all_checks = []
-    for sensortype in SensorMeta.sensortypes:
-        if sensortype not in wc.objects:
-            logging.warning("Sensor type '%s' is installed but unknown to the config, skipped.",
-                sensortype)
-            continue
-
-        sensor = wc.objects[sensortype]
-
-        for confobj in wc.objects.values():
-            if confobj.objtype not in ("node", "target"):
-                continue
-            for target_params in sensor.discover(confobj):
-                params = {
-                    "sensor": sensortype,
-                    "node":   myhostname,
-                    "target": confobj.name,
-                }
-                params.update(target_params)
-                checks = wc.find_objects_by_params("check", **params)
-                if not checks:
-                    logging.warning("Found new target on %s: %s", confobj.name, target_params)
-                    checkname = ",".join([confobj.name, sensortype] + target_params.values())
-                    check = wc.add_object("check", checkname, [], params)
-                    params["uuid"] = check["uuid"]
-                else:
-                    logging.info("Found known target on %s: %s", confobj.name, target_params)
-                    params["uuid"] = checks[0]["uuid"]
-                all_checks.append(params)
-
-    if options.noop:
-        return "Check discovery finished but no-op is active, exiting."
-
-    if all_checks:
-        account.add_checks(all_checks)
-
-    for chk in myhost.checks:
-        if not chk.is_active:
-            account.deactivate(chk)
+    nextdisco = 0
 
     try:
         while True:
+            if time() > nextdisco:
+                # schedule next discovery in one hour
+                nextdisco = time() + 60 * 60
+
+                # Discover checkable objects
+                all_checks = []
+                for sensortype in SensorMeta.sensortypes:
+                    if sensortype not in wc.objects:
+                        logging.warning("Sensor type '%s' is installed but unknown to the config, skipped.",
+                            sensortype)
+                        continue
+
+                    sensor = wc.objects[sensortype]
+
+                    for confobj in wc.objects.values():
+                        if confobj.objtype not in ("node", "target"):
+                            continue
+                        for target_params in sensor.discover(confobj):
+                            params = {
+                                "sensor": sensortype,
+                                "node":   myhostname,
+                                "target": confobj.name,
+                            }
+                            params.update(target_params)
+                            checks = wc.find_objects_by_params("check", **params)
+                            if not checks:
+                                logging.warning("Found new target on %s: %s", confobj.name, target_params)
+                                checkname = ",".join([confobj.name, sensortype] + target_params.values())
+                                check = wc.add_object("check", checkname, [], params)
+                                params["uuid"] = check["uuid"]
+                            else:
+                                logging.info("Found known target on %s: %s", confobj.name, target_params)
+                                params["uuid"] = checks[0]["uuid"]
+                            all_checks.append(params)
+
+                if options.noop:
+                    return "Check discovery finished but no-op is active, exiting."
+
+                if all_checks:
+                    account.add_checks(all_checks)
+
+                for chk in myhost.checks:
+                    if not chk.is_active:
+                        account.deactivate(chk)
+
             nextdue = time() + options.interval
             results = []
             for chk in myhost.checks:
