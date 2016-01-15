@@ -15,7 +15,7 @@ class Sensor(WolfObject):
     def sensor(self):
         if self._sensor is None:
             SensorType = SensorMeta.sensortypes[self.name]
-            self._sensor = SensorType(self._conf)
+            self._sensor = SensorType(self._conf, self.params)
         return self._sensor
 
     def can_activate(self, checkinst):

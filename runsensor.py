@@ -22,7 +22,7 @@ class DummyParams(dict):
 
 
 def main():
-    parser = OptionParser(usage="%prog [options] [<sensor>] [target.<parameter>=<value> ...] [<parameter>=<value> ...]")
+    parser = OptionParser(usage="%prog [options] [<sensor>] [sensor.<parameter>=<value> ...] [target.<parameter>=<value> ...] [<parameter>=<value> ...]")
 
     parser.add_option("-u", "--uuid",     default="11111111-1111-1111-1111-111111111111")
     parser.add_option("-d", "--datadir",  default="/tmp")
@@ -41,6 +41,7 @@ def main():
 
     DummyConf.environ.update(options.__dict__)
 
+    sensor_params = {}
     params = DummyParams({"uuid": options.uuid})
     params.target.name = options.target
     for arg in posargs[1:]:
@@ -48,6 +49,9 @@ def main():
         if key.startswith("target."):
             _, tgtkey = key.split(".", 1)
             params.target[tgtkey] = val
+        elif key.startswith("sensor."):
+            _, tgtkey = key.split(".", 1)
+            sensor_params[tgtkey] = val
         else:
             params[key] = val
 
@@ -56,12 +60,12 @@ def main():
         return 0
 
     if len(params) == 1:
-        sensor = SensorMeta.sensortypes[posargs[0]](DummyConf)
+        sensor = SensorMeta.sensortypes[posargs[0]](DummyConf, sensor_params)
         print json.dumps(sensor.discover(params.target), indent=4)
         return 0
 
     if len(params) >= 2:
-        sensor = SensorMeta.sensortypes[posargs[0]](DummyConf)
+        sensor = SensorMeta.sensortypes[posargs[0]](DummyConf, sensor_params)
         print json.dumps(sensor.check(params), indent=4)
         return 0
 

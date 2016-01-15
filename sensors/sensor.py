@@ -18,8 +18,9 @@ class SensorMeta(type):
 class AbstractSensor(object):
     __metaclass__ = SensorMeta
 
-    def __init__(self, conf):
+    def __init__(self, conf, params):
         self.conf = conf
+        self.params = params
 
     def _invoke(self, args):
         proc = subprocess.Popen(args, stdout=subprocess.PIPE)
