@@ -13,8 +13,8 @@ from sensors.sensor import AbstractSensor
 from sensors.values import ValueDict
 
 class NetstatsSensor(AbstractSensor):
-    def __init__(self, conf):
-        AbstractSensor.__init__(self, conf)
+    def __init__(self, conf, params):
+        AbstractSensor.__init__(self, conf, params)
         self._cache     = {}
         self._cachetime = {}
 
