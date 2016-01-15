@@ -2,6 +2,9 @@
 # kate: space-indent on; indent-width 4; replace-tabs on;
 
 import os
+import json
+import subprocess
+import logging
 
 from time import time
 
@@ -10,14 +13,52 @@ from sensors.values import ValueDict
 
 class AlfredNodeSensor(AbstractSensor):
     def discover(self, target):
-        return []
+        if target.name != self.conf.environ["fqdn"]:
+            return []
+
+        if not self.params["domain"].endswith("."):
+            self.params["domain"] += "."
+
+        alf = subprocess.Popen(["alfred-json", "-z", "-r", "158"], stdout=subprocess.PIPE)
+        out, err = alf.communicate()
+        self.nodeinfo = json.loads(out)
+
+        self.timestamp = int(time())
+
+        targets = []
+
+        for macaddr, info in self.nodeinfo.items():
+            fqdn = "%s.%s" % (info["hostname"], self.params["domain"])
+            if fqdn not in self.conf.objects:
+                self.conf.add_object("target", fqdn, [], {"macaddr": macaddr})
+            elif "macaddr" not in self.conf.objects[fqdn].params or self.conf.objects[fqdn]["macaddr"] != macaddr:
+                self.conf.set_object_param(self.conf.objects[fqdn]["uuid"], "macaddr", macaddr)
+            targets.append({"target": fqdn})
+
+        return targets
+
+    def can_activate(self, checkinst):
+        # targets that no longer show up in discovery may not even have a known macaddr,
+        # and even if they do they won't appear in self.nodeinfo
+        return "macaddr" in checkinst.target.params and \
+               (not hasattr(self, "nodeinfo") or
+                checkinst.target["macaddr"] in self.nodeinfo)
 
     def check(self, checkinst):
-        pass
+        if not hasattr(self, "statistics") or time() - self.timestamp > 120:
+            logging.error("updating alfrednode statistics cache")
+            alf = subprocess.Popen(["alfred-json", "-z", "-r", "159"], stdout=subprocess.PIPE)
+            out, err = alf.communicate()
+            self.statistics = json.loads(out)
+            self.timestamp = int(time())
 
-    def process_data(self, checkinst, stats, timestamp):
+        if "macaddr" not in checkinst.target.params:
+            return None, {}
+
+        stats = self.statistics[checkinst.target["macaddr"]]
+
         # Read the state file (if possible).
-        storetime, storedata = self._load_store(checkinst.uuid)
+        storetime, storedata = self._load_store(checkinst["uuid"])
         havestate = (storedata is not None)
 
         absstats = ValueDict({
@@ -45,7 +86,7 @@ class AlfredNodeSensor(AbstractSensor):
             "mgmt_tx_bytes":    stats["traffic"]["mgmt_tx"]["bytes"],
             "mgmt_rx_packets":  stats["traffic"]["mgmt_rx"]["packets"],
             "mgmt_rx_bytes":    stats["traffic"]["mgmt_rx"]["bytes"],
-            "timestamp":        timestamp
+            "timestamp":        self.timestamp
             })
 
         if havestate:
@@ -62,12 +103,14 @@ class AlfredNodeSensor(AbstractSensor):
         else:
             merged = None
 
-        self._save_store(checkinst.uuid, {
+        self._save_store(checkinst["uuid"], {
             "relstats": relstats,
         })
 
-        return {
-            "timestamp":  timestamp,
-            "data":       merged,
-            "errmessage": None
-        }
+        #return {
+            #"timestamp":  self.timestamp,
+            #"data":       merged,
+            #"errmessage": None
+        #}, {}
+
+        return merged, {}
