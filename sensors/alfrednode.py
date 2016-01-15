@@ -46,7 +46,7 @@ class AlfredNodeSensor(AbstractSensor):
 
     def check(self, checkinst):
         if not hasattr(self, "statistics") or time() - self.timestamp > 120:
-            logging.error("updating alfrednode statistics cache")
+            logging.debug("updating alfrednode statistics cache")
             alf = subprocess.Popen(["alfred-json", "-z", "-r", "159"], stdout=subprocess.PIPE)
             out, err = alf.communicate()
             self.statistics = json.loads(out)
