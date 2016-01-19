@@ -268,13 +268,12 @@ class Check(models.Model):
 
     def process_result(self, result):
         if result["data"] is not None:
-            self.activate()
-
             with transaction.atomic():
                 timestamp = make_aware(datetime.fromtimestamp(int(result["timestamp"])), get_default_timezone())
                 for key in result["data"]:
                     self.checkmeasurement_set.create(variable=self.sensor.sensorvariable_set.get(name=key),
                                                      measured_at=timestamp, value=result["data"][key])
+                self.is_active  = True
                 self.updated_at = timestamp
                 self.save()
 
