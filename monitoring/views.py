@@ -184,5 +184,7 @@ def latency_histogram(request):
     buf = StringIO()
     im.save( buf, "PNG" )
 
-    return HttpResponse( buf.getvalue(), content_type="image/png" )
+    resp = HttpResponse( buf.getvalue(), content_type="image/png" )
+    resp["Refresh"] = "300"
+    return resp
 
