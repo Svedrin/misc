@@ -79,7 +79,7 @@ BEGIN {
 	colorprint(rqszcolor, $8)
 	total_rqsz += $8
 
-	latcolor = grayn
+	latcolor = gray
 	if( $12 >  1 ) latcolor = green
 	if( $12 >  5 ) latcolor = yellow
 	if( $12 > 10 ) latcolor = red
