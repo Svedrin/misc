@@ -113,8 +113,10 @@ def get_contacts():
 
 def update_cache():
     """ Update the contacts.json cache file. """
-    with open(os.path.expanduser("~/.zsync/contacts.json"), "wb") as cachefd:
+    with open(os.path.expanduser("~/.zsync/contacts.json.new"), "wb") as cachefd:
         json.dump(list(get_contacts()), cachefd)
+    os.rename(os.path.expanduser("~/.zsync/contacts.json.new"),
+              os.path.expanduser("~/.zsync/contacts.json"))
 
 def get_cached_contacts():
     """ Generator that gets contacts from the contacts.json cache file. """
