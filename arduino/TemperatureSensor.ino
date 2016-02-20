@@ -35,7 +35,7 @@ float toCentigrade(unsigned long x){
     }
   }
 
-  // We're in [step - 1:step]. Interpolate where exactly
+  // We're in [idx - 1:idx]. Interpolate where exactly
   float partial = (vin - vlower) / (float)(vupper - vlower);
   int   cupper = centigrade[idx];
   int   clower = centigrade[idx - 1];
