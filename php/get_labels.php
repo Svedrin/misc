@@ -361,6 +361,7 @@ else if( $_GET["action"] == "labels" ){
         );
 
         for( $i = 0; $i < $db_order["products_count"]; $i++ ){
+            set_time_limit(29);
             $label = createShipment( $db_order, $customer );
 
             if( $label["success"] ){
