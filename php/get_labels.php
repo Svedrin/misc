@@ -304,7 +304,7 @@ else if( $_GET["action"] == "labels" ){
 
     $orders_query =
         "SELECT ".
-            "o.orders_id, o.orders_status, ".
+            "o.orders_id, o.orders_status, o.customers_email_address, ".
             "o.customers_firstname, o.customers_lastname, o.customers_street_address, o.customers_postcode, o.customers_city, ".
             "o.delivery_firstname,  o.delivery_lastname,  o.delivery_street_address,  o.delivery_postcode,  o.delivery_city,  o.delivery_company, o.delivery_suburb, ".
             "s.orders_status_name, sum(op.products_quantity) as products_count ".
@@ -348,7 +348,7 @@ else if( $_GET["action"] == "labels" ){
             'zip'           => $db_order["delivery_postcode"],
             'city'          => $db_order["delivery_city"],
             'country'       => 'Germany',
-            'email'         => $db_order["customers_email_address"]
+            'email'         => trim($db_order["customers_email_address"])
         );
 
         for( $i = 0; $i < $db_order["products_count"]; $i++ ){
