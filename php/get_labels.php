@@ -117,9 +117,6 @@ if( !isset($_GET["action"]) || $_GET["action"] == "" || $_GET["action"] == "list
                             </tr>
                         <?php endforeach ?>
                     </table>
-<!--                    <div align="center">
-                        <a class="button" style="width: 200px" href="<?=$_SERVER["REQUEST_URI"]?>?action=labels" target="_blank">DHL-Labels f&uuml;r alle</a>
-                    </div>-->
                 </td>
             </tr>
         </table>
