@@ -61,7 +61,7 @@ if( !isset($_GET["action"]) || $_GET["action"] == "" || $_GET["action"] == "list
     error_log($orders_query);
     $orders_result = xtc_db_query($orders_query);
 
-    $orders = [];
+    $orders = array();
 
     while( $db_order = xtc_db_fetch_array($orders_result) ){
         $orders[] = $db_order;
@@ -325,7 +325,7 @@ else if( $_GET["action"] == "labels" ){
 
     $failed = false;
     $pdf = new PDFMerger();
-    $tfiles = [];
+    $tfiles = array();
     $getting_labels_at = microtime(true);
 
     while( !$failed && $db_order = xtc_db_fetch_array($orders_result) ){
