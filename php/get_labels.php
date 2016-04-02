@@ -111,15 +111,15 @@ if( !isset($_GET["action"]) || $_GET["action"] == "" || $_GET["action"] == "list
                                 <td class="dataTableContent"><?=(int)$order["products_count"]?></td>
                                 <td class="dataTableContent">
                                     <div align="center">
-                                        <a class="button" href="<?=$_SERVER["REQUEST_URI"]?>?action=labels&amp;order=<?=$order["orders_id"]?>">DHL-Labels </a>
+                                        <a class="button" href="<?=$_SERVER["REQUEST_URI"]?>?action=labels&amp;order=<?=$order["orders_id"]?>" target="_blank">DHL-Labels </a>
                                     </div>
                                 </td>
                             </tr>
                         <?php endforeach ?>
                     </table>
-                    <div align="center">
-                        <a class="button" style="width: 200px" href="<?=$_SERVER["REQUEST_URI"]?>?action=labels">DHL-Labels f&uuml;r alle</a>
-                    </div>
+<!--                    <div align="center">
+                        <a class="button" style="width: 200px" href="<?=$_SERVER["REQUEST_URI"]?>?action=labels" target="_blank">DHL-Labels f&uuml;r alle</a>
+                    </div>-->
                 </td>
             </tr>
         </table>
