@@ -357,9 +357,18 @@ else if( $_GET["action"] == "labels" ){
             if( $label["success"] ){
                 error_log("srs success!");
                 // Download the label into a temp file
+                $retries = 0;
                 while(($label = file_get_contents($label["label_url"])) === false){
-                    error_log("download failed, retry...");
-                    sleep(.2);
+                    if( $retries < 5 ){
+                        error_log("download failed, retry...");
+                        $retries++;
+                        sleep(.2);
+                    }
+                    else{
+                        error_log("download failed, giving up.");
+                        $failed = true;
+                        break;
+                    }
                 }
 
                 $tfile = tempnam(DIR_FS_CATALOG . "cache", "dhl_label");
@@ -374,8 +383,10 @@ else if( $_GET["action"] == "labels" ){
                 print_r($label);
                 echo "</pre>";
                 $failed = true;
-                break;
             }
+
+            if($failed)
+                break;
 
             sleep(.2);
         }
