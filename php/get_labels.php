@@ -136,6 +136,15 @@ else if( $_GET["action"] == "labels" ){
         die("order param needs to be absent or a number");
     }
 
+    function get_with_curl($url){
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $data = curl_exec($ch);
+        curl_close($ch);
+        return $data;
+    }
+
+
     function createShipment( $order_details, $customer_details ){
         $WSDL_URL           = 'https://cig.dhl.de/cig-wsdls/com/dpdhl/wsdl/geschaeftskundenversand-api/1.0/geschaeftskundenversand-api-1.0.wsdl';
         $DHL_SANDBOX_URL    = 'https://cig.dhl.de/services/sandbox/soap';
@@ -358,7 +367,7 @@ else if( $_GET["action"] == "labels" ){
                 error_log("srs success!");
                 // Download the label into a temp file
                 $retries = 0;
-                while(($label = file_get_contents($label["label_url"])) === false){
+                while(($label = get_with_curl($label["label_url"])) === false){
                     if( $retries < 5 ){
                         error_log("download failed, retry...");
                         $retries++;
