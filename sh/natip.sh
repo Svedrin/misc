@@ -21,7 +21,7 @@ EXT_IFACE="$2"
 EXT_IP="$3"
 INT_IP="$4"
 
-EXT_NET=$(ip route show dev "$EXT_IFACE" scope link | awk '{ print $1 }')
+EXT_NET=$(ip route show dev "$EXT_IFACE" scope link proto kernel | awk '{ print $1 }')
 EXT_NETADDR="${EXT_NET%/*}"
 EXT_NETCIDR="${EXT_NET#*/}"
 
