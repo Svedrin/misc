@@ -1,0 +1,43 @@
+#!/bin/bash
+
+case "$1" in
+	start)
+		echo "=======START========" >> /tmp/dummy.log
+		date >> /tmp/dummy.log
+		env >> /tmp/dummy.log
+		touch /tmp/dummyrunning
+		exit 0
+		;;
+	stop)
+		echo "=======STOP=========" >> /tmp/dummy.log
+		date >> /tmp/dummy.log
+		env >> /tmp/dummy.log
+		rm -f /tmp/dummyrunning
+		exit 0
+		;;
+	status)
+		echo "=======STATUS=======" >> /tmp/dummy.log
+		date >> /tmp/dummy.log
+		env >> /tmp/dummy.log
+		if [ -e /tmp/dummyrunning ]
+		then
+			echo "running"
+			echo "running" >> /tmp/dummy.log
+			exit 0
+		else
+			echo "stopped"
+			echo "stopped" >> /tmp/dummy.log
+			exit 3
+		fi
+		;;
+	probe)
+		echo restart
+		exit 0
+		;;
+	*)
+		echo unknown
+		echo "=======UNKNOWN======" "$@" >> /tmp/dummy.log
+		date >> /tmp/dummy.log
+		env >> /tmp/dummy.log
+		;;
+esac
