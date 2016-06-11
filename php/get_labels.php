@@ -327,7 +327,7 @@ else if( $_GET["action"] == "labels" ){
     error_log($orders_query);
     $orders_result = xtc_db_query($orders_query);
 
-    $db_order = xtc_db_fetch_array($orders_result)
+    $db_order = xtc_db_fetch_array($orders_result);
 
     if( !$db_order ){
         die("Could not get order info from database");
@@ -366,7 +366,7 @@ else if( $_GET["action"] == "labels" ){
     }
 
     for( $i = 0; $i < $db_order["products_count"]; $i++ ){
-        $labelfile = DIR_FS_CATALOG . "cache/dhl_label-{$order_id}-{$i}.pdf"
+        $labelfile = DIR_FS_CATALOG . "cache/dhl_label-{$order_id}-{$i}.pdf";
         $tfiles[]  = $labelfile;
 
         if( !file_exists($labelfile) || !filesize($labelfile)){
