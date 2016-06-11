@@ -329,10 +329,6 @@ else if( $_GET["action"] == "labels" ){
     error_log($orders_query);
     $orders_result = xtc_db_query($orders_query);
 
-    $failed = false;
-    $pdf = new PDFMerger();
-    $tfiles = array();
-    $getting_labels_at = microtime(true);
     $db_order = xtc_db_fetch_array($orders_result)
 
     if( !$db_order ){
@@ -361,6 +357,11 @@ else if( $_GET["action"] == "labels" ){
         'email'         => trim($db_order["customers_email_address"])
     );
 
+
+    $failed = false;
+    $tfiles = array();
+    $getting_labels_at = microtime(true);
+
     for( $i = 0; $i < $db_order["products_count"]; $i++ ){
         set_time_limit(29);
         $label = createShipment( $db_order, $customer );
@@ -386,7 +387,6 @@ else if( $_GET["action"] == "labels" ){
             file_put_contents($tfile, $label);
 
             $tfiles[] = $tfile;
-            $pdf->addPDF($tfile, "all");
 
         }
         else{
@@ -404,6 +404,10 @@ else if( $_GET["action"] == "labels" ){
 
     if( !$failed ){
         $merging_pdf_at = microtime(true);
+        $pdf = new PDFMerger();
+        foreach($tfiles as $tfile){
+            $pdf->addPDF($tfile, "all");
+        }
         $mergedPdf = $pdf->merge("string");
         $done_at = microtime(true);
 
