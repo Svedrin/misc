@@ -403,7 +403,8 @@ else if( $_GET["action"] == "labels" ){
                         break;
                     }
                 }
-                file_put_contents($labelfile, $label);
+                if(!$failed)
+                    file_put_contents($labelfile, $label);
             }
             else{
                 echo "<pre>Failed:\n";
