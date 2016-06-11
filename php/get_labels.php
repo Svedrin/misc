@@ -53,8 +53,7 @@ if( !isset($_GET["action"]) || $_GET["action"] == "" || $_GET["action"] == "list
         "INNER JOIN ".TABLE_ORDERS_STATUS." s ON (o.orders_status = s.orders_status_id) ".
         "INNER JOIN orders_products op ON (o.orders_id = op.orders_id) ".
         "WHERE ".
-            "s.language_id = '".$_SESSION['languages_id']."' AND ".
-            "o.orders_status NOT IN (3, 99) ".
+            "s.language_id = '".$_SESSION['languages_id']."' ".
         "GROUP BY o.orders_id ".
         "ORDER BY o.date_purchased DESC";
 
@@ -64,7 +63,23 @@ if( !isset($_GET["action"]) || $_GET["action"] == "" || $_GET["action"] == "list
     $orders = array();
 
     while( $db_order = xtc_db_fetch_array($orders_result) ){
-        $orders[] = $db_order;
+        if( $db_order["orders_status"] == 3 || $db_order["orders_status"] == 99 ){
+            // See if we have old labels lying around that need to be deleted
+            $lockfile = DIR_FS_CATALOG . "cache/dhl_label-{$order_id}.lock";
+            if( file_exists($lockfile) ){
+                unlink($lockfile);
+            }
+
+            for( $i = 0; $i < $db_order["products_count"]; $i++ ){
+                $labelfile = DIR_FS_CATALOG . "cache/dhl_label-{$order_id}-{$i}.pdf";
+                if( file_exists($labelfile) ){
+                    unlink($labelfile);
+                }
+            }
+        }
+        else{
+            $orders[] = $db_order;
+        }
     }
 
 ?><!doctype html public "-//W3C//DTD HTML 4.01 Transitional//EN">
