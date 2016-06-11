@@ -376,7 +376,7 @@ else if( $_GET["action"] == "labels" ){
     $getting_labels_at = microtime(true);
 
     $lockfp = fopen(DIR_FS_CATALOG . "cache/dhl_label-{$order_id}.lock", "w+");
-    if(!$lockfp || !flock($fp, LOCK_EX)){
+    if(!$lockfp || !flock($lockfp, LOCK_EX)){
         die("Could not get lock. We can't be sure there's no other process currently running, aborting.");
     }
 
@@ -419,8 +419,8 @@ else if( $_GET["action"] == "labels" ){
         sleep(.2);
     }
 
-    flock($fp, LOCK_UN);
-    fclose($fp);
+    flock($lockfp, LOCK_UN);
+    fclose($lockfp);
 
     if( !$failed ){
         $merging_pdf_at = microtime(true);
