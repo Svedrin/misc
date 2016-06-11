@@ -129,10 +129,6 @@ if( !isset($_GET["action"]) || $_GET["action"] == "" || $_GET["action"] == "list
 }
 else if( $_GET["action"] == "labels" ){
 
-    if(isset($_GET["order"]) && !is_numeric($_GET["order"])){
-        die("order param needs to be absent or a number");
-    }
-
     function get_with_curl($url){
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -307,6 +303,11 @@ else if( $_GET["action"] == "labels" ){
     }
 
 
+    if(!isset($_GET["order"]) || empty($_GET["order"]) || !is_numeric($_GET["order"])){
+        die("order param needs to be a number");
+    }
+
+    $order_id = $_GET["order"];
 
     $orders_query =
         "SELECT ".
@@ -319,10 +320,7 @@ else if( $_GET["action"] == "labels" ){
         "INNER JOIN orders_products op ON (o.orders_id = op.orders_id) ".
         "WHERE ".
             "s.language_id = '".$_SESSION['languages_id']."' AND ".
-            (isset($_GET["order"])
-             ? "o.orders_id = '".((int)$_GET['order'])."' "
-             : "o.orders_status NOT IN (3, 99) "
-            ).
+            "o.orders_id = '{$order_id}' ".
         "GROUP BY o.orders_id ".
         "ORDER BY o.date_purchased DESC";
 
