@@ -333,70 +333,73 @@ else if( $_GET["action"] == "labels" ){
     $pdf = new PDFMerger();
     $tfiles = array();
     $getting_labels_at = microtime(true);
+    $db_order = xtc_db_fetch_array($orders_result)
 
-    while( !$failed && $db_order = xtc_db_fetch_array($orders_result) ){
-        // split street name and number
-        if(preg_match('/(.*)\s+(\d+.*)$/i', trim($db_order['delivery_street_address']), $matches) == 1) {
-                $receiver_streetname   = $matches[1];
-                $receiver_streetnumber = $matches[2];
-        }
-        else {
-                $receiver_streetname   = trim($db_order['delivery_street_address']);
-                $receiver_streetnumber = '';
-        }
+    if( !$db_order ){
+        die("Could not get order info from database");
+    }
 
-        $customer = array(
-            'company_name'  => $db_order["delivery_company"],
-            'first_name'    => $db_order["delivery_firstname"],
-            'last_name'     => $db_order["delivery_lastname"],
-            'street_name'   => $receiver_streetname,
-            'street_number' => $receiver_streetnumber,
-            'zip'           => $db_order["delivery_postcode"],
-            'city'          => $db_order["delivery_city"],
-            'country'       => 'Germany',
-            'email'         => trim($db_order["customers_email_address"])
-        );
+    // split street name and number
+    if(preg_match('/(.*)\s+(\d+.*)$/i', trim($db_order['delivery_street_address']), $matches) == 1) {
+            $receiver_streetname   = $matches[1];
+            $receiver_streetnumber = $matches[2];
+    }
+    else {
+            $receiver_streetname   = trim($db_order['delivery_street_address']);
+            $receiver_streetnumber = '';
+    }
 
-        for( $i = 0; $i < $db_order["products_count"]; $i++ ){
-            set_time_limit(29);
-            $label = createShipment( $db_order, $customer );
+    $customer = array(
+        'company_name'  => $db_order["delivery_company"],
+        'first_name'    => $db_order["delivery_firstname"],
+        'last_name'     => $db_order["delivery_lastname"],
+        'street_name'   => $receiver_streetname,
+        'street_number' => $receiver_streetnumber,
+        'zip'           => $db_order["delivery_postcode"],
+        'city'          => $db_order["delivery_city"],
+        'country'       => 'Germany',
+        'email'         => trim($db_order["customers_email_address"])
+    );
 
-            if( $label["success"] ){
-                error_log("srs success!");
-                // Download the label into a temp file
-                $retries = 0;
-                while(($label = get_with_curl($label["label_url"])) === false){
-                    if( $retries < 5 ){
-                        error_log("download failed, retry...");
-                        $retries++;
-                        sleep(.2);
-                    }
-                    else{
-                        error_log("download failed, giving up.");
-                        $failed = true;
-                        break;
-                    }
+    for( $i = 0; $i < $db_order["products_count"]; $i++ ){
+        set_time_limit(29);
+        $label = createShipment( $db_order, $customer );
+
+        if( $label["success"] ){
+            error_log("srs success!");
+            // Download the label into a temp file
+            $retries = 0;
+            while(($label = get_with_curl($label["label_url"])) === false){
+                if( $retries < 5 ){
+                    error_log("download failed, retry...");
+                    $retries++;
+                    sleep(.2);
                 }
-
-                $tfile = tempnam(DIR_FS_CATALOG . "cache", "dhl_label");
-                file_put_contents($tfile, $label);
-
-                $tfiles[] = $tfile;
-                $pdf->addPDF($tfile, "all");
-
-            }
-            else{
-                echo "<pre>Failed:\n";
-                print_r($label);
-                echo "</pre>";
-                $failed = true;
+                else{
+                    error_log("download failed, giving up.");
+                    $failed = true;
+                    break;
+                }
             }
 
-            if($failed)
-                break;
+            $tfile = tempnam(DIR_FS_CATALOG . "cache", "dhl_label");
+            file_put_contents($tfile, $label);
 
-            sleep(.2);
+            $tfiles[] = $tfile;
+            $pdf->addPDF($tfile, "all");
+
         }
+        else{
+            echo "<pre>Failed:\n";
+            print_r($label);
+            echo "</pre>";
+            $failed = true;
+        }
+
+        if($failed)
+            break;
+
+        sleep(.2);
     }
 
     if( !$failed ){
