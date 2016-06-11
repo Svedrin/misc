@@ -129,10 +129,6 @@ if( !isset($_GET["action"]) || $_GET["action"] == "" || $_GET["action"] == "list
 }
 else if( $_GET["action"] == "labels" ){
 
-    if(isset($_GET["order"]) && !is_numeric($_GET["order"])){
-        die("order param needs to be absent or a number");
-    }
-
     function get_with_curl($url){
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -307,6 +303,11 @@ else if( $_GET["action"] == "labels" ){
     }
 
 
+    if(!isset($_GET["order"]) || empty($_GET["order"]) || !is_numeric($_GET["order"])){
+        die("order param needs to be a number");
+    }
+
+    $order_id = $_GET["order"];
 
     $orders_query =
         "SELECT ".
@@ -319,50 +320,55 @@ else if( $_GET["action"] == "labels" ){
         "INNER JOIN orders_products op ON (o.orders_id = op.orders_id) ".
         "WHERE ".
             "s.language_id = '".$_SESSION['languages_id']."' AND ".
-            (isset($_GET["order"])
-             ? "o.orders_id = '".((int)$_GET['order'])."' "
-             : "o.orders_status NOT IN (3, 99) "
-            ).
+            "o.orders_id = '{$order_id}' ".
         "GROUP BY o.orders_id ".
         "ORDER BY o.date_purchased DESC";
 
     error_log($orders_query);
     $orders_result = xtc_db_query($orders_query);
 
+    $db_order = xtc_db_fetch_array($orders_result)
+
+    if( !$db_order ){
+        die("Could not get order info from database");
+    }
+
+    // split street name and number
+    if(preg_match('/(.*)\s+(\d+.*)$/i', trim($db_order['delivery_street_address']), $matches) == 1) {
+            $receiver_streetname   = $matches[1];
+            $receiver_streetnumber = $matches[2];
+    }
+    else {
+            $receiver_streetname   = trim($db_order['delivery_street_address']);
+            $receiver_streetnumber = '';
+    }
+
+    $customer = array(
+        'company_name'  => $db_order["delivery_company"],
+        'first_name'    => $db_order["delivery_firstname"],
+        'last_name'     => $db_order["delivery_lastname"],
+        'street_name'   => $receiver_streetname,
+        'street_number' => $receiver_streetnumber,
+        'zip'           => $db_order["delivery_postcode"],
+        'city'          => $db_order["delivery_city"],
+        'country'       => 'Germany',
+        'email'         => trim($db_order["customers_email_address"])
+    );
+
+
     $failed = false;
-    $pdf = new PDFMerger();
     $tfiles = array();
     $getting_labels_at = microtime(true);
 
-    while( !$failed && $db_order = xtc_db_fetch_array($orders_result) ){
-        // split street name and number
-        if(preg_match('/(.*)\s+(\d+.*)$/i', trim($db_order['delivery_street_address']), $matches) == 1) {
-                $receiver_streetname   = $matches[1];
-                $receiver_streetnumber = $matches[2];
-        }
-        else {
-                $receiver_streetname   = trim($db_order['delivery_street_address']);
-                $receiver_streetnumber = '';
-        }
+    for( $i = 0; $i < $db_order["products_count"]; $i++ ){
+        $labelfile = DIR_FS_CATALOG . "cache/dhl_label-{$order_id}-{$i}.pdf"
+        $tfiles[]  = $labelfile;
 
-        $customer = array(
-            'company_name'  => $db_order["delivery_company"],
-            'first_name'    => $db_order["delivery_firstname"],
-            'last_name'     => $db_order["delivery_lastname"],
-            'street_name'   => $receiver_streetname,
-            'street_number' => $receiver_streetnumber,
-            'zip'           => $db_order["delivery_postcode"],
-            'city'          => $db_order["delivery_city"],
-            'country'       => 'Germany',
-            'email'         => trim($db_order["customers_email_address"])
-        );
-
-        for( $i = 0; $i < $db_order["products_count"]; $i++ ){
+        if( !file_exists($labelfile) || !filesize($labelfile)){
             set_time_limit(29);
             $label = createShipment( $db_order, $customer );
 
             if( $label["success"] ){
-                error_log("srs success!");
                 // Download the label into a temp file
                 $retries = 0;
                 while(($label = get_with_curl($label["label_url"])) === false){
@@ -377,13 +383,7 @@ else if( $_GET["action"] == "labels" ){
                         break;
                     }
                 }
-
-                $tfile = tempnam(DIR_FS_CATALOG . "cache", "dhl_label");
-                file_put_contents($tfile, $label);
-
-                $tfiles[] = $tfile;
-                $pdf->addPDF($tfile, "all");
-
+                file_put_contents($labelfile, $label);
             }
             else{
                 echo "<pre>Failed:\n";
@@ -391,16 +391,20 @@ else if( $_GET["action"] == "labels" ){
                 echo "</pre>";
                 $failed = true;
             }
-
-            if($failed)
-                break;
-
-            sleep(.2);
         }
+
+        if($failed)
+            break;
+
+        sleep(.2);
     }
 
     if( !$failed ){
         $merging_pdf_at = microtime(true);
+        $pdf = new PDFMerger();
+        foreach($tfiles as $tfile){
+            $pdf->addPDF($tfile, "all");
+        }
         $mergedPdf = $pdf->merge("string");
         $done_at = microtime(true);
 
