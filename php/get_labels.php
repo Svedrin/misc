@@ -360,6 +360,11 @@ else if( $_GET["action"] == "labels" ){
     $tfiles = array();
     $getting_labels_at = microtime(true);
 
+    $lockfp = fopen(DIR_FS_CATALOG . "cache/dhl_label-{$order_id}.lock", "w+");
+    if(!$lockfp || !flock($fp, LOCK_EX)){
+        die("Could not get lock. We can't be sure there's no other process currently running, aborting.");
+    }
+
     for( $i = 0; $i < $db_order["products_count"]; $i++ ){
         $labelfile = DIR_FS_CATALOG . "cache/dhl_label-{$order_id}-{$i}.pdf"
         $tfiles[]  = $labelfile;
@@ -398,6 +403,9 @@ else if( $_GET["action"] == "labels" ){
 
         sleep(.2);
     }
+
+    flock($fp, LOCK_UN);
+    fclose($fp);
 
     if( !$failed ){
         $merging_pdf_at = microtime(true);
