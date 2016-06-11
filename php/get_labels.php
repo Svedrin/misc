@@ -361,37 +361,36 @@ else if( $_GET["action"] == "labels" ){
     $getting_labels_at = microtime(true);
 
     for( $i = 0; $i < $db_order["products_count"]; $i++ ){
-        set_time_limit(29);
-        $label = createShipment( $db_order, $customer );
+        $labelfile = DIR_FS_CATALOG . "cache/dhl_label-{$order_id}-{$i}.pdf"
+        $tfiles[]  = $labelfile;
 
-        if( $label["success"] ){
-            error_log("srs success!");
-            // Download the label into a temp file
-            $retries = 0;
-            while(($label = get_with_curl($label["label_url"])) === false){
-                if( $retries < 5 ){
-                    error_log("download failed, retry...");
-                    $retries++;
-                    sleep(.2);
+        if( !file_exists($labelfile) || !filesize($labelfile)){
+            set_time_limit(29);
+            $label = createShipment( $db_order, $customer );
+
+            if( $label["success"] ){
+                // Download the label into a temp file
+                $retries = 0;
+                while(($label = get_with_curl($label["label_url"])) === false){
+                    if( $retries < 5 ){
+                        error_log("download failed, retry...");
+                        $retries++;
+                        sleep(.2);
+                    }
+                    else{
+                        error_log("download failed, giving up.");
+                        $failed = true;
+                        break;
+                    }
                 }
-                else{
-                    error_log("download failed, giving up.");
-                    $failed = true;
-                    break;
-                }
+                file_put_contents($labelfile, $label);
             }
-
-            $tfile = tempnam(DIR_FS_CATALOG . "cache", "dhl_label");
-            file_put_contents($tfile, $label);
-
-            $tfiles[] = $tfile;
-
-        }
-        else{
-            echo "<pre>Failed:\n";
-            print_r($label);
-            echo "</pre>";
-            $failed = true;
+            else{
+                echo "<pre>Failed:\n";
+                print_r($label);
+                echo "</pre>";
+                $failed = true;
+            }
         }
 
         if($failed)
