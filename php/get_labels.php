@@ -389,7 +389,7 @@ else if( $_GET["action"] == "labels" ){
             $label = createShipment( $db_order, $customer );
 
             if( $label["success"] ){
-                // Download the label into a temp file
+                // Download the label
                 $retries = 0;
                 while(($label = get_with_curl($label["label_url"])) === false){
                     if( $retries < 5 ){
