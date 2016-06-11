@@ -424,9 +424,5 @@ else if( $_GET["action"] == "labels" ){
         header("Content-Type: Application/PDF");
         echo $mergedPdf;
     }
-
-    foreach($tfiles as $tfile){
-        unlink($tfile);
-    }
 }
 
