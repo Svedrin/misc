@@ -391,7 +391,7 @@ else if( $_GET["action"] == "labels" ){
             if( $label["success"] ){
                 // Download the label
                 $retries = 0;
-                while(($label = get_with_curl($label["label_url"])) === false){
+                while(($labelpdf = get_with_curl($label["label_url"])) === false){
                     if( $retries < 5 ){
                         error_log("download failed, retry...");
                         $retries++;
@@ -404,7 +404,7 @@ else if( $_GET["action"] == "labels" ){
                     }
                 }
                 if(!$failed)
-                    file_put_contents($labelfile, $label);
+                    file_put_contents($labelfile, $labelpdf);
             }
             else{
                 echo "<pre>Failed:\n";
