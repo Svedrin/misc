@@ -8,6 +8,8 @@ import pygame.draw
 import pygame.font
 import pygame.image
 
+import numpy
+
 from PIL import Image, ImageEnhance, ImageDraw
 from time import sleep
 
@@ -37,14 +39,9 @@ while True:
 
     pil_string_image = pygame.image.tostring(surface_img, "RGBA", False)
     im = Image.frombytes("RGBA", (1920, 1080), pil_string_image)
-
-    sw = im.convert("LA")
-
+    sw = im.convert("L")
     contrast = ImageEnhance.Contrast(sw)
-
     sw = contrast.enhance(5)
-
-    #draw = ImageDraw.Draw(sw)
 
     thresh = 150
     min_x = None
@@ -53,7 +50,7 @@ while True:
     max_y = None
 
     for x in range( 1920 / 2 - 500, 1920 / 2 + 500, 10 ):
-        px, alpha = sw.getpixel((x, 1080/2))
+        px = sw.getpixel((x, 1080/2))
         if min_x is None:
             if px <= thresh:
                 min_x = x
@@ -63,7 +60,7 @@ while True:
                     max_x = x
 
     for y in range( 1080 / 2 - 500, 1080 / 2 + 500, 10 ):
-        px, alpha = sw.getpixel((1920/2, y))
+        px = sw.getpixel((1920/2, y))
         if min_y is None:
             if px <= thresh:
                 min_y = y
@@ -71,8 +68,6 @@ while True:
             if max_y is None:
                 if px > thresh:
                     max_y = y
-
-    #print min_x, min_y, max_x, max_y
 
     if min_x and min_y and max_x and max_y:
         pygame.draw.lines(
@@ -83,13 +78,9 @@ while True:
              (max_x, min_y)),
             2)
 
-        dark_pixels = 0
 
-        for x in range(min_x, max_x):
-            for y in range(min_y, max_y):
-                px, alpha = sw.getpixel((x, y))
-                if px < thresh:
-                    dark_pixels += 1
+        swdata = numpy.asarray( sw.crop((min_x, min_y, max_x, max_y)) )
+        dark_pixels = (swdata < thresh).sum()
 
         prozentes = font.render(
             '%.2f%%' % (dark_pixels / ( (max_x - min_x) * float(max_y - min_y) ) * 100.),
@@ -103,4 +94,4 @@ while True:
     screen.blit(prozentes, (10, 10))
 
     pygame.display.flip()
-    sleep(0.001)
+    sleep(1 / 30.)
