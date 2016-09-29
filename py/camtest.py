@@ -5,6 +5,7 @@ import pygame
 import pygame.camera
 import pygame.display
 import pygame.draw
+import pygame.font
 import pygame.image
 
 from PIL import Image, ImageEnhance, ImageDraw
@@ -18,10 +19,23 @@ cam.start()
 
 pygame.display.init()
 screen = pygame.display.set_mode((1920, 1080))
+font = pygame.font.Font(None, 60)
 
 while True:
     surface_img = cam.get_image()
+    screen.fill((0, 0, 0, 255))
     screen.blit(surface_img, (0, 0))
+
+    pygame.draw.line(
+        screen, (255, 0, 0, 255),
+        (1920/2 - 50, 1080/2),
+        (1920/2 + 50, 1080/2),
+        1)
+    pygame.draw.line(
+        screen, (255, 0, 0, 255),
+        (1920/2, 1080/2 - 50),
+        (1920/2, 1080/2 + 50),
+        1)
 
     pil_string_image = pygame.image.tostring(surface_img, "RGBA", False)
     im = Image.frombytes("RGBA", (1920, 1080), pil_string_image)
@@ -60,10 +74,9 @@ while True:
                 if px > thresh:
                     max_y = y
 
-    print min_x, min_y, max_x, max_y
+    #print min_x, min_y, max_x, max_y
 
     if min_x and min_y and max_x and max_y:
-        #draw.rectangle( (min_x, min_y, max_x, max_y) )
         pygame.draw.lines(
             screen, (0, 0, 255, 255), True,
             ((min_x, min_y),
@@ -80,10 +93,16 @@ while True:
                 if px < thresh:
                     dark_pixels += 1
 
-        print "Dark pixels:", dark_pixels
-        print "In %:", dark_pixels / ( (max_x - min_x) * float(max_y - min_y) ) * 100.
+        prozentes = font.render(
+            '%.2f%%' % (dark_pixels / ( (max_x - min_x) * float(max_y - min_y) ) * 100.),
+            0, (0, 255, 0, 255), (0, 0, 0, 0)
+        )
     else:
-        print "nix gefunden"
+        prozentes = font.render(
+            '??.??%',
+            0, (0, 255, 0, 255), (0, 0, 0, 0)
+        )
+    screen.blit(prozentes, (10, 10))
 
     pygame.display.flip()
     sleep(0.001)
