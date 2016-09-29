@@ -22,9 +22,7 @@ screen = pygame.display.set_mode((1920, 1080))
 font = pygame.font.Font(None, 60)
 
 while True:
-    surface_img = cam.get_image()
-    screen.fill((0, 0, 0, 255))
-    screen.blit(surface_img, (0, 0))
+    surface_img = cam.get_image(screen)
 
     pygame.draw.line(
         screen, (255, 0, 0, 255),
