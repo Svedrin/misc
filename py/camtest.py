@@ -18,7 +18,7 @@ cam = pygame.camera.Camera("/dev/video1", (1920, 1080) )
 cam.start()
 
 pygame.display.init()
-screen = pygame.display.set_mode((1920, 1080))
+screen = pygame.display.set_mode((1920, 1080), pygame.HWSURFACE | pygame.DOUBLEBUF)
 font = pygame.font.Font(None, 60)
 
 while True:
