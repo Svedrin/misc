@@ -89,7 +89,7 @@ def cpu1():
                         bus.data = my_bit          # ram it in the ground
                     outq.put("cpu1 sent a %s" % my_bit)
                     sleep(0.5)                     # give everyone a chance to overwrite me
-                    if bus.data != my_bit:         # someone else killed our bit
+                    if my_bit and not bus.data:    # someone else killed our bit
                         outq.put("cpu1 is a sad panda and waits for the next frame.")
                 else:
                     sending_id = False         # ID is complete
