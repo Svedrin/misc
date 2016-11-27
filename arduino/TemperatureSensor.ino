@@ -5,18 +5,19 @@ unsigned int  num_steps    = sizeof(centigrade)/sizeof(int);
 
 unsigned long rvcc = 5000;
 unsigned long rref = 1200;
-unsigned long vref = 1200;
+unsigned long vref = 1231;
 unsigned long vcc  =    0;
 
 unsigned int pinref = A5;
 
 void setup() {
   Serial.begin(9600);
+  analogReference(EXTERNAL);
 }
 
 double toVoltsSimple(unsigned long x){
   // Convert ADC units to a voltage, without any amplification stuff.
-  return vcc * x / 1024.0;
+  return vcc * x / 1023.0;
 }
 
 double toVoltsWithOpAmp(unsigned long x){
@@ -52,18 +53,27 @@ double toCentigrade(unsigned long vin){
   return clower + (partial * (cupper - clower));
 }
 
+unsigned long analogSafeRead(int pin){
+  analogRead(pin);         // Switch adc input mux
+  delay(2000);              // Allow the value to settle
+  return analogRead(pin);  // Read the value
+}
+
 void readTemp(int analogInPin){
-  unsigned long sensorValue = analogRead(analogInPin);
+  unsigned long sensorValue = analogSafeRead(analogInPin);
+  double vin = toVoltsSimple(sensorValue);
 
   // print the results to the serial monitor:
   Serial.print("sensor = " );
   Serial.print(sensorValue);
+  Serial.print("\t volts = ");
+  Serial.print(vin);
   Serial.print("\t temp = ");
-  Serial.print(toCentigrade(toVoltsSimple(sensorValue)));
+  Serial.print(toCentigrade(vin));
 }
 
 void readTempTheCoolWay(int analogInPin){
-  unsigned long sensorValue = analogRead(analogInPin);
+  unsigned long sensorValue = analogSafeRead(analogInPin);
   double vin = toVoltsWithOpAmp(sensorValue);
 
   // print the results to the serial monitor:
@@ -76,16 +86,19 @@ void readTempTheCoolWay(int analogInPin){
 }
 
 void loop() {
-  vcc = vref * 1024.0 / analogRead(pinref);
+  vcc = vref * 1023 / (analogSafeRead(pinref) - 1);
+
+  Serial.print(vcc);
+  Serial.print("\t|\t");
+  Serial.print("\n"); return;
 
   readTemp(A0);
-  Serial.print("\t");
+  Serial.print("\t|\t");
 
-  readTemp(A1);
-  Serial.print("\t");
+//  readTemp(A1);
+//  Serial.print("\t");
 
   readTempTheCoolWay(A2);
   Serial.println();
-
-  delay(200);
+  delay(1000);
 }
