@@ -111,6 +111,7 @@ def cpu1():
                         message = None
                         start_at_tick = None
                         outq.put("cpu1 message complete")
+                        bus.shutdown = True
 
         if lastclock and not bus.clock:    # ¯\_
             if start_at_tick is not None:
@@ -179,8 +180,8 @@ def cpu2():
 
 
 try:
-    while True:
-        sleep(99999)
+    cpu1.join()
+    cpu2.join()
 except KeyboardInterrupt:
     outq.put("The machine has initiated its shutdown sequence. Please stand by.")
     bus.shutdown = True
