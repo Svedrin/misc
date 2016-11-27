@@ -105,13 +105,12 @@ def cpu1():
                         body_char_idx = body_pos // 8
                         body_bit_idx  = body_pos  % 8
                         body_pos += 1
-                        if body_char_idx < 8:
-                            bus.data = bool(ord(message[1][body_char_idx]) & (1<<body_bit_idx))
-                            outq.put("cpu1 sent a %s" % bus.data)
-                        else:
-                            message = None
-                            start_at_tick = None
-                            outq.put("cpu1 message complete")
+                        bus.data = bool(ord(message[1][body_char_idx]) & (1<<body_bit_idx))
+                        outq.put("cpu1 sent a %s" % bus.data)
+                    else:
+                        message = None
+                        start_at_tick = None
+                        outq.put("cpu1 message complete")
 
         if lastclock and not bus.clock:    # ¯\_
             if start_at_tick is not None:
