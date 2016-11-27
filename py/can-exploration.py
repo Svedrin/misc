@@ -46,9 +46,16 @@ def printer():
 @go_nodaemon
 def clock():
     while not bus.shutdown:
-        outq.put("Tick")
+        if not bus.clock:
+            # we're going to create a _/¯ edge, and because the CPUs rely on the
+            # bus being set to high when they just don't do anything, we need to
+            # simulate that here. and it needs to be done before the CPUs have a
+            # chance to run and store a value that we'd then destroy.
+            bus.data = True
+            outq.put("Tick")
+        else:
+            outq.put("Tock")
         bus.clock = not bus.clock
-        bus.data  = True
         sleep(1)
 
 
@@ -88,9 +95,6 @@ def cpu1():
                     if bus.data and not my_bit:    # high means clear in the ID phase
                         bus.data = my_bit          # ram it in the ground
                     outq.put("cpu1 sent a %s" % my_bit)
-                    sleep(0.5)                     # give everyone a chance to overwrite me
-                    if my_bit and not bus.data:    # someone else killed our bit
-                        outq.put("cpu1 is a sad panda and waits for the next frame.")
                 else:
                     if sending_id:
                         sending_id = False         # ID is complete
@@ -104,12 +108,17 @@ def cpu1():
                         if body_char_idx < 8:
                             bus.data = bool(ord(message[1][body_char_idx]) & (1<<body_bit_idx))
                             outq.put("cpu1 sent a %s" % bus.data)
-                            sleep(0.5)
-                            # recv part is empty
                         else:
                             message = None
                             start_at_tick = None
                             outq.put("cpu1 message complete")
+
+        if lastclock and not bus.clock:    # ¯\_
+            if start_at_tick is not None:
+                if current_bit_idx >= 0:
+                    if my_bit and not bus.data:    # someone else killed our bit
+                        outq.put("cpu1 is a sad panda and waits for the next frame.")
+
 
         lastclock = bus.clock
         sleep(0.1)
@@ -139,10 +148,8 @@ def cpu2():
                 outq.put("cpu2 starting to read")
                 start_at_tick = current_tick
 
+        if lastclock and not bus.clock:    # ¯\_
             if start_at_tick is not None:
-                # send part is empty
-                sleep(0.5)
-
                 outq.put("cpu2 received a %s" % bus.data)
 
                 current_bit_idx = 11 - (current_tick - start_at_tick)
