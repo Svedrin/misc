@@ -254,6 +254,10 @@ apt-get dist-upgrade -y
 
 service rsyslog stop
 service udev stop
+
+# root password = init123
+usermod --password '\$6\$5/wXIu6E\$P4qgpWiECnhO0TH/PwLJCSPgHX5Fl6GSCz1VOKn6LYGq6lBqW8ULKTUzusGZUfcIej5RrEI8lKgkq48n/Mm.41' root
+
 EOSCRIPT
 
 if [ "${PUPPIFY:-false}" = "true" ]; then
