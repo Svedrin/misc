@@ -233,8 +233,8 @@ EOF
 
 dpkg-reconfigure -fnoninteractive keyboard-configuration
 
-mv /mnt/etc/rc.local      /etc/rc.local.done
-mv /mnt/etc/rc.local.orig /etc/rc.local
+mv /etc/rc.local      /etc/rc.local.done
+mv /etc/rc.local.orig /etc/rc.local
 EOF
 
 chmod +x /mnt/etc/rc.local
