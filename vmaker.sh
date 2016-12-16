@@ -258,8 +258,8 @@ apt-get install -y lvm2 locales
 locale-gen en_US.UTF-8
 locale-gen de_DE.UTF-8
 
-service rsyslog stop
-service udev stop
+service rsyslog stop || /bin/true
+service udev    stop || /bin/true
 
 # root password = init123
 usermod --password '\$6\$5/wXIu6E\$P4qgpWiECnhO0TH/PwLJCSPgHX5Fl6GSCz1VOKn6LYGq6lBqW8ULKTUzusGZUfcIej5RrEI8lKgkq48n/Mm.41' root
