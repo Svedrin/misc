@@ -118,8 +118,9 @@ CLEANUP_STAGE=1
 #                                      #
 ########################################
 
-
-debootstrap --unpack-tarball="$CACHEDIR/$OS.tgz" $OS /mnt ; echo deboostrap exit = $?
+# Debootstrap sometimes exits with 1 even though the installation worked perfectly fine.
+# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=526978
+debootstrap --unpack-tarball="$CACHEDIR/$OS.tgz" $OS /mnt || /bin/true
 
 mount --bind /dev  /mnt/dev
 mount --bind /proc /mnt/proc
