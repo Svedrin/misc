@@ -235,12 +235,10 @@ dpkg-reconfigure -fnoninteractive keyboard-configuration
 
 mv /etc/rc.local      /etc/rc.local.done
 mv /etc/rc.local.orig /etc/rc.local
-EOF
-
-chmod +x /mnt/etc/rc.local
 
 EOSCRIPT
 
+chmod +x /mnt/etc/rc.local
 
 chmod +x /mnt/install.sh
 chroot /mnt /install.sh
