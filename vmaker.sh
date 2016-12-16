@@ -4,7 +4,7 @@ set -e
 set -u
 
 
-if [ "$(lsb_release -is)" = "debian" ]; then
+if [ "$(lsb_release -is)" = "Debian" ]; then
     OS="jessie"
 else
     OS="xenial"
@@ -38,15 +38,16 @@ done
 
 while [ -n "${1:-}" ]; do
     case "$1" in
-        --help)
+        -h|--help)
             echo "Usage: $0 [options] <imagefile> <os> <hostname>"
             echo
             echo "Options:"
-            echo "    --help             This help text"
+            echo " -h --help             This help text"
             echo "    --virt-install     Automatically register a KVM VM"
             echo "    --puppet           Auto-Deploy and start the Puppet agent"
             echo " -o --os               OS variant [$OS]"
-            echo " -i --imagefile        Image file"
+            echo " -f --imagefile        Image file"
+            echo " -n --hostname         Host name for the created VM"
             exit 0
             ;;
 
