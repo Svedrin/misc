@@ -316,6 +316,6 @@ if [ "${VIRTINST:-false}" = "true" ]; then
     virt-install --disk "$IMAGEFILE,format=raw,cache=writeback,io=threads" --boot hd \
         --network bridge="$BRIDGE" \
         --boot 'kernel=/vmlinuz,initrd=/initrd.img,kernel_args="root=/dev/vmsys/root ro"' \
-        -v --accelerate -n ${VMNAME} -r 4096 --arch=x86_64 --vnc --os-variant=ubuntu16.04 --vcpus 2 --noautoconsole
+        -v --accelerate -n ${VMNAME} -r 4096 --arch=x86_64 --vnc --os-variant="$OSVARIANT" --vcpus 2 --noautoconsole
 fi
 

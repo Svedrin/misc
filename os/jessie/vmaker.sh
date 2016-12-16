@@ -1,0 +1,1 @@
+OSVARIANT="debian8"
