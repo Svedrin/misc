@@ -3,24 +3,11 @@
 set -e
 set -u
 
-if [ "$#" -lt 3 ]; then
-    echo "Usage: $0 <imagefile> <os> <hostname>"
-    exit 3
-fi
-
-
-IMAGEFILE="$1"
-OS="$2"
-HOSTNAME="$3"
 
 DOMAIN="local.lan"
 CACHEDIR="/var/cache/vmaker"
 BRIDGE="svdr0"
 
-
-if [ -e "os/$OS/vmaker.sh" ]; then
-    source "os/$OS/vmaker.sh"
-fi
 
 
 ########################################
@@ -35,6 +22,56 @@ for tool in qemu-img guestfish guestmount debootstrap virt-install; do
         exit 4
     fi
 done
+
+########################################
+#                                      #
+#        Pares argumentés              #
+#                                      #
+########################################
+
+
+while [ -n "${1:-}" ]; do
+    case "$1" in
+        --help)
+            echo "Usage: $0 [options] <imagefile> <os> <hostname>"
+            echo
+            echo "Options:"
+            echo "    --help             This help text"
+            echo "    --virt-install     Automatically register a KVM VM"
+            echo "    --puppet           Auto-Deploy and start the Puppet agent"
+            exit 0
+            ;;
+
+        --virt-install)
+            VIRTINST=true
+            ;;
+
+        --puppet)
+            PUPPIFY=true
+            ;;
+
+        *)
+            echo "Unknown option $1, see --help"
+            exit 3
+    esac
+    shift
+done
+
+if [ "$#" -lt 3 ]; then
+    echo "Usage: $0 [options] <imagefile> <os> <hostname> -- see --help"
+    exit 3
+fi
+
+
+IMAGEFILE="$1"
+OS="$2"
+HOSTNAME="$3"
+
+
+if [ -e "os/$OS/vmaker.sh" ]; then
+    source "os/$OS/vmaker.sh"
+fi
+
 
 ########################################
 #                                      #
@@ -198,9 +235,11 @@ apt-get dist-upgrade -y
 
 service rsyslog stop
 service udev stop
-
-apt-get install -y --download-only puppet
 EOSCRIPT
+
+if [ "${PUPPIFY:-false}" = "true" ]; then
+    echo apt-get install -y --download-only puppet >> /mnt/install.sh
+fi
 
 
 # Prepare postinst script to be run at first boot
@@ -241,6 +280,12 @@ mv /etc/rc.local.orig /etc/rc.local
 
 EOSCRIPT
 
+if [ "${PUPPIFY:-false}" = "true" ]; then
+    echo apt-get install puppet >> /mnt/etc/rc.local
+    echo puppet agent --enable  >> /mnt/etc/rc.local
+    service puppet start        >> /mnt/etc/rc.local
+fi
+
 chmod +x /mnt/etc/rc.local
 
 chmod +x /mnt/install.sh
@@ -248,8 +293,10 @@ chroot /mnt /install.sh
 rm /mnt/install.sh
 
 
-virt-install --disk "$IMAGEFILE,format=raw,cache=writeback,io=threads" --boot hd \
-    --network bridge="$BRIDGE" \
-    --boot 'kernel=/vmlinuz,initrd=/initrd.img,kernel_args="root=/dev/vmsys/root ro"' \
-    -v --accelerate -n ${HOSTNAME} -r 4096 --arch=x86_64 --vnc --os-variant=ubuntu16.04 --vcpus 2 --noautoconsole
+if [ "${VIRTINST:-false}" = "true" ]; then
+    virt-install --disk "$IMAGEFILE,format=raw,cache=writeback,io=threads" --boot hd \
+        --network bridge="$BRIDGE" \
+        --boot 'kernel=/vmlinuz,initrd=/initrd.img,kernel_args="root=/dev/vmsys/root ro"' \
+        -v --accelerate -n ${HOSTNAME} -r 4096 --arch=x86_64 --vnc --os-variant=ubuntu16.04 --vcpus 2 --noautoconsole
+fi
 
