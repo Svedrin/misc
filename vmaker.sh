@@ -233,9 +233,9 @@ EOF
 ln -sf /proc/mounts /mnt/etc/mtab
 
 
-
-sed -i 's#TimeoutStartSec=5min#TimeoutStartSec=10sec#g' /mnt/lib/systemd/system/networking.service
-
+if [ "$OS" = "xenial" ]; then
+    sed -i 's#TimeoutStartSec=5min#TimeoutStartSec=10sec#g' /mnt/lib/systemd/system/networking.service
+fi
 
 
 <<EOSCRIPT cat > /mnt/install.sh
