@@ -251,6 +251,7 @@ locale-gen de_DE.UTF-8
 
 apt-get update
 apt-get dist-upgrade -y
+apt-get install -y lvm2
 
 service rsyslog stop
 service udev stop
