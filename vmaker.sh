@@ -61,14 +61,17 @@ while [ -n "${1:-}" ]; do
         -o|--os)
             OS="$2"
             shift
+            ;;
 
         -f|--imagefile)
             IMAGEFILE="$2"
             shift
+            ;;
 
         -n|--hostname)
             VMNAME="$2"
             shift
+            ;;
 
         *)
             echo "Unknown option $1, see --help"
