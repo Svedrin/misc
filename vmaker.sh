@@ -224,7 +224,7 @@ EOF
 
 # Configure mounts
 
-<<EOF cat > /etc/fstab
+<<EOF cat > /mnt/etc/fstab
 # <filesystem>        <mount point>  <type>  <options>              <dump> <pass>
 /dev/vmsys/root       /              ext4    errors=remount-ro      0      1
 /dev/vmsys/varlog     /var/log       ext4    defaults               0      2
