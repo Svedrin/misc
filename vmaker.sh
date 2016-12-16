@@ -18,6 +18,11 @@ CACHEDIR="/var/cache/vmaker"
 BRIDGE="svdr0"
 
 
+if [ -e "os/$OS/vmaker.sh" ]; then
+    source "os/$OS/vmaker.sh"
+fi
+
+
 ########################################
 #                                      #
 #    Check for tools                   #
@@ -72,11 +77,8 @@ if [ ! -e "$CACHEDIR/$OS.tgz" ]; then
     mkdir "$CACHEDIR/$OS"
     debootstrap --download-only --make-tarball="$CACHEDIR/$OS.tgz"                       \
                 --include=htop,iftop,iotop,sysstat,vim,dialog,lvm2,rsync,ssh,rsyslog,sed \
-                $OS "$CACHEDIR/$OS"
+                ${DEBOOTSTRAP_OPTS:-} $OS "$CACHEDIR/$OS"
 fi
-
-
-
 
 
 
@@ -117,7 +119,7 @@ CLEANUP_STAGE=1
 ########################################
 
 
-debootstrap --unpack-tarball="$CACHEDIR/$OS.tgz" $OS /mnt
+debootstrap --unpack-tarball="$CACHEDIR/$OS.tgz" $OS /mnt ; echo deboostrap exit = $?
 
 mount --bind /dev  /mnt/dev
 mount --bind /proc /mnt/proc
