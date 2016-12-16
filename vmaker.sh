@@ -4,6 +4,12 @@ set -e
 set -u
 
 
+if [ "$(lsb_release -is)" = "debian" ]; then
+    OS="jessie"
+else
+    OS="xenial"
+fi
+
 DOMAIN="local.lan"
 CACHEDIR="/var/cache/vmaker"
 BRIDGE="svdr0"
@@ -39,6 +45,8 @@ while [ -n "${1:-}" ]; do
             echo "    --help             This help text"
             echo "    --virt-install     Automatically register a KVM VM"
             echo "    --puppet           Auto-Deploy and start the Puppet agent"
+            echo " -o --os               OS variant [$OS]"
+            echo " -i --imagefile        Image file"
             exit 0
             ;;
 
@@ -50,6 +58,18 @@ while [ -n "${1:-}" ]; do
             PUPPIFY=true
             ;;
 
+        -o|--os)
+            OS="$2"
+            shift
+
+        -f|--imagefile)
+            IMAGEFILE="$2"
+            shift
+
+        -n|--hostname)
+            VMNAME="$2"
+            shift
+
         *)
             echo "Unknown option $1, see --help"
             exit 3
@@ -57,15 +77,10 @@ while [ -n "${1:-}" ]; do
     shift
 done
 
-if [ "$#" -lt 3 ]; then
-    echo "Usage: $0 [options] <imagefile> <os> <hostname> -- see --help"
+if [ -z "${IMAGEFILE:-}" ] || [ -z "${VMNAME:-}" ]; then
+    echo "Usage: $0 [options] -i <imagefile> -n <hostname> -- see --help"
     exit 3
 fi
-
-
-IMAGEFILE="$1"
-OS="$2"
-HOSTNAME="$3"
 
 
 if [ -e "os/$OS/vmaker.sh" ]; then
@@ -191,11 +206,11 @@ iface ens3 inet dhcp
 auto ens3
 EOF
 
-echo $HOSTNAME > /mnt/etc/hostname
+echo $VMNAME > /mnt/etc/hostname
 
 <<EOF cat > /mnt/etc/hosts
 127.0.0.1       localhost
-127.0.1.1       $HOSTNAME.$DOMAIN  $HOSTNAME
+127.0.1.1       $VMNAME.$DOMAIN  $VMNAME
 
 # The following lines are desirable for IPv6 capable hosts
 ::1     localhost ip6-localhost ip6-loopback
@@ -297,6 +312,6 @@ if [ "${VIRTINST:-false}" = "true" ]; then
     virt-install --disk "$IMAGEFILE,format=raw,cache=writeback,io=threads" --boot hd \
         --network bridge="$BRIDGE" \
         --boot 'kernel=/vmlinuz,initrd=/initrd.img,kernel_args="root=/dev/vmsys/root ro"' \
-        -v --accelerate -n ${HOSTNAME} -r 4096 --arch=x86_64 --vnc --os-variant=ubuntu16.04 --vcpus 2 --noautoconsole
+        -v --accelerate -n ${VMNAME} -r 4096 --arch=x86_64 --vnc --os-variant=ubuntu16.04 --vcpus 2 --noautoconsole
 fi
 
