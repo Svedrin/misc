@@ -131,8 +131,8 @@ if [ ! -e "$CACHEDIR/$OS.tgz" ]; then
         rm -rf "$CACHEDIR/$OS"
     fi
     mkdir "$CACHEDIR/$OS"
-    debootstrap --download-only --make-tarball="$CACHEDIR/$OS.tgz"                       \
-                --include=htop,iftop,iotop,sysstat,vim,dialog,lvm2,rsync,ssh,rsyslog,sed \
+    debootstrap --download-only --make-tarball="$CACHEDIR/$OS.tgz" \
+                --include=htop,iftop,iotop,sysstat,vim,dialog,lvm2,rsync,ssh,rsyslog,sed,openssh-server \
                 ${DEBOOTSTRAP_OPTS:-} $OS "$CACHEDIR/$OS"
 fi
 
@@ -244,14 +244,19 @@ fi
 set -e
 set -u
 
-locale-gen en_US.UTF-8
-locale-gen de_DE.UTF-8
+<<EOF debconf-set-selections
+locales	locales/locales_to_be_generated	multiselect	de_DE.UTF-8 UTF-8, en_US.UTF-8 UTF-8
+locales	locales/default_environment_locale	select	de_DE.UTF-8
+EOF
 
 # Update installed packages and install a basic set of tools
 
 apt-get update
 apt-get dist-upgrade -y
-apt-get install -y lvm2
+apt-get install -y lvm2 locales
+
+locale-gen en_US.UTF-8
+locale-gen de_DE.UTF-8
 
 service rsyslog stop
 service udev stop
@@ -273,31 +278,41 @@ mv /mnt/etc/rc.local  /mnt/etc/rc.local.orig
 <<EOSCRIPT cat > /mnt/etc/rc.local
 #!/bin/bash
 
+exec >> /var/log/sysprep.log
+exec 2>&1
+
 set -e
 set -u
 
 <<EOF debconf-set-selections
-keyboard-configuration  keyboard-configuration/xkb-keymap       select  de(nodeadkeys)
-keyboard-configuration  keyboard-configuration/unsupported_layout       boolean true
-keyboard-configuration  keyboard-configuration/switch   select  No temporary switch
-keyboard-configuration  keyboard-configuration/ctrl_alt_bksp    boolean false
-keyboard-configuration  keyboard-configuration/layout   select  German
-keyboard-configuration  keyboard-configuration/variant  select  Deutsch - Deutsch (ohne Akzenttasten)
-keyboard-configuration  keyboard-configuration/store_defaults_in_debconf_db     boolean true
-keyboard-configuration  keyboard-configuration/layoutcode       string  de
-keyboard-configuration  keyboard-configuration/modelcode        string  pc105
-keyboard-configuration  keyboard-configuration/unsupported_options      boolean true
-keyboard-configuration  keyboard-configuration/variantcode      string  nodeadkeys
-keyboard-configuration  keyboard-configuration/unsupported_config_layout        boolean true
-keyboard-configuration  keyboard-configuration/unsupported_config_options       boolean true
-keyboard-configuration  keyboard-configuration/optionscode      string  compose:lwin
-keyboard-configuration  keyboard-configuration/toggle   select  No toggling
-keyboard-configuration  keyboard-configuration/model    select  Generische PC-Tastatur mit 105 Tasten (Intl)
-keyboard-configuration  keyboard-configuration/compose  select  Left Logo key
-keyboard-configuration  keyboard-configuration/altgr    select  The default for the keyboard layout
+keyboard-configuration	keyboard-configuration/xkb-keymap	select	
+keyboard-configuration	console-setup/detect	detect-keyboard	
+keyboard-configuration	keyboard-configuration/modelcode	string	pc105
+keyboard-configuration	keyboard-configuration/ctrl_alt_bksp	boolean	true
+keyboard-configuration	keyboard-configuration/store_defaults_in_debconf_db	boolean	true
+keyboard-configuration	keyboard-configuration/unsupported_layout	boolean	true
+keyboard-configuration	keyboard-configuration/switch	select	No temporary switch
+keyboard-configuration	keyboard-configuration/unsupported_config_options	boolean	true
+keyboard-configuration	keyboard-configuration/layoutcode	string	de
+keyboard-configuration	keyboard-configuration/toggle	select	No toggling
+keyboard-configuration	console-setup/ask_detect	boolean	false
+keyboard-configuration	keyboard-configuration/variant	select	German - German (eliminate dead keys)
+keyboard-configuration	keyboard-configuration/compose	select	Left Logo key
+keyboard-configuration	console-setup/detected	note	
+keyboard-configuration	keyboard-configuration/model	select	Generic 105-key (Intl) PC
+keyboard-configuration	keyboard-configuration/variantcode	string	nodeadkeys
+keyboard-configuration	keyboard-configuration/optionscode	string	lv3:ralt_switch,compose:lwin,terminate:ctrl_alt_bksp
+keyboard-configuration	keyboard-configuration/layout	select	German
+keyboard-configuration	keyboard-configuration/altgr	select	Right Alt (AltGr)
+keyboard-configuration	keyboard-configuration/unsupported_config_layout	boolean	true
+keyboard-configuration	keyboard-configuration/unsupported_options	boolean	true
 EOF
 
-dpkg-reconfigure -fnoninteractive keyboard-configuration
+if dpkg-query -l keyboard-configuration > /dev/null; then
+    dpkg-reconfigure -fnoninteractive keyboard-configuration
+else
+    apt-get -y install keyboard-configuration console-setup
+fi
 
 mv /etc/rc.local      /etc/rc.local.done
 mv /etc/rc.local.orig /etc/rc.local
