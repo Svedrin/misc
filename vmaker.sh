@@ -20,9 +20,7 @@ BRIDGE="svdr0"
 
 ########################################
 #                                      #
-#    PREPARATION:                      #
-#                                      #
-#    Check for tools, update cache     #
+#    Check for tools                   #
 #                                      #
 ########################################
 
@@ -32,16 +30,6 @@ for tool in qemu-img guestfish guestmount debootstrap virt-install; do
         exit 4
     fi
 done
-
-if [ ! -d "$CACHEDIR" ]; then
-    mkdir -p "$CACHEDIR"
-fi
-
-if [ ! -e "$CACHEDIR/$OS.tar.gz" ]; then
-    mkdir "$CACHEDIR/$OS"
-    debootstrap --download-only --make-tarball="$CACHEDIR/$OS.tar.gz" $OS "$CACHEDIR/$OS"
-fi
-
 
 ########################################
 #                                      #
@@ -64,6 +52,34 @@ cleanup() {
 trap cleanup EXIT
 
 
+set -x
+
+########################################
+#                                      #
+#    Update cache                      #
+#                                      #
+########################################
+
+
+if [ ! -d "$CACHEDIR" ]; then
+    mkdir -p "$CACHEDIR"
+fi
+
+if [ ! -e "$CACHEDIR/$OS.tgz" ]; then
+    if [ -e "$CACHEDIR/$OS" ]; then
+        rm -rf "$CACHEDIR/$OS"
+    fi
+    mkdir "$CACHEDIR/$OS"
+    debootstrap --download-only --make-tarball="$CACHEDIR/$OS.tgz"                       \
+                --include=htop,iftop,iotop,sysstat,vim,dialog,lvm2,rsync,ssh,rsyslog,sed \
+                $OS "$CACHEDIR/$OS"
+fi
+
+
+
+
+
+
 ########################################
 #                                      #
 #     CREATE IMAGE AND PARTITIONS      #
@@ -71,7 +87,7 @@ trap cleanup EXIT
 ########################################
 
 
-set -x
+
 
 qemu-img create "$IMAGEFILE" 15G
 
@@ -101,7 +117,7 @@ CLEANUP_STAGE=1
 ########################################
 
 
-debootstrap --unpack-tarball="$CACHEDIR/$OS.tar.gz" $OS /mnt || /bin/true
+debootstrap --unpack-tarball="$CACHEDIR/$OS.tgz" $OS /mnt
 
 mount --bind /dev  /mnt/dev
 mount --bind /proc /mnt/proc
@@ -176,7 +192,6 @@ locale-gen de_DE.UTF-8
 
 apt-get update
 apt-get dist-upgrade -y
-apt-get install -y htop iftop iotop sysstat vim dialog lvm2 rsync ssh rsyslog sed
 
 service rsyslog stop
 service udev stop
