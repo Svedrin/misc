@@ -206,8 +206,11 @@ source-directory /etc/network/interfaces.d
 auto lo
 iface lo inet loopback
 
+iface eth0 inet dhcp
+allow-hotplug eth0
+
 iface ens3 inet dhcp
-auto ens3
+allow-hotplug ens3
 EOF
 
 echo $VMNAME > /mnt/etc/hostname
