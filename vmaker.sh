@@ -233,10 +233,6 @@ EOF
 ln -sf /proc/mounts /mnt/etc/mtab
 
 
-if [ "$OS" = "xenial" ]; then
-    sed -i 's#TimeoutStartSec=5min#TimeoutStartSec=10sec#g' /mnt/lib/systemd/system/networking.service
-fi
-
 
 <<EOSCRIPT cat > /mnt/install.sh
 #!/bin/bash
@@ -331,6 +327,12 @@ chmod +x /mnt/install.sh
 chroot /mnt /install.sh
 rm /mnt/install.sh
 
+if [ "$OS" = "xenial" ]; then
+    sed -i 's#TimeoutStartSec=5min#TimeoutStartSec=10sec#g' /mnt/lib/systemd/system/networking.service
+fi
+
+cleanup
+CLEANUP_STAGE=0
 
 if [ "${VIRTINST:-false}" = "true" ]; then
     virt-install --disk "$IMAGEFILE,format=raw,cache=writeback,io=threads" --boot hd \
