@@ -305,6 +305,14 @@ keyboard-configuration	keyboard-configuration/layout	select	German
 keyboard-configuration	keyboard-configuration/altgr	select	Right Alt (AltGr)
 keyboard-configuration	keyboard-configuration/unsupported_config_layout	boolean	true
 keyboard-configuration	keyboard-configuration/unsupported_options	boolean	true
+console-setup	console-setup/fontsize-text47	select	8x16
+console-setup	console-setup/charmap47	select	UTF-8
+console-setup	console-setup/fontsize	string	8x16
+console-setup	console-setup/codesetcode	string	Lat15
+console-setup	console-setup/codeset47	select	# Latin1 and Latin5 - western Europe and Turkic languages
+console-setup	console-setup/store_defaults_in_debconf_db	boolean	true
+console-setup	console-setup/fontface47	select	VGA
+console-setup	console-setup/fontsize-fb47	select	8x16
 EOF
 
 if dpkg-query -l keyboard-configuration > /dev/null; then
