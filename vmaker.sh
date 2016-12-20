@@ -106,7 +106,9 @@ cleanup() {
     fi
 
     if [ "$CLEANUP_STAGE" -ge 1 ]; then
-        umount /mnt/
+        while ! umount /mnt/; do
+            sleep 1
+        done
     fi
 }
 
