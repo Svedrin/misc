@@ -3,6 +3,7 @@
 # kate: space-indent on; indent-width 4; replace-tabs on;
 
 # CAN bus exploration.
+# See also arduino/PoorMansCan.ino
 
 import threading
 
@@ -56,7 +57,7 @@ def clock():
         else:
             outq.put("Tock")
         bus.clock = not bus.clock
-        sleep(1)
+        sleep(0.125)
 
 
 @go_nodaemon
@@ -121,7 +122,7 @@ def cpu1():
 
 
         lastclock = bus.clock
-        sleep(0.1)
+        sleep(0.00001)
 
 
 @go_nodaemon
@@ -175,7 +176,7 @@ def cpu2():
 
 
         lastclock = bus.clock
-        sleep(0.1)
+        sleep(0.00001)
 
 
 
