@@ -134,7 +134,6 @@ if [ ! -e "$CACHEDIR/$OS.tgz" ]; then
     fi
     mkdir "$CACHEDIR/$OS"
     debootstrap --make-tarball="$CACHEDIR/$OS.tgz" \
-                --include=htop,iftop,iotop,sysstat,vim,dialog,lvm2,rsync,ssh,rsyslog,sed,openssh-server \
                 ${DEBOOTSTRAP_OPTS:-} $OS "$CACHEDIR/$OS"
 fi
 
@@ -261,44 +260,6 @@ set -u
 <<EOF debconf-set-selections
 locales	locales/locales_to_be_generated	multiselect	de_DE.UTF-8 UTF-8, en_US.UTF-8 UTF-8
 locales	locales/default_environment_locale	select	de_DE.UTF-8
-EOF
-
-# Update installed packages and install a basic set of tools
-
-apt-get update
-apt-get dist-upgrade -y
-apt-get install -y lvm2 locales
-
-locale-gen en_US.UTF-8
-locale-gen de_DE.UTF-8
-
-service rsyslog stop || /bin/true
-service udev    stop || /bin/true
-
-# root password = init123
-usermod --password '\$6\$5/wXIu6E\$P4qgpWiECnhO0TH/PwLJCSPgHX5Fl6GSCz1VOKn6LYGq6lBqW8ULKTUzusGZUfcIej5RrEI8lKgkq48n/Mm.41' root
-
-EOSCRIPT
-
-if [ "${PUPPIFY:-false}" = "true" ]; then
-    echo apt-get install -y --download-only puppet >> /mnt/install.sh
-fi
-
-
-# Prepare postinst script to be run at first boot
-
-mv /mnt/etc/rc.local  /mnt/etc/rc.local.orig
-
-<<EOSCRIPT cat > /mnt/etc/rc.local
-#!/bin/bash
-
-exec >> /var/log/sysprep.log
-exec 2>&1
-
-set -e
-set -u
-
-<<EOF debconf-set-selections
 keyboard-configuration	keyboard-configuration/xkb-keymap	select	
 keyboard-configuration	console-setup/detect	detect-keyboard	
 keyboard-configuration	keyboard-configuration/modelcode	string	pc105
@@ -335,6 +296,41 @@ if dpkg-query -l keyboard-configuration > /dev/null; then
 else
     apt-get -y install keyboard-configuration console-setup
 fi
+
+
+# Update installed packages and install a basic set of tools
+
+apt-get update
+apt-get dist-upgrade -y
+apt-get install -y lvm2 locales htop iftop iotop sysstat vim dialog rsync ssh rsyslog openssh-server
+locale-gen en_US.UTF-8
+locale-gen de_DE.UTF-8
+
+service rsyslog stop || /bin/true
+service udev    stop || /bin/true
+
+# root password = init123
+usermod --password '\$6\$5/wXIu6E\$P4qgpWiECnhO0TH/PwLJCSPgHX5Fl6GSCz1VOKn6LYGq6lBqW8ULKTUzusGZUfcIej5RrEI8lKgkq48n/Mm.41' root
+
+EOSCRIPT
+
+if [ "${PUPPIFY:-false}" = "true" ]; then
+    echo apt-get install -y --download-only puppet >> /mnt/install.sh
+fi
+
+
+# Prepare postinst script to be run at first boot
+
+mv /mnt/etc/rc.local  /mnt/etc/rc.local.orig
+
+<<EOSCRIPT cat > /mnt/etc/rc.local
+#!/bin/bash
+
+exec >> /var/log/sysprep.log
+exec 2>&1
+
+set -e
+set -u
 
 mv /etc/rc.local      /etc/rc.local.done
 mv /etc/rc.local.orig /etc/rc.local
