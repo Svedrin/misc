@@ -131,7 +131,7 @@ if [ ! -e "$CACHEDIR/$OS.tgz" ]; then
         rm -rf "$CACHEDIR/$OS"
     fi
     mkdir "$CACHEDIR/$OS"
-    debootstrap --download-only --make-tarball="$CACHEDIR/$OS.tgz" \
+    debootstrap --make-tarball="$CACHEDIR/$OS.tgz" \
                 --include=htop,iftop,iotop,sysstat,vim,dialog,lvm2,rsync,ssh,rsyslog,sed,openssh-server \
                 ${DEBOOTSTRAP_OPTS:-} $OS "$CACHEDIR/$OS"
 fi
