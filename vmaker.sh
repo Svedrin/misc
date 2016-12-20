@@ -236,6 +236,19 @@ EOF
 ln -sf /proc/mounts /mnt/etc/mtab
 
 
+<<EOF cat > /mnt/etc/default/keyboard
+# KEYBOARD CONFIGURATION FILE
+
+# Consult the keyboard(5) manual page.
+
+XKBMODEL="pc105"
+XKBLAYOUT="de"
+XKBVARIANT="nodeadkeys"
+XKBOPTIONS=""
+
+BACKSPACE="guess"
+EOF
+
 
 <<EOSCRIPT cat > /mnt/install.sh
 #!/bin/bash
