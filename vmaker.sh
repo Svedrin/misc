@@ -257,6 +257,8 @@ EOF
 set -e
 set -u
 
+apt-get update
+
 <<EOF debconf-set-selections
 locales	locales/locales_to_be_generated	multiselect	de_DE.UTF-8 UTF-8, en_US.UTF-8 UTF-8
 locales	locales/default_environment_locale	select	de_DE.UTF-8
@@ -300,7 +302,6 @@ fi
 
 # Update installed packages and install a basic set of tools
 
-apt-get update
 apt-get dist-upgrade -y
 apt-get install -y lvm2 locales htop iftop iotop sysstat vim dialog rsync ssh rsyslog openssh-server
 locale-gen en_US.UTF-8
