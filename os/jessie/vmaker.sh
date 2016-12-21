@@ -1,1 +1,2 @@
 OSVARIANT="debian8"
+NETWORK_INTERFACE="eth0"

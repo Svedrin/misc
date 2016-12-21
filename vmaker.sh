@@ -46,6 +46,7 @@ while [ -n "${1:-}" ]; do
             echo "    --virt-install     Automatically register a KVM VM"
             echo "    --puppet           Auto-Deploy and start the Puppet agent"
             echo " -o --os               OS variant [$OS]"
+            echo " -i --ipaddr           IP Address [dhcp]"
             echo " -f --imagefile        Image file"
             echo " -n --hostname         Host name for the created VM"
             exit 0
@@ -71,6 +72,11 @@ while [ -n "${1:-}" ]; do
 
         -n|--hostname)
             VMNAME="$2"
+            shift
+            ;;
+
+        -i|--ipaddr)
+            IPADDR="$2"
             shift
             ;;
 
