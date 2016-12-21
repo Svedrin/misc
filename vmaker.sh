@@ -4,16 +4,16 @@ set -e
 set -u
 
 
-if [ "$(lsb_release -is)" = "Debian" ]; then
-    OS="jessie"
-else
-    OS="xenial"
+if [ ! -e defaults.sh ]; then
+    echo "defaults.sh not found, exiting"
+    exit 3
 fi
 
-DOMAIN="local.lan"
-CACHEDIR="/var/cache/vmaker"
-BRIDGE="svdr0"
+source defaults.sh
 
+if [ -e settings.sh ]; then
+    source settings.sh
+fi
 
 
 ########################################
