@@ -322,9 +322,9 @@ mv /etc/rc.local.orig /etc/rc.local
 EOSCRIPT
 
 if [ "${PUPPIFY:-false}" = "true" ]; then
-    echo apt-get install puppet >> /mnt/etc/rc.local
-    echo puppet agent --enable  >> /mnt/etc/rc.local
-    service puppet start        >> /mnt/etc/rc.local
+    echo apt-get -y install puppet >> /mnt/etc/rc.local
+    echo puppet agent --enable     >> /mnt/etc/rc.local
+    echo service puppet start      >> /mnt/etc/rc.local
 fi
 
 chmod +x /mnt/etc/rc.local
