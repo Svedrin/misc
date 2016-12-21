@@ -198,33 +198,8 @@ cp os/$OS/sources.list /mnt/etc/apt/sources.list
 
 # Configure networking
 
-<<EOF cat > /mnt/etc/network/interfaces
-# interfaces(5) file used by ifup(8) and ifdown(8)
-# Include files from /etc/network/interfaces.d:
-source-directory /etc/network/interfaces.d
-
-# The loopback network interface
-auto lo
-iface lo inet loopback
-
-iface eth0 inet dhcp
-allow-hotplug eth0
-
-iface ens3 inet dhcp
-allow-hotplug ens3
-EOF
-
-echo $VMNAME > /mnt/etc/hostname
-
-<<EOF cat > /mnt/etc/hosts
-127.0.0.1       localhost
-127.0.1.1       $VMNAME.$DOMAIN  $VMNAME
-
-# The following lines are desirable for IPv6 capable hosts
-::1     localhost ip6-localhost ip6-loopback
-ff02::1 ip6-allnodes
-ff02::2 ip6-allrouters
-EOF
+eval "$(get_network)"
+source parts/networking.sh
 
 # Configure mounts
 
