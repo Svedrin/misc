@@ -237,6 +237,7 @@ EOF
 
 set -e
 set -u
+set -x
 
 apt-get update
 
@@ -313,6 +314,7 @@ exec 2>&1
 
 set -e
 set -u
+set -x
 
 mv /etc/rc.local      /etc/rc.local.done
 mv /etc/rc.local.orig /etc/rc.local
