@@ -82,7 +82,7 @@ while [ -n "${1:-}" ]; do
 done
 
 if [ -z "${IMAGEFILE:-}" ] || [ -z "${VMNAME:-}" ]; then
-    echo "Usage: $0 [options] -i <imagefile> -n <hostname> -- see --help"
+    echo "Usage: $0 [options] -f <imagefile> -n <hostname> -- see --help"
     exit 3
 fi
 
