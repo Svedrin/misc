@@ -365,6 +365,7 @@ CLEANUP_STAGE=0
 # See if we're building an RBD image, and if so, convert
 if [ "${RBD_MODE:-false}" = "true" ]; then
     qemu-img convert -p -O raw "$IMAGEFILE" "rbd:$RBD_POOL/$RBD_IMAGE"
+    virsh pool-refresh "$RBD_POOL"
     rm -f "$IMAGEFILE"
 fi
 
