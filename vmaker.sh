@@ -383,6 +383,8 @@ if [ "${VIRTINST:-false}" = "true" ]; then
             --boot 'kernel=/vmlinuz,initrd=/initrd.img,kernel_args="root=/dev/vmsys/root ro"' \
             -v --accelerate -n ${VMNAME} -r 4096 --arch=x86_64 --vnc --os-variant="$OSVARIANT" \
             --vcpus 2 --noautoconsole --print-xml | python parts/fix-rbd-disk-xml.py $RBD_POOL | virsh define /dev/stdin
+
+        virsh start "${VMNAME}"
     fi
 fi
 
