@@ -29,6 +29,11 @@ for tool in qemu-img guestfish guestmount debootstrap virt-install; do
     fi
 done
 
+if [ ! python -c 'import xmltodict' ]; then
+    echo "Please install python-xmltodict."
+    exit 4
+fi
+
 ########################################
 #                                      #
 #        Parse argumentés              #
@@ -361,15 +366,23 @@ CLEANUP_STAGE=0
 if [ "${RBD_MODE:-false}" = "true" ]; then
     qemu-img convert -p -O raw "$IMAGEFILE" "rbd:$RBD_POOL/$RBD_IMAGE"
     rm -f "$IMAGEFILE"
-    IMAGEFILE="rbd:$RBD_POOL/$RBD_IMAGE"
 fi
 
 
 if [ "${VIRTINST:-false}" = "true" ]; then
-    virt-install --disk "$IMAGEFILE,format=raw,cache=writeback,io=threads" --boot hd \
-        --network bridge="$NETWORK_BRIDGE" \
-        --boot 'kernel=/vmlinuz,initrd=/initrd.img,kernel_args="root=/dev/vmsys/root ro"' \
-        -v --accelerate -n ${VMNAME} -r 4096 --arch=x86_64 --vnc --os-variant="$OSVARIANT" --vcpus 2 --noautoconsole
+    if [ "${RBD_MODE:-false}" = "false" ]; then
+        virt-install --disk "$IMAGEFILE,format=raw,cache=writeback,io=threads" --boot hd \
+            --network bridge="$NETWORK_BRIDGE" \
+            --boot 'kernel=/vmlinuz,initrd=/initrd.img,kernel_args="root=/dev/vmsys/root ro"' \
+            -v --accelerate -n ${VMNAME} -r 4096 --arch=x86_64 --vnc --os-variant="$OSVARIANT" \
+            --vcpus 2 --noautoconsole
+    else
+        virt-install --disk "vol=$RBD_POOL/$RBD_IMAGE,format=raw,cache=writeback,io=threads" --boot hd \
+            --network bridge="$NETWORK_BRIDGE" \
+            --boot 'kernel=/vmlinuz,initrd=/initrd.img,kernel_args="root=/dev/vmsys/root ro"' \
+            -v --accelerate -n ${VMNAME} -r 4096 --arch=x86_64 --vnc --os-variant="$OSVARIANT" \
+            --vcpus 2 --noautoconsole --print-xml | python parts/fix-rbd-disk-xml.py $RBD_POOL | virsh define /dev/stdin
+    fi
 fi
 
 
