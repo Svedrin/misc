@@ -152,6 +152,16 @@ fi
 ########################################
 
 
+if [ "`echo $IMAGEFILE | cut -d: -f1`" = "rbd" ]; then
+    # Target is an RBD image. Since guestfish can't handle those,
+    # use a tempfile and qemu-img convert to rbd before booting
+    # the VM.
+
+    RBD_MODE="true"
+    RBD_POOL="`echo $IMAGEFILE | cut -d: -f2 | cut -d/ -f1`"
+    RBD_IMAGE="`echo $IMAGEFILE | cut -d: -f2 | cut -d/ -f2`"
+    IMAGEFILE="/tmp/$VMNAME.img"
+fi
 
 
 qemu-img create "$IMAGEFILE" 15G
@@ -339,6 +349,15 @@ fi
 
 cleanup
 CLEANUP_STAGE=0
+
+
+# See if we're building an RBD image, and if so, convert
+if [ "${RBD_MODE:-false}" = "true" ]; then
+    qemu-img convert -p -O raw "$IMAGEFILE" "rbd:$RBD_POOL/$RBD_IMAGE"
+    rm -f "$IMAGEFILE"
+    IMAGEFILE="rbd:$RBD_POOL/$RBD_IMAGE"
+fi
+
 
 if [ "${VIRTINST:-false}" = "true" ]; then
     virt-install --disk "$IMAGEFILE,format=raw,cache=writeback,io=threads" --boot hd \
