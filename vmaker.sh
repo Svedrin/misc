@@ -44,6 +44,7 @@ while [ -n "${1:-}" ]; do
             echo "Options:"
             echo " -h --help             This help text"
             echo "    --virt-install     Automatically register a KVM VM"
+            echo "    --pcmk             Automatically register the VM with pacemaker (implies --virt-install)"
             echo "    --puppet           Auto-Deploy and start the Puppet agent"
             echo " -o --os               OS variant [$OS]"
             echo " -i --ipaddr           IP Address [dhcp]"
@@ -54,6 +55,11 @@ while [ -n "${1:-}" ]; do
 
         --virt-install)
             VIRTINST=true
+            ;;
+
+        --pcmk)
+            VIRTINST=true
+            PCMK=true
             ;;
 
         --puppet)
@@ -364,5 +370,17 @@ if [ "${VIRTINST:-false}" = "true" ]; then
         --network bridge="$NETWORK_BRIDGE" \
         --boot 'kernel=/vmlinuz,initrd=/initrd.img,kernel_args="root=/dev/vmsys/root ro"' \
         -v --accelerate -n ${VMNAME} -r 4096 --arch=x86_64 --vnc --os-variant="$OSVARIANT" --vcpus 2 --noautoconsole
+fi
+
+
+if [ "${PCMK:-false}" = "true" ]; then
+    crm configure primitive "vm_${VMNAME}" VirtualDomain \
+        params config="/etc/libvirt/qemu/${VMNAME}.xml" hypervisor="qemu:///system" migration_transport=ssh force_stop=0 \
+        op start interval=0 timeout=90s \
+        op stop interval=0 timeout=300s \
+        op monitor interval=10 timeout=30s depth=0 \
+        op migrate_from interval=0 timeout=240s \
+        op migrate_to interval=0 timeout=240s \
+        meta allow-migrate=true target-role=Started
 fi
 
