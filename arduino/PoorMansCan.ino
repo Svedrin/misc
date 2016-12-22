@@ -109,7 +109,7 @@ void loop() {
     }
     else if( pmc_state == STATE_MSG ){
       bitsToGo--;
-      myValue = (source_val & (1<<bitsToGo));
+      myValue = (source_val & (1<<bitsToGo)) > 0;
       digitalWrite(sender, myValue);
       if( bitsToGo == 0 ){
         next_state = STATE_INIT;
