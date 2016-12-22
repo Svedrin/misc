@@ -56,8 +56,8 @@ int next_state = STATE_INIT;
 
 // state variables
 
-int source_val = 0;
-int message_val;
+uint16_t source_val = 0;
+uint16_t message_val;
 unsigned int message_id = 0;
 unsigned int bitsToGo = 0;
 
