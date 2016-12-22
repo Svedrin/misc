@@ -31,8 +31,17 @@ int source  = A0;
 
 int sender  = 7;
 int monitor = 8;
-int bitrate = 10;
 
+// Delay for 500µs between send/recv cycles.
+// We want to be able to transmit a single message in max 10ms. One message
+// is a zero bit + 11 bits ID + 16 bits data. That means we need a min bitrate
+// of 1+11+16 / 0.010 = 1612 b/s. So for simplicity, we'll operate at 2kbps.
+// That means one bit every 500µs, and since that time is split into two phases
+// each with their own delay(), we'll need to set half that time here.
+int microdelay = 250;
+
+int sender_pause = 2000;
+unsigned long long pause_until  = 0;
 
 #define STATE_INIT 0
 #define STATE_ID   1
@@ -55,6 +64,9 @@ void setup() {
   pinMode(monitor, INPUT);
   pmc_state = STATE_INIT;
   digitalWrite(sender, HIGH);
+  if( my_role == ROLE_SENDER ){
+    pause_until = millis() + sender_pause;
+  }
 }
 
 
@@ -65,13 +77,14 @@ void loop() {
 
   if( my_role == ROLE_SENDER ){
     if( pmc_state == STATE_INIT ){
-      // This looks like a perfect opportunity to start a new frame
-      next_state = STATE_ID;
-      Serial.println("STATE_INIT -> STATE_ID");
+      if( millis() > pause_until ){
+        // This looks like a perfect opportunity to start a new frame
+        next_state = STATE_ID;
+        Serial.println("STATE_INIT -> STATE_ID");
 
-      message_id = 42;
-      source_val = analogRead(source);
-      bitsToGo = 11;
+        message_id = 42;
+        source_val = analogRead(source);
+        bitsToGo = 11;
 
         digitalWrite(sender, LOW);
       }
@@ -96,6 +109,7 @@ void loop() {
       if( bitsToGo == 0 ){
         next_state = STATE_INIT;
         Serial.println("STATE_MSG -> STATE_INIT");
+        pause_until = millis() + sender_pause;
       }
     }
     else if( pmc_state == STATE_WAIT ){
@@ -110,7 +124,9 @@ void loop() {
 
   // READ STAGE
   busValue = digitalRead(monitor);
-  Serial.println(busValue);
+  if( pmc_state != STATE_INIT ){
+    Serial.println(busValue);
+  }
 
   if( my_role == ROLE_SENDER ){
     if( pmc_state == STATE_ID ){
@@ -128,6 +144,7 @@ void loop() {
       if( bitsToGo == 0 ){
         next_state = STATE_INIT;
         Serial.println("STATE_WAIT -> STATE_INIT");
+        pause_until = millis() + sender_pause;
       }
     }
   }
@@ -163,7 +180,8 @@ void loop() {
     }
   }
 
-  delay(500);
+  delayMicroseconds(microdelay);
+
   if( next_state != pmc_state ){
     Serial.print("State is currently ");
     Serial.print(pmc_state);
