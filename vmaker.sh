@@ -376,16 +376,16 @@ if [ "${VIRTINST:-false}" = "true" ]; then
             --network bridge="$NETWORK_BRIDGE" \
             --boot 'kernel=/vmlinuz,initrd=/initrd.img,kernel_args="root=/dev/vmsys/root ro"' \
             -v --accelerate -n ${VMNAME} -r 4096 --arch=x86_64 --vnc --os-variant="$OSVARIANT" \
-            --vcpus 2 --noautoconsole
+            --vcpus 2 --noautoconsole --print-xml | virsh define /dev/stdin
     else
         virt-install --disk "vol=$RBD_POOL/$RBD_IMAGE,format=raw,cache=writeback,io=threads" --boot hd \
             --network bridge="$NETWORK_BRIDGE" \
             --boot 'kernel=/vmlinuz,initrd=/initrd.img,kernel_args="root=/dev/vmsys/root ro"' \
             -v --accelerate -n ${VMNAME} -r 4096 --arch=x86_64 --vnc --os-variant="$OSVARIANT" \
             --vcpus 2 --noautoconsole --print-xml | python parts/fix-rbd-disk-xml.py $RBD_POOL | virsh define /dev/stdin
-
-        virsh start "${VMNAME}"
     fi
+
+    virsh start "${VMNAME}"
 fi
 
 
