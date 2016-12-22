@@ -85,7 +85,6 @@ void loop() {
       if( millis() > pause_until ){
         // This looks like a perfect opportunity to start a new frame
         next_state = STATE_ID;
-        Serial.println("STATE_INIT -> STATE_ID");
 
         message_id = 42;
         source_val = analogRead(source);
@@ -102,7 +101,6 @@ void loop() {
       myValue = (message_id & (1<<bitsToGo)) > 0;
       digitalWrite(sender, myValue);
       if( bitsToGo == 0 ){
-        Serial.println("STATE_ID -> STATE_MSG");
         next_state = STATE_MSG;
         bitsToGo = 16;
       }
@@ -113,7 +111,7 @@ void loop() {
       digitalWrite(sender, myValue);
       if( bitsToGo == 0 ){
         next_state = STATE_INIT;
-        Serial.println("STATE_MSG -> STATE_INIT");
+        Serial.println(".");
         pause_until = millis() + sender_pause;
       }
     }
@@ -129,9 +127,6 @@ void loop() {
 
   // READ STAGE
   busValue = digitalRead(monitor);
-  if( pmc_state != STATE_INIT ){
-    Serial.println(busValue);
-  }
 
   if( my_role == ROLE_SENDER ){
     if( pmc_state == STATE_ID ){
@@ -139,7 +134,6 @@ void loop() {
       if( myValue == HIGH && busValue == LOW ){
         // Someone else killed our bit -> Wait until next frame
         next_state = STATE_WAIT;
-        Serial.println("STATE_ID -> STATE_WAIT");
         bitsToGo += 16;
       }
     }
@@ -148,7 +142,6 @@ void loop() {
       bitsToGo--;
       if( bitsToGo == 0 ){
         next_state = STATE_INIT;
-        Serial.println("STATE_WAIT -> STATE_INIT");
         pause_until = millis() + sender_pause;
       }
     }
@@ -160,7 +153,6 @@ void loop() {
         next_state = STATE_ID;
         message_id = 0;
         bitsToGo = 11;
-        Serial.println("STATE_INIT -> STATE_ID");
       }
     }
     else if( pmc_state == STATE_ID ){
@@ -170,8 +162,6 @@ void loop() {
         next_state = STATE_MSG;
         bitsToGo = 16;
         message_val = 0;
-        Serial.println("STATE_ID -> STATE_MSG");
-        Serial.println(message_id);
       }
     }
     else if( pmc_state == STATE_MSG ){
@@ -179,7 +169,8 @@ void loop() {
       message_val = (message_val << 1) | busValue;
       if( bitsToGo == 0 ){
         next_state = STATE_INIT;
-        Serial.println("STATE_MSG -> STATE_INIT");
+        Serial.print(message_id);
+        Serial.print(" = ");
         Serial.println(message_val);
       }
     }
@@ -187,13 +178,6 @@ void loop() {
 
   delayMicroseconds(microdelay);
 
-  if( next_state != pmc_state ){
-    Serial.print("State is currently ");
-    Serial.print(pmc_state);
-    Serial.print(", setting to ");
-    Serial.print(next_state);
-    Serial.println();
-  }
   pmc_state = next_state;
 }
 
