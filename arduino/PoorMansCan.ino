@@ -11,6 +11,11 @@
       the bus state when writing a "1".
     * Connect the bus to VCC via a 10k pull-up resistor.
 
+  Noteworthy Versions:
+
+    * Initial Version (2016-12-21)
+      https://bitbucket.org/Svedrin/misc/src/83581ca4/arduino/PoorMansCan.ino
+
  */
 
 
@@ -68,7 +73,11 @@ void loop() {
       source_val = analogRead(source);
       bitsToGo = 11;
 
-      digitalWrite(sender, LOW);
+        digitalWrite(sender, LOW);
+      }
+      else{
+        digitalWrite(sender, HIGH);
+      }
     }
     else if( pmc_state == STATE_ID ){
       bitsToGo--;
@@ -97,7 +106,7 @@ void loop() {
     digitalWrite(sender, HIGH);
   }
 
-  delay(500);
+  delayMicroseconds(microdelay);
 
   // READ STAGE
   busValue = digitalRead(monitor);
