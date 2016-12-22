@@ -11,6 +11,8 @@
       the bus state when writing a "1".
     * Connect the bus to VCC via a 10k pull-up resistor.
 
+  Also, hardwire port 4 to VCC for the sender and GND for the receiver.
+
   Noteworthy Versions:
 
     * Initial Version (2016-12-21)
@@ -21,14 +23,15 @@
 
 // Config variables
 
-#define ROLE_SENDER 0
-#define ROLE_RECVER 1
+#define ROLE_RECVER 0
+#define ROLE_SENDER 1
 
-int my_role = ROLE_RECVER;
+int my_role;
 
 // when I'm a sender, send this pin's value as message
 int source  = A0;
 
+int rolepin = 4;
 int sender  = 7;
 int monitor = 8;
 
@@ -62,8 +65,10 @@ void setup() {
   Serial.begin(9600);
   pinMode(sender,  OUTPUT);
   pinMode(monitor, INPUT);
+  pinMode(rolepin, INPUT);
   pmc_state = STATE_INIT;
   digitalWrite(sender, HIGH);
+  my_role = digitalRead(rolepin);
   if( my_role == ROLE_SENDER ){
     pause_until = millis() + sender_pause;
   }
