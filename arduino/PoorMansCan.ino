@@ -191,6 +191,7 @@ void loop() {
         crc_verify_buf = 0;
         message_id = 0;
         bitsToGo = CAN_LEN_ID;
+        digitalWrite(crcled, HIGH);
       }
     }
     else if( pmc_state == STATE_ID ){
@@ -220,12 +221,6 @@ void loop() {
         // so, normalize the most significant bit to 1
         crc_buf |= (1 << CAN_LEN_CRC);
         crc_verify_buf |= (1 << CAN_LEN_CRC);
-      }
-    }
-    else if( pmc_state == STATE_EOFRM ){
-      bitsToGo--;
-      if( bitsToGo == 0 ){
-        next_state = STATE_INIT;
         if( crc_buf == crc_verify_buf ){
           // CRC valid, LED off, need HIGH
           digitalWrite(crcled, HIGH);
@@ -233,6 +228,12 @@ void loop() {
         else{
           digitalWrite(crcled, LOW);
         }
+      }
+    }
+    else if( pmc_state == STATE_EOFRM ){
+      bitsToGo--;
+      if( bitsToGo == 0 ){
+        next_state = STATE_INIT;
       }
     }
 
