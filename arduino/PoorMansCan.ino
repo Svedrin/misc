@@ -227,17 +227,14 @@ void loop() {
       bitsToGo--;
       if( bitsToGo == 0 ){
         next_state = STATE_INIT;
-        Serial.print(message_id);
-        Serial.print(" = ");
-        Serial.print(message_val);
-        Serial.print(" # ");
-        Serial.print(crc_buf);
-        Serial.print(" : ");
-        Serial.print(crc_verify_buf);
-        if( crc_buf != crc_verify_buf ){
-          Serial.print(" (invalid)");
+        if( crc_buf == crc_verify_buf ){
+          Serial.print(message_id);
+          Serial.print(" = ");
+          Serial.println(message_val);
         }
-        Serial.println("");
+        else{
+          Serial.println("!!");
+        }
       }
     }
 
