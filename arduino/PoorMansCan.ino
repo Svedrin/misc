@@ -34,6 +34,7 @@ int source  = A0;
 int rolepin = 4;
 int sender  = 7;
 int monitor = 8;
+int mirror  = 9;
 
 // Delay for 500µs between send/recv cycles.
 // We want to be able to transmit a single message in max 10ms. One message
@@ -65,6 +66,7 @@ void setup() {
   Serial.begin(9600);
   pinMode(sender,  OUTPUT);
   pinMode(monitor, INPUT);
+  pinMode(mirror,  OUTPUT);
   pinMode(rolepin, INPUT);
   pmc_state = STATE_INIT;
   digitalWrite(sender, HIGH);
@@ -127,6 +129,7 @@ void loop() {
 
   // READ STAGE
   busValue = digitalRead(monitor);
+  digitalWrite(mirror, busValue);
 
   if( my_role == ROLE_SENDER ){
     if( pmc_state == STATE_ID ){
