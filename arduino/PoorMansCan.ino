@@ -46,7 +46,8 @@ int crcled  = 10;
 // each with their own delay(), we'll need to set half that time here.
 int microdelay = 250;
 
-int sender_pause = 500;
+// int sender_pause = 500;
+int sender_pause = 543;
 unsigned long long pause_until  = 0;
 
 #define CAN_LEN_ID    11
