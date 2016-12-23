@@ -98,16 +98,15 @@ void loop() {
         source_val = analogRead(source);
         bitsToGo = CAN_LEN_ID;
 
-        digitalWrite(sender, LOW);
+        myValue = LOW;
       }
       else{
-        digitalWrite(sender, HIGH);
+        myValue = HIGH;
       }
     }
     else if( pmc_state == STATE_ID ){
       bitsToGo--;
       myValue = (message_id & (1<<bitsToGo)) > 0;
-      digitalWrite(sender, myValue);
       if( bitsToGo == 0 ){
         next_state = STATE_MSG;
         bitsToGo = CAN_LEN_MSG;
@@ -116,7 +115,6 @@ void loop() {
     else if( pmc_state == STATE_MSG ){
       bitsToGo--;
       myValue = (source_val & (1<<bitsToGo)) > 0;
-      digitalWrite(sender, myValue);
       if( bitsToGo == 0 ){
         next_state = STATE_EOFRM;
         bitsToGo = CAN_LEN_EOFRM;
@@ -124,10 +122,10 @@ void loop() {
       }
     }
     else if( pmc_state == STATE_WAIT ){
-      digitalWrite(sender, HIGH);
+      myValue = HIGH;
     }
     else if( pmc_state == STATE_EOFRM ){
-      digitalWrite(sender, HIGH);
+      myValue = HIGH;
       bitsToGo--;
       if( bitsToGo == 0 ){
         next_state = STATE_INIT;
@@ -137,8 +135,10 @@ void loop() {
     }
   }
   else{
-    digitalWrite(sender, HIGH);
+    myValue = HIGH;
   }
+
+  digitalWrite(sender, myValue);
 
   delayMicroseconds(microdelay);
 
