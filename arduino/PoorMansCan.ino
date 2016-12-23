@@ -180,7 +180,7 @@ void loop() {
       if( myValue == HIGH && busValue == LOW ){
         // Someone else killed our bit -> Wait until next frame
         next_state = STATE_WAIT;
-        bitsToGo += CAN_LEN_MSG;
+        bitsToGo += CAN_LEN_MSG + CAN_LEN_CRC + CAN_LEN_EOFRM;
       }
     }
     else if( pmc_state == STATE_WAIT ){
