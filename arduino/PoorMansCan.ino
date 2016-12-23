@@ -36,6 +36,7 @@ int rolepin = 4;
 int sender  = 7;
 int monitor = 8;
 int mirror  = 9;
+int crcled  = 10;
 
 // Delay for 500µs between send/recv cycles.
 // We want to be able to transmit a single message in max 10ms. One message
@@ -77,11 +78,11 @@ uint16_t crc_buf;
 uint16_t crc_verify_buf;
 
 void setup() {
-  Serial.begin(9600);
   pinMode(sender,  OUTPUT);
   pinMode(monitor, INPUT);
   pinMode(mirror,  OUTPUT);
   pinMode(rolepin, INPUT);
+  pinMode(crcled,  OUTPUT);
   pmc_state = STATE_INIT;
   digitalWrite(sender, HIGH);
   my_role = digitalRead(rolepin);
@@ -140,8 +141,6 @@ void loop() {
       bitsToGo--;
       if( bitsToGo == 0 ){
         next_state = STATE_INIT;
-        Serial.print(". ");
-        Serial.println(crc_buf);
         pause_until = millis() + sender_pause;
       }
     }
@@ -228,12 +227,11 @@ void loop() {
       if( bitsToGo == 0 ){
         next_state = STATE_INIT;
         if( crc_buf == crc_verify_buf ){
-          Serial.print(message_id);
-          Serial.print(" = ");
-          Serial.println(message_val);
+          // CRC valid, LED off, need HIGH
+          digitalWrite(crcled, HIGH);
         }
         else{
-          Serial.println("!!");
+          digitalWrite(crcled, LOW);
         }
       }
     }
