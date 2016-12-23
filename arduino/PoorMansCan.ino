@@ -16,6 +16,9 @@
 
   Noteworthy Versions:
 
+    * Added CRC and End-of-Frame (2016-12-23)
+      https://bitbucket.org/Svedrin/misc/src/8c4a29b5/arduino/PoorMansCan.ino
+
     * Initial Version (2016-12-21)
       https://bitbucket.org/Svedrin/misc/src/83581ca4/arduino/PoorMansCan.ino
 
