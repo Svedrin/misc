@@ -168,6 +168,11 @@ if [ "`echo $IMAGEFILE | cut -d: -f1`" = "rbd" ]; then
     # use a tempfile and qemu-img convert to rbd before booting
     # the VM.
 
+    if qemu-img info "$IMAGEFILE" &> /dev/null; then
+        echo "Image already exists"
+        exit 1
+    fi
+
     RBD_MODE="true"
     RBD_POOL="`echo $IMAGEFILE | cut -d: -f2 | cut -d/ -f1`"
     RBD_IMAGE="`echo $IMAGEFILE | cut -d: -f2 | cut -d/ -f2`"
