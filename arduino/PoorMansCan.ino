@@ -1,4 +1,5 @@
-/*
+/* kate: space-indent on; indent-width 2; replace-tabs on; hl c++
+
   Poor Man's CAN Bus
   Uses a single wire to build a multi-master realtime bus that operates
   pretty much in the same way as the CAN bus does.
@@ -47,10 +48,15 @@ int microdelay = 250;
 int sender_pause = 2000;
 unsigned long long pause_until  = 0;
 
+#define CAN_LEN_ID    11
+#define CAN_LEN_MSG   16
+#define CAN_LEN_EOFRM  7
+
 #define STATE_INIT 0
 #define STATE_ID   1
 #define STATE_MSG  2
 #define STATE_WAIT 3
+#define STATE_EOFRM 4
 int pmc_state = STATE_INIT;
 int next_state = STATE_INIT;
 
@@ -90,7 +96,7 @@ void loop() {
 
         message_id = 42;
         source_val = analogRead(source);
-        bitsToGo = 11;
+        bitsToGo = CAN_LEN_ID;
 
         digitalWrite(sender, LOW);
       }
@@ -104,7 +110,7 @@ void loop() {
       digitalWrite(sender, myValue);
       if( bitsToGo == 0 ){
         next_state = STATE_MSG;
-        bitsToGo = 16;
+        bitsToGo = CAN_LEN_MSG;
       }
     }
     else if( pmc_state == STATE_MSG ){
@@ -112,13 +118,22 @@ void loop() {
       myValue = (source_val & (1<<bitsToGo)) > 0;
       digitalWrite(sender, myValue);
       if( bitsToGo == 0 ){
-        next_state = STATE_INIT;
+        next_state = STATE_EOFRM;
+        bitsToGo = CAN_LEN_EOFRM;
         Serial.println(".");
-        pause_until = millis() + sender_pause;
       }
     }
     else if( pmc_state == STATE_WAIT ){
       digitalWrite(sender, HIGH);
+    }
+    else if( pmc_state == STATE_EOFRM ){
+      digitalWrite(sender, HIGH);
+      bitsToGo--;
+      if( bitsToGo == 0 ){
+        next_state = STATE_INIT;
+        Serial.println(".");
+        pause_until = millis() + sender_pause;
+      }
     }
   }
   else{
@@ -137,7 +152,7 @@ void loop() {
       if( myValue == HIGH && busValue == LOW ){
         // Someone else killed our bit -> Wait until next frame
         next_state = STATE_WAIT;
-        bitsToGo += 16;
+        bitsToGo += CAN_LEN_MSG;
       }
     }
     else if( pmc_state == STATE_WAIT ){
@@ -155,7 +170,7 @@ void loop() {
         // Someone announced they're gonna send
         next_state = STATE_ID;
         message_id = 0;
-        bitsToGo = 11;
+        bitsToGo = CAN_LEN_ID;
       }
     }
     else if( pmc_state == STATE_ID ){
@@ -163,13 +178,20 @@ void loop() {
       message_id = (message_id << 1) | busValue;
       if( bitsToGo == 0 ){
         next_state = STATE_MSG;
-        bitsToGo = 16;
+        bitsToGo = CAN_LEN_MSG;
         message_val = 0;
       }
     }
     else if( pmc_state == STATE_MSG ){
       bitsToGo--;
       message_val = (message_val << 1) | busValue;
+      if( bitsToGo == 0 ){
+        bitsToGo = CAN_LEN_EOFRM;
+        next_state = STATE_EOFRM;
+      }
+    }
+    else if( pmc_state == STATE_EOFRM ){
+      bitsToGo--;
       if( bitsToGo == 0 ){
         next_state = STATE_INIT;
         Serial.print(message_id);
@@ -183,6 +205,3 @@ void loop() {
 
   pmc_state = next_state;
 }
-
-
-
