@@ -29,7 +29,7 @@ for tool in qemu-img guestfish guestmount debootstrap virt-install; do
     fi
 done
 
-if [ ! python -c 'import xmltodict' ]; then
+if ! python -c 'import xmltodict'; then
     echo "Please install python-xmltodict."
     exit 4
 fi
