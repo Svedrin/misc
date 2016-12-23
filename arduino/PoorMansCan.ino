@@ -50,13 +50,18 @@ unsigned long long pause_until  = 0;
 
 #define CAN_LEN_ID    11
 #define CAN_LEN_MSG   16
+#define CAN_LEN_CRC   15
 #define CAN_LEN_EOFRM  7
+
+// See http://www.mikrocontroller.net/articles/CAN_CRC_Berechnung
+#define CAN_CRC_MASK 0xC599
 
 #define STATE_INIT 0
 #define STATE_ID   1
 #define STATE_MSG  2
 #define STATE_WAIT 3
-#define STATE_EOFRM 4
+#define STATE_CRC   4
+#define STATE_EOFRM 5
 int pmc_state = STATE_INIT;
 int next_state = STATE_INIT;
 
@@ -68,6 +73,9 @@ uint16_t message_val;
 unsigned int message_id = 0;
 unsigned int bitsToGo = 0;
 
+uint16_t crc_buf;
+uint16_t crc_verify_buf;
+
 void setup() {
   Serial.begin(9600);
   pinMode(sender,  OUTPUT);
@@ -75,6 +83,7 @@ void setup() {
   pinMode(mirror,  OUTPUT);
   pinMode(rolepin, INPUT);
   pmc_state = STATE_INIT;
+  crc_buf = 0;
   digitalWrite(sender, HIGH);
   my_role = digitalRead(rolepin);
   if( my_role == ROLE_SENDER ){
@@ -94,6 +103,7 @@ void loop() {
         // This looks like a perfect opportunity to start a new frame
         next_state = STATE_ID;
 
+        crc_buf = 0;
         message_id = 42;
         source_val = analogRead(source);
         bitsToGo = CAN_LEN_ID;
@@ -116,21 +126,39 @@ void loop() {
       bitsToGo--;
       myValue = (source_val & (1<<bitsToGo)) > 0;
       if( bitsToGo == 0 ){
-        next_state = STATE_EOFRM;
-        bitsToGo = CAN_LEN_EOFRM;
-        Serial.println(".");
+        next_state = STATE_CRC;
+        bitsToGo = CAN_LEN_CRC;
       }
     }
     else if( pmc_state == STATE_WAIT ){
       myValue = HIGH;
+    }
+    else if( pmc_state == STATE_CRC ){
+      bitsToGo--;
+      myValue = (crc_buf & (1<<bitsToGo)) > 0;
+      if( bitsToGo == 0 ){
+        next_state = STATE_EOFRM;
+        bitsToGo = CAN_LEN_EOFRM;
+      }
     }
     else if( pmc_state == STATE_EOFRM ){
       myValue = HIGH;
       bitsToGo--;
       if( bitsToGo == 0 ){
         next_state = STATE_INIT;
-        Serial.println(".");
+        Serial.print(". ");
+        Serial.println(crc_buf);
         pause_until = millis() + sender_pause;
+      }
+    }
+
+    // calculate CRC checksum while sending
+    if( pmc_state == STATE_ID || pmc_state == STATE_MSG ){
+      if( ((crc_buf >> CAN_LEN_CRC) & 1) != myValue ){
+        crc_buf = (crc_buf << 1) ^ CAN_CRC_MASK;
+      }
+      else{
+        crc_buf = (crc_buf << 1);
       }
     }
   }
@@ -169,6 +197,8 @@ void loop() {
       if( busValue == LOW ){
         // Someone announced they're gonna send
         next_state = STATE_ID;
+        crc_buf = 0;
+        crc_verify_buf = 0;
         message_id = 0;
         bitsToGo = CAN_LEN_ID;
       }
@@ -186,8 +216,20 @@ void loop() {
       bitsToGo--;
       message_val = (message_val << 1) | busValue;
       if( bitsToGo == 0 ){
+        bitsToGo = CAN_LEN_CRC;
+        next_state = STATE_CRC;
+      }
+    }
+    else if( pmc_state == STATE_CRC ){
+      bitsToGo--;
+      crc_verify_buf = (crc_verify_buf << 1) | busValue;
+      if( bitsToGo == 0 ){
         bitsToGo = CAN_LEN_EOFRM;
         next_state = STATE_EOFRM;
+        // 16th bit is not sent, but may be set to 1 by the algo
+        // so, normalize the most significant bit to 1
+        crc_buf |= (1 << CAN_LEN_CRC);
+        crc_verify_buf |= (1 << CAN_LEN_CRC);
       }
     }
     else if( pmc_state == STATE_EOFRM ){
@@ -196,7 +238,25 @@ void loop() {
         next_state = STATE_INIT;
         Serial.print(message_id);
         Serial.print(" = ");
-        Serial.println(message_val);
+        Serial.print(message_val);
+        Serial.print(" # ");
+        Serial.print(crc_buf);
+        Serial.print(" : ");
+        Serial.print(crc_verify_buf);
+        if( crc_buf != crc_verify_buf ){
+          Serial.print(" (invalid)");
+        }
+        Serial.println("");
+      }
+    }
+
+    // calculate CRC checksum while recving
+    if( pmc_state == STATE_ID || pmc_state == STATE_MSG ){
+      if( ((crc_buf >> CAN_LEN_CRC) & 1) != busValue ){
+        crc_buf = (crc_buf << 1) ^ CAN_CRC_MASK;
+      }
+      else{
+        crc_buf = (crc_buf << 1);
       }
     }
   }
