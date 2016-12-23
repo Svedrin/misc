@@ -83,7 +83,6 @@ void setup() {
   pinMode(mirror,  OUTPUT);
   pinMode(rolepin, INPUT);
   pmc_state = STATE_INIT;
-  crc_buf = 0;
   digitalWrite(sender, HIGH);
   my_role = digitalRead(rolepin);
   if( my_role == ROLE_SENDER ){
@@ -97,6 +96,8 @@ void loop() {
 
   // WRITE STAGE
 
+  myValue = HIGH;
+
   if( my_role == ROLE_SENDER ){
     if( pmc_state == STATE_INIT ){
       if( millis() > pause_until ){
@@ -109,9 +110,6 @@ void loop() {
         bitsToGo = CAN_LEN_ID;
 
         myValue = LOW;
-      }
-      else{
-        myValue = HIGH;
       }
     }
     else if( pmc_state == STATE_ID ){
@@ -130,9 +128,6 @@ void loop() {
         bitsToGo = CAN_LEN_CRC;
       }
     }
-    else if( pmc_state == STATE_WAIT ){
-      myValue = HIGH;
-    }
     else if( pmc_state == STATE_CRC ){
       bitsToGo--;
       myValue = (crc_buf & (1<<bitsToGo)) > 0;
@@ -142,7 +137,6 @@ void loop() {
       }
     }
     else if( pmc_state == STATE_EOFRM ){
-      myValue = HIGH;
       bitsToGo--;
       if( bitsToGo == 0 ){
         next_state = STATE_INIT;
@@ -161,9 +155,6 @@ void loop() {
         crc_buf = (crc_buf << 1);
       }
     }
-  }
-  else{
-    myValue = HIGH;
   }
 
   digitalWrite(sender, myValue);
