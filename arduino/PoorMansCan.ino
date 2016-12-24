@@ -25,7 +25,6 @@
  */
 
 
-// Config variables
 
 #define ROLE_RECVER 0
 #define ROLE_SENDER 1
@@ -33,13 +32,13 @@
 int my_role;
 
 // when I'm a sender, send this pin's value as message
-int source  = A0;
+#define PIN_SOURCE  A0
 
-int rolepin = 4;
-int sender  = 7;
-int monitor = 8;
-int mirror  = 9;
-int crcled  = 10;
+#define PIN_ROLE     4
+#define PIN_SENDER   7
+#define PIN_MONITOR  8
+#define PIN_MIRROR   9
+#define PIN_CRCLED  10
 
 // Delay for 500µs between send/recv cycles.
 // We want to be able to transmit a single message in max 10ms. One message
@@ -47,7 +46,7 @@ int crcled  = 10;
 // of 1+11+16 / 0.010 = 1612 b/s. So for simplicity, we'll operate at 2kbps.
 // That means one bit every 500µs, and since that time is split into two phases
 // each with their own delay(), we'll need to set half that time here.
-int microdelay = 250;
+int phase_delay = 250;
 
 int sender_pause = 100;
 unsigned long long pause_until  = 0;
@@ -57,7 +56,6 @@ unsigned long long pause_until  = 0;
 #define CAN_LEN_CRC   15
 #define CAN_LEN_EOFRM  7
 
-// See http://www.mikrocontroller.net/articles/CAN_CRC_Berechnung
 #define CAN_CRC_MASK 0xC599
 
 #define STATE_INIT 0
@@ -66,29 +64,30 @@ unsigned long long pause_until  = 0;
 #define STATE_WAIT 3
 #define STATE_CRC   4
 #define STATE_EOFRM 5
-int pmc_state = STATE_INIT;
+
+int pmc_state  = STATE_INIT;
 int next_state = STATE_INIT;
 
-
-// state variables
-
-uint16_t source_val = 0;
+uint16_t source_val;
+uint16_t message_id;
 uint16_t message_val;
-unsigned int message_id = 0;
-unsigned int bitsToGo = 0;
+
+unsigned int bits_to_go = 0;
 
 uint16_t crc_buf;
 uint16_t crc_verify_buf;
 
+
 void setup() {
-  pinMode(sender,  OUTPUT);
-  pinMode(monitor, INPUT);
-  pinMode(mirror,  OUTPUT);
-  pinMode(rolepin, INPUT);
-  pinMode(crcled,  OUTPUT);
-  pmc_state = STATE_INIT;
-  digitalWrite(sender, HIGH);
-  my_role = digitalRead(rolepin);
+  pinMode(PIN_ROLE,    INPUT);
+  pinMode(PIN_MONITOR, INPUT);
+  pinMode(PIN_SENDER,  OUTPUT);
+  pinMode(PIN_MIRROR,  OUTPUT);
+  pinMode(PIN_CRCLED,  OUTPUT);
+
+  digitalWrite(PIN_SENDER, HIGH);
+
+  my_role = digitalRead(PIN_ROLE);
   if( my_role == ROLE_SENDER ){
     pause_until = millis() + sender_pause;
   }
@@ -96,11 +95,11 @@ void setup() {
 
 
 void loop() {
-  int myValue, busValue;
+  int my_value, bus_value;
 
   // WRITE STAGE
 
-  myValue = HIGH;
+  my_value = HIGH;
 
   if( my_role == ROLE_SENDER ){
     if( pmc_state == STATE_INIT ){
@@ -110,39 +109,39 @@ void loop() {
 
         crc_buf = 0;
         message_id = 42;
-        source_val = analogRead(source);
-        bitsToGo = CAN_LEN_ID;
+        source_val = analogRead(PIN_SOURCE);
+        bits_to_go = CAN_LEN_ID;
 
-        myValue = LOW;
+        my_value = LOW;
       }
     }
     else if( pmc_state == STATE_ID ){
-      bitsToGo--;
-      myValue = (message_id & (1<<bitsToGo)) > 0;
-      if( bitsToGo == 0 ){
+      bits_to_go--;
+      my_value = (message_id & (1<<bits_to_go)) > 0;
+      if( bits_to_go == 0 ){
         next_state = STATE_MSG;
-        bitsToGo = CAN_LEN_MSG;
+        bits_to_go = CAN_LEN_MSG;
       }
     }
     else if( pmc_state == STATE_MSG ){
-      bitsToGo--;
-      myValue = (source_val & (1<<bitsToGo)) > 0;
-      if( bitsToGo == 0 ){
+      bits_to_go--;
+      my_value = (source_val & (1<<bits_to_go)) > 0;
+      if( bits_to_go == 0 ){
         next_state = STATE_CRC;
-        bitsToGo = CAN_LEN_CRC;
+        bits_to_go = CAN_LEN_CRC;
       }
     }
     else if( pmc_state == STATE_CRC ){
-      bitsToGo--;
-      myValue = (crc_buf & (1<<bitsToGo)) > 0;
-      if( bitsToGo == 0 ){
+      bits_to_go--;
+      my_value = (crc_buf & (1<<bits_to_go)) > 0;
+      if( bits_to_go == 0 ){
         next_state = STATE_EOFRM;
-        bitsToGo = CAN_LEN_EOFRM;
+        bits_to_go = CAN_LEN_EOFRM;
       }
     }
     else if( pmc_state == STATE_EOFRM ){
-      bitsToGo--;
-      if( bitsToGo == 0 ){
+      bits_to_go--;
+      if( bits_to_go == 0 ){
         next_state = STATE_INIT;
         pause_until = millis() + sender_pause;
       }
@@ -150,7 +149,7 @@ void loop() {
 
     // calculate CRC checksum while sending
     if( pmc_state == STATE_ID || pmc_state == STATE_MSG ){
-      if( ((crc_buf >> CAN_LEN_CRC) & 1) != myValue ){
+      if( ((crc_buf >> CAN_LEN_CRC) & 1) != my_value ){
         crc_buf = (crc_buf << 1) ^ CAN_CRC_MASK;
       }
       else{
@@ -159,29 +158,29 @@ void loop() {
     }
   }
 
-  digitalWrite(sender, myValue);
+  digitalWrite(PIN_SENDER, my_value);
 
   if( pmc_state != STATE_INIT ){
-    delayMicroseconds(microdelay);
+    delayMicroseconds(phase_delay);
   }
 
   // READ STAGE
-  busValue = digitalRead(monitor);
-  digitalWrite(mirror, busValue);
+  bus_value = digitalRead(PIN_MONITOR);
+  digitalWrite(PIN_MIRROR, bus_value);
 
   if( my_role == ROLE_SENDER ){
     if( pmc_state == STATE_ID ){
       // See if we have a recessive bit which was killed
-      if( myValue == HIGH && busValue == LOW ){
+      if( my_value == HIGH && bus_value == LOW ){
         // Someone else killed our bit -> Wait until next frame
         next_state = STATE_WAIT;
-        bitsToGo += CAN_LEN_MSG + CAN_LEN_CRC + CAN_LEN_EOFRM;
+        bits_to_go += CAN_LEN_MSG + CAN_LEN_CRC + CAN_LEN_EOFRM;
       }
     }
     else if( pmc_state == STATE_WAIT ){
       // Can only happen to the sender
-      bitsToGo--;
-      if( bitsToGo == 0 ){
+      bits_to_go--;
+      if( bits_to_go == 0 ){
         next_state = STATE_INIT;
         pause_until = millis() + sender_pause;
       }
@@ -189,38 +188,41 @@ void loop() {
   }
   else if( my_role == ROLE_RECVER ){
     if( pmc_state == STATE_INIT ){
-      if( busValue == LOW ){
+      if( bus_value == LOW ){
         // Someone announced they're gonna send
         next_state = STATE_ID;
         crc_buf = 0;
         crc_verify_buf = 0;
         message_id = 0;
-        bitsToGo = CAN_LEN_ID;
-        digitalWrite(crcled, HIGH);
+        bits_to_go = CAN_LEN_ID;
+        // Turn off the LED while recving. this way, it can share
+        // a resistor with an LED attached to PIN_MIRROR. (I don't
+        // have room for a second R on my breadboard. no shit.)
+        digitalWrite(PIN_CRCLED, HIGH);
       }
     }
     else if( pmc_state == STATE_ID ){
-      bitsToGo--;
-      message_id = (message_id << 1) | busValue;
-      if( bitsToGo == 0 ){
+      bits_to_go--;
+      message_id = (message_id << 1) | bus_value;
+      if( bits_to_go == 0 ){
         next_state = STATE_MSG;
-        bitsToGo = CAN_LEN_MSG;
+        bits_to_go = CAN_LEN_MSG;
         message_val = 0;
       }
     }
     else if( pmc_state == STATE_MSG ){
-      bitsToGo--;
-      message_val = (message_val << 1) | busValue;
-      if( bitsToGo == 0 ){
-        bitsToGo = CAN_LEN_CRC;
+      bits_to_go--;
+      message_val = (message_val << 1) | bus_value;
+      if( bits_to_go == 0 ){
+        bits_to_go = CAN_LEN_CRC;
         next_state = STATE_CRC;
       }
     }
     else if( pmc_state == STATE_CRC ){
-      bitsToGo--;
-      crc_verify_buf = (crc_verify_buf << 1) | busValue;
-      if( bitsToGo == 0 ){
-        bitsToGo = CAN_LEN_EOFRM;
+      bits_to_go--;
+      crc_verify_buf = (crc_verify_buf << 1) | bus_value;
+      if( bits_to_go == 0 ){
+        bits_to_go = CAN_LEN_EOFRM;
         next_state = STATE_EOFRM;
         // 16th bit is not sent, but may be set to 1 by the algo
         // so, normalize the most significant bit to 1
@@ -228,23 +230,23 @@ void loop() {
         crc_verify_buf |= (1 << CAN_LEN_CRC);
         if( crc_buf == crc_verify_buf ){
           // CRC valid, LED off, need HIGH
-          digitalWrite(crcled, HIGH);
+          digitalWrite(PIN_CRCLED, HIGH);
         }
         else{
-          digitalWrite(crcled, LOW);
+          digitalWrite(PIN_CRCLED, LOW);
         }
       }
     }
     else if( pmc_state == STATE_EOFRM ){
-      bitsToGo--;
-      if( bitsToGo == 0 ){
+      bits_to_go--;
+      if( bits_to_go == 0 ){
         next_state = STATE_INIT;
       }
     }
 
     // calculate CRC checksum while recving
     if( pmc_state == STATE_ID || pmc_state == STATE_MSG ){
-      if( ((crc_buf >> CAN_LEN_CRC) & 1) != busValue ){
+      if( ((crc_buf >> CAN_LEN_CRC) & 1) != bus_value ){
         crc_buf = (crc_buf << 1) ^ CAN_CRC_MASK;
       }
       else{
@@ -253,7 +255,7 @@ void loop() {
     }
   }
 
-  delayMicroseconds(microdelay);
+  delayMicroseconds(phase_delay);
 
   pmc_state = next_state;
 }
