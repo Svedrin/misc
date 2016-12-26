@@ -26,7 +26,7 @@ unsigned int level = 0;
 
 int i2caddr = (0x90 >> 1);
 
-unsigned long rshunt = 10;  // Ohms of Shunt resistor
+unsigned long rshunt = 1;  // Ohms of Shunt resistor
 
 // Voltage measurements are done using a voltage divider to reduce the voltage from
 // up to 30V to <=5V. rVCC is the resistor going up to VCC, rGND goes to ground.
@@ -46,6 +46,7 @@ void setup() {
   Serial.begin(9600);
   Wire.begin();
   pinMode(8, OUTPUT);
+  analogReference(EXTERNAL);
 }
 
 unsigned long toVolts(unsigned long x){
@@ -63,12 +64,10 @@ unsigned int toLevel(unsigned long vin){
     // Can't output more than 100%
     return 255;
   }
-  return vx * 255 / vcc;                         // Convert to level
+  return (vx * 255 / vcc) + 1;                         // Convert to level
 }
 
 void printVal(int x){
-  Serial.print(x);
-  Serial.print("=");
   Serial.print(toVolts(x));
   Serial.print("\t");
 }
@@ -114,7 +113,7 @@ void loop() {
       printedLines = 0;
     }
     if( printedLines == 0 ){
-      Serial.println("\nState\tVCC\t\tLevel\t\tTransistor\tResistor \tSupply\t\tCurrent");
+      Serial.println("\nState\tvalref\tVCC\tLevel\tTransistor\tResistor \tSupply\tCurrent\tAuxV");
     }
 
     if( ignoreInput == 1 ){
@@ -124,10 +123,10 @@ void loop() {
       Serial.print("ok\t");
     }
 
-    int valref = analogRead(pinref);
+    long valref = analogRead(pinref) - 3;
     vcc = vref * 1024 / valref;
     Serial.print(valref);
-    Serial.print("=");
+    Serial.print("\t");
     Serial.print(vcc);
     Serial.print("\t");
 
@@ -147,11 +146,13 @@ void loop() {
     Wire.requestFrom(i2caddr, 1);
     utransistor = Wire.read();
     printVal(utransistor);
+    Serial.print("\t");
 
     // Voltage after Resistor
     Wire.requestFrom(i2caddr, 1);
     uresistor = Wire.read();
     printVal(uresistor);
+    Serial.print("\t");
 
     // Voltage of Power Supply
     Wire.requestFrom(i2caddr, 1);
@@ -159,6 +160,11 @@ void loop() {
 
     // Calculate the current
     Serial.print(toAmps(toVolts(utransistor), toVolts(uresistor)));
+    Serial.print("\t");
+
+    // Measure voltage at the Aux port
+    valref = analogRead(A2);
+    Serial.print( vcc * valref / 1024 * (rvcc + rgnd) / rgnd );
 
     Serial.println("");
     printedLines++;
