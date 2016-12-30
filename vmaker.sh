@@ -11,6 +11,10 @@ fi
 
 source defaults.sh
 
+if [ -e "os/$OS/vmaker.sh" ]; then
+    source "os/$OS/vmaker.sh"
+fi
+
 if [ -e settings.sh ]; then
     source settings.sh
 fi
@@ -103,10 +107,6 @@ if [ -z "${IMAGEFILE:-}" ] || [ -z "${VMNAME:-}" ]; then
     exit 3
 fi
 
-
-if [ -e "os/$OS/vmaker.sh" ]; then
-    source "os/$OS/vmaker.sh"
-fi
 
 
 ########################################
