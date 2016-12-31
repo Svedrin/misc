@@ -10,7 +10,7 @@
    the freaking math even works out this time omfg!
 
    NB: I found out that this only worked due to a 10µF capacitor I had
-       previously plugged in an then forgotten. Remove it and the ADC
+       previously plugged in and then forgotten. Remove it and the ADC
        will return to measuring randomness again. So, better have one
        of those handy.
 
