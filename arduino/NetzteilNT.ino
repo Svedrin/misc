@@ -8,6 +8,12 @@
    To measure VCC, I attached a voltage divider made of a 10kΩ resistor
    to VCC and a 4.7kΩ resistor to GND to the Arduino's port A0 - and
    the freaking math even works out this time omfg!
+
+   NB: I found out that this only worked due to a 10µF capacitor I had
+       previously plugged in an then forgotten. Remove it and the ADC
+       will return to measuring randomness again. So, better have one
+       of those handy.
+
 */
 
 void setup() {
