@@ -44,9 +44,11 @@ int my_role;
 #define PIN_MIRROR   9
 #define PIN_CRCLED  10
 
-int sender_pause = 100;
+int sender_pause = 500;
 unsigned long long pause_until = 0;
 CanDrive can(PIN_SENDER, PIN_MONITOR);
+
+boolean toggleVal = false;
 
 void setup() {
   pinMode(PIN_ROLE, INPUT);
@@ -76,10 +78,12 @@ void loop() {
       can.send(251, analogRead(PIN_SOURCE) * 10);
     }
     else if( digitalRead(11) == LOW ){
-      can.send(250, 0);
+      can.send(450, toggleVal);
+      toggleVal = !toggleVal;
     }
     else if( digitalRead(10) == LOW ){
-      can.send(251, 0);
+      can.send(451, toggleVal);
+      toggleVal = !toggleVal;
     }
     else{
       can.send(42, analogRead(PIN_SOURCE));
