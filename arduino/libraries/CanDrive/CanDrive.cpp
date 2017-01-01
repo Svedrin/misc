@@ -21,7 +21,7 @@
 #define STATE_EOFRM 5
 
 
-CanDrive::CanDrive(int pin_sender, int pin_monitor, boolean auto_init){
+CanDrive::CanDrive(int pin_sender, int pin_monitor){
   this->pin_sender  = pin_sender;
   this->pin_monitor = pin_monitor;
   this->pin_mirror  = 0;
@@ -30,10 +30,6 @@ CanDrive::CanDrive(int pin_sender, int pin_monitor, boolean auto_init){
 
   this->recv_message_valid = false;
   this->send_message = false;
-
-  if( auto_init ){
-    this->init();
-  }
 }
 
 

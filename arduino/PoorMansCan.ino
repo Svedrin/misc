@@ -46,7 +46,7 @@ int my_role;
 
 int sender_pause = 100;
 unsigned long long pause_until = 0;
-CanDrive can(PIN_SENDER, PIN_MONITOR, false);
+CanDrive can(PIN_SENDER, PIN_MONITOR);
 
 void setup() {
   pinMode(PIN_ROLE, INPUT);

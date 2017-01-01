@@ -42,13 +42,10 @@
 
 class CanDrive {
   public:
-    // If you want to stick to the defaults, the constructor only needs
-    // to know the sender and monitor (receiver) pins.
-    // If you want to change other values as well, set auto_init=false,
-    // change the values after constructing your instance, and then call
-    // init() before doing actual work.
+    // We need at least the sender and monitor pins.
+    CanDrive(int pin_sender, int pin_monitor);
 
-    CanDrive(int pin_sender, int pin_monitor, boolean auto_init=true);
+    // Call init() from your setup().
     void init();
 
     // If the bus is idle, you can use send and recv to easily modify
