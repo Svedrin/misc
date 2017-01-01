@@ -17,40 +17,78 @@
 
 */
 
+#include "CanDrive.h"
+
+#define CAN_PIN_SENDER     7
+#define CAN_PIN_MONITOR    8
+
+#define PIN_OUT1           3
+#define CAN_ID_OUT1      250
+
+#define PIN_OUT2           6
+#define CAN_ID_OUT2      251
+
+CanDrive can(CAN_PIN_SENDER, CAN_PIN_MONITOR);
+
 void setup() {
+  pinMode(PIN_OUT1, OUTPUT);
+  pinMode(PIN_OUT2, OUTPUT);
+//   can.pin_mirror =  9;
+  can.pin_crcled = 10;
+  can.init();
   Serial.begin(9600);
-  pinMode(3, OUTPUT);
-  pinMode(6, OUTPUT);
 }
 
 unsigned long long lasttime = 0;
-double wantvolts = 7;
+
+double voltage_out1 = 0;
+double voltage_out2 = 0;
+double vcc;
+
+
+unsigned int set_pwm_for_voltage(unsigned int pin, double wantvolts){
+  unsigned int pwm_value;
+  if( wantvolts >= vcc ){
+    pwm_value = 255;
+  }
+  else{
+    pwm_value = wantvolts / vcc * 255;
+  }
+  analogWrite(pin, pwm_value);
+}
 
 void loop() {
+  uint16_t recv_id, recv_val;
+
   if( millis() > lasttime + 1000 ){
     lasttime = millis();
 
     unsigned int analog_val;
-    double voltage;
     analog_val = analogRead(A0);
 
     // ADC:               U2  = x/1023 * 5V
     // Voltage Divider:   VCC = U2 * (R1 + R2) / R2
 
-    voltage = (analog_val / (double)1023.0 * 5) * (1000 + 470) / (double)470.0;
+    vcc = (analog_val / (double)1023.0 * 5) * (1000 + 470) / (double)470.0;
 
-    unsigned int pwm_value;
-    if( wantvolts >= voltage ){
-      pwm_value = 255;
-    }
-    else{
-      pwm_value = wantvolts / voltage * 255;
-    }
-    analogWrite(6, pwm_value);
-    analogWrite(3, pwm_value);
     Serial.print("Input = ");
-    Serial.print(voltage);
-    Serial.print("V, setting output to ");
-    Serial.println(pwm_value);
+    Serial.print(vcc);
+    Serial.print(" OUT1 = ");
+    Serial.print(voltage_out1);
+    Serial.print(" OUT2 = ");
+    Serial.println(voltage_out2);
+  }
+
+  can.handle_message();
+
+  if( can.recv(&recv_id, &recv_val) ){
+    if( recv_id == CAN_ID_OUT1 ){
+      voltage_out1 = recv_val / (double)1000.0;
+      set_pwm_for_voltage(PIN_OUT1, voltage_out1);
+    }
+    else if( recv_id == CAN_ID_OUT2 ){
+      voltage_out2 = recv_val / (double)1000.0;
+      set_pwm_for_voltage(PIN_OUT2, voltage_out2);
+    }
   }
 }

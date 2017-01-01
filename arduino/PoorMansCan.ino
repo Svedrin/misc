@@ -58,13 +58,32 @@ void setup() {
   can.pin_mirror = PIN_MIRROR;
   can.pin_crcled = PIN_CRCLED;
   can.init();
+
+  pinMode(13, INPUT);
+  pinMode(12, INPUT);
+  pinMode(11, INPUT);
+  pinMode(10, INPUT);
 }
 
 void loop() {
   uint16_t recv_id, recv_val;
 
   if( my_role == ROLE_SENDER && millis() > pause_until ){
-    can.send(42, analogRead(PIN_SOURCE));
+    if( digitalRead(13) == LOW ){
+      can.send(250, analogRead(PIN_SOURCE) * 10);
+    }
+    else if( digitalRead(12) == LOW ){
+      can.send(251, analogRead(PIN_SOURCE) * 10);
+    }
+    else if( digitalRead(11) == LOW ){
+      can.send(250, 0);
+    }
+    else if( digitalRead(10) == LOW ){
+      can.send(251, 0);
+    }
+    else{
+      can.send(42, analogRead(PIN_SOURCE));
+    }
     pause_until = millis() + sender_pause;
   }
 
