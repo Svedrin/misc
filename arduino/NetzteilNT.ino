@@ -1,5 +1,6 @@
+/* kate: space-indent on; indent-width 2; replace-tabs on; hl c++
 
-/* I rebuilt my power supply from scratch, this time using a TLV2371 OpAmp
+   I rebuilt my power supply from scratch, this time using a TLV2371 OpAmp
    and a 15kΩ/2.2µF RC circuit powering a BD-311 high load transistor as
    indicated by this guy:
 
