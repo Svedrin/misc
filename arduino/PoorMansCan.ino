@@ -16,6 +16,10 @@
 
   Noteworthy Versions:
 
+    * Moved code into the CanDrive library (2017-01-01)
+      https://bitbucket.org/Svedrin/misc/src/1634efe2/arduino/libraries/CanDrive/
+      https://bitbucket.org/Svedrin/misc/src/1634efe2/arduino/PoorMansCan.ino
+
     * Added CRC and End-of-Frame (2016-12-23)
       https://bitbucket.org/Svedrin/misc/src/8c4a29b5/arduino/PoorMansCan.ino
 
