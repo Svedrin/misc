@@ -21,6 +21,22 @@
 #define STATE_EOFRM 5
 
 
+
+void digitalWriteOrDelay(int pin, int val){
+  // digitalWrite is actually a pretty slow thing to do on an Arduino.
+  // So, if optional pins are disabled, we need to call delayMicroseconds
+  // to avoid messing up our timing when some devices on the bus have
+  // those pins enabled and others have them disabled.
+  if( pin != 0 ){
+    digitalWrite(pin, val);
+  }
+  else{
+    delayMicroseconds(5);
+  }
+}
+
+
+
 CanDrive::CanDrive(int pin_sender, int pin_monitor){
   this->pin_sender  = pin_sender;
   this->pin_monitor = pin_monitor;
@@ -151,9 +167,7 @@ void CanDrive::handle_bit(){
 
   // READ STAGE
   bus_value = digitalRead(pin_monitor);
-  if( pin_mirror != 0 ){
-    digitalWrite(pin_mirror, bus_value);
-  }
+  digitalWriteOrDelay(pin_mirror, bus_value);
 
   if( send_message ){
     if( pmc_state == STATE_ID ){
@@ -183,9 +197,7 @@ void CanDrive::handle_bit(){
         recv_message_valid = false;
         recv_message_value = 0;
         bits_to_go = CAN_LEN_ID;
-        if( pin_crcled != 0 ){
-          digitalWrite(pin_crcled, HIGH);
-        }
+        digitalWriteOrDelay(pin_crcled, HIGH);
       }
     }
     else if( pmc_state == STATE_ID ){
@@ -215,9 +227,9 @@ void CanDrive::handle_bit(){
         crc_calc_buf |= (1 << CAN_LEN_CRC);
         crc_verify_buf |= (1 << CAN_LEN_CRC);
         recv_message_valid = (crc_calc_buf == crc_verify_buf);
-        if( pin_crcled != 0 && !recv_message_valid ){
-          // We have a CRC LED attached and a CRC checksum error occurred
-          digitalWrite(pin_crcled, LOW);
+        if( !recv_message_valid ){
+          // CRC checksum error occurred
+          digitalWriteOrDelay(pin_crcled, LOW);
         }
       }
     }
