@@ -3,3 +3,4 @@ libCanDrive.so: CanDrive.cpp CanDrive.h
 
 install: libCanDrive.so
 	libtool --mode=install install -c libCanDrive.so /usr/local/lib/libCanDrive.so
+	install CanDrive.h /usr/local/include/CanDrive.h
