@@ -31,13 +31,7 @@
 #ifndef CANDRIVE_H
 #define CANDRIVE_H
 
-#ifdef ARDUINO
-#    include "Arduino.h"
-#elif defined __linux__
-#    include <stdint.h>
-#    include <wiringPi.h>
-typedef int boolean;
-#endif
+#include "Arduino.h"
 
 #define CAN_LEN_ID    11
 #define CAN_LEN_MSG   16

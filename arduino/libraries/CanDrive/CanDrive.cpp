@@ -11,16 +11,6 @@
 
 #include "CanDrive.h"
 
-#if defined __linux__
-#    include <stdio.h>
-#    include <time.h>
-#endif
-
-// This sucks, but Raspi *still* seems to sleep longer than Arduino does
-#define MAGIC_DELAY  24825
-
-#define NSEC_PER_SEC 1000000000
-
 #define STATE_INIT  0
 #define STATE_ID    1
 #define STATE_MSG   2
@@ -28,26 +18,6 @@
 #define STATE_CRC   4
 #define STATE_EOFRM 5
 
-
-void inline platformSpecificMicroSleep(unsigned int micros){
-#ifdef ARDUINO
-  delayMicroseconds(micros);
-#else
-  struct timespec t;
-  clock_gettime(CLOCK_MONOTONIC, &t);
-
-  /* calculate next shot */
-  t.tv_nsec += micros * 1000 - MAGIC_DELAY;
-
-  while (t.tv_nsec >= NSEC_PER_SEC) {
-    t.tv_nsec -= NSEC_PER_SEC;
-    t.tv_sec++;
-  }
-
-  /* wait until next shot */
-  clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &t, NULL);
-#endif
-}
 
 
 void digitalWriteOrDelay(int pin, int val){
@@ -190,14 +160,11 @@ void CanDrive::handle_bit(){
   digitalWrite(pin_sender, my_value);
 
   if( pmc_state != STATE_INIT ){
-    platformSpecificMicroSleep(phase_delay);
+    delayMicroseconds(phase_delay);
   }
 
   // READ STAGE
   bus_value = digitalRead(pin_monitor);
-  if( pmc_state != STATE_INIT ){
-    printf( "%d", bus_value );
-  }
   digitalWriteOrDelay(pin_mirror, bus_value);
 
   if( send_message ){
@@ -237,7 +204,6 @@ void CanDrive::handle_bit(){
       if( bits_to_go == 0 ){
         next_state = STATE_MSG;
         bits_to_go = CAN_LEN_MSG;
-        printf( " " );
       }
     }
     else if( pmc_state == STATE_MSG ){
@@ -246,7 +212,6 @@ void CanDrive::handle_bit(){
       if( bits_to_go == 0 ){
         bits_to_go = CAN_LEN_CRC;
         next_state = STATE_CRC;
-        printf( " " );
       }
     }
     else if( pmc_state == STATE_CRC ){
@@ -255,7 +220,6 @@ void CanDrive::handle_bit(){
       if( bits_to_go == 0 ){
         bits_to_go = CAN_LEN_EOFRM;
         next_state = STATE_EOFRM;
-        printf( " " );
         // 16th bit is not sent, but may be set to 1 by the algo
         // so, normalize the most significant bit to 1
         crc_calc_buf |= (1 << CAN_LEN_CRC);
@@ -271,7 +235,6 @@ void CanDrive::handle_bit(){
       bits_to_go--;
       if( bits_to_go == 0 ){
         next_state = STATE_INIT;
-        printf("\n");
       }
     }
 
@@ -286,7 +249,7 @@ void CanDrive::handle_bit(){
     }
   }
 
-  platformSpecificMicroSleep(phase_delay);
+  delayMicroseconds(phase_delay);
 
   pmc_state = next_state;
 }
