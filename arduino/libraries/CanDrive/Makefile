@@ -1,5 +1,5 @@
 libCanDrive.so: CanDrive.cpp CanDrive.h
-	g++ -o libCanDrive.so CanDrive.cpp -lwiringPi -shared
+	g++ -shared -Wall -Werror -o libCanDrive.so CanDrive.cpp -lwiringPi -lrt
 
 install: libCanDrive.so
 	libtool --mode=install install -c libCanDrive.so /usr/local/lib/libCanDrive.so
