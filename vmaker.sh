@@ -311,7 +311,7 @@ fi
 # Update installed packages and install a basic set of tools
 
 apt-get dist-upgrade -y
-apt-get install -y lvm2 locales htop iftop iotop sysstat vim dialog rsync ssh rsyslog openssh-server
+apt-get install -y lvm2 locales htop iftop iotop sysstat vim dialog rsync rsyslog
 locale-gen en_US.UTF-8
 locale-gen de_DE.UTF-8
 
@@ -320,6 +320,8 @@ service udev    stop || /bin/true
 
 # root password = init123
 usermod --password '\$6\$5/wXIu6E\$P4qgpWiECnhO0TH/PwLJCSPgHX5Fl6GSCz1VOKn6LYGq6lBqW8ULKTUzusGZUfcIej5RrEI8lKgkq48n/Mm.41' root
+
+apt-get install -y --download-only linux-image-generic openssh-server ssh
 
 EOSCRIPT
 
@@ -341,6 +343,12 @@ exec 2>&1
 set -e
 set -u
 set -x
+
+<<EOF debconf-set-selections
+grub-pc	grub-pc/install_devices	multiselect	/dev/vda
+EOF
+
+DEBIAN_FRONTEND=noninteractive apt-get install -y linux-image-generic openssh-server ssh
 
 mv /etc/rc.local      /etc/rc.local.done
 mv /etc/rc.local.orig /etc/rc.local
