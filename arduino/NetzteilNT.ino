@@ -28,6 +28,9 @@
 #define PIN_OUT2           6
 #define CAN_ID_OUT2      251
 
+#define R1 ((double)10000)
+#define R2 ((double) 4700)
+
 CanDrive can(CAN_PIN_SENDER, CAN_PIN_MONITOR);
 
 void setup() {
@@ -59,7 +62,7 @@ unsigned int set_pwm_for_voltage(unsigned int pin, double wantvolts){
     pwm_value = 255;
   }
   else{
-    u_in = wantvolts / (1 + (10000/(double)4700.0));
+    u_in = wantvolts / (1 + (R1/R2));
     pwm_value = round(u_in / 5.0 * 255);
   }
   analogWrite(pin, pwm_value);
@@ -77,7 +80,7 @@ void loop() {
     // ADC:               U2  = x/1023 * 5V
     // Voltage Divider:   VCC = U2 * (R1 + R2) / R2
 
-    vcc = (analog_val / (double)1023.0 * 5) * (10000 + 4700) / (double)4700.0;
+    vcc = (analog_val / (double)1023.0 * 5) * (R1 + R2) / R2;
 
     Serial.print("Input = ");
     Serial.print(vcc);
