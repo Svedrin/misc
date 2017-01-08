@@ -15,6 +15,10 @@
        will return to measuring randomness again. So, better have one
        of those handy.
 
+   For the schematic, see:
+
+   https://bytebucket.org/Svedrin/misc/raw/56ac8a08/arduino/NetzteilNT.png
+
 */
 
 #include "CanDrive.h"
