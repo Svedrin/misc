@@ -69,7 +69,7 @@ void loop() {
     // ADC:               U2  = x/1023 * 5V
     // Voltage Divider:   VCC = U2 * (R1 + R2) / R2
 
-    vcc = (analog_val / (double)1023.0 * 5) * (1000 + 470) / (double)470.0;
+    vcc = (analog_val / (double)1023.0 * 5) * (10000 + 4700) / (double)4700.0;
 
     Serial.print("Input = ");
     Serial.print(vcc);
