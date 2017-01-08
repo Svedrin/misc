@@ -18,6 +18,10 @@ void setup() {
   pinMode(12, OUTPUT);
   pinMode(11, OUTPUT);
   pinMode( 9, OUTPUT);
+  digitalWrite(13, LOW);
+  digitalWrite(12, LOW);
+  digitalWrite(11, LOW);
+  digitalWrite( 9, LOW);
 }
 
 unsigned long long reset1 = 0;
@@ -44,10 +48,12 @@ void loop() {
   if( can.recv(&recv_id, &recv_val) ){
     if( recv_id == 450 ){
       digitalWrite( (recv_val == 0 ? 13 : 12), HIGH);
+      digitalWrite( (recv_val == 0 ? 12 : 13), LOW);
       reset1 = millis() + 500;
     }
     else if( recv_id == 451 ){
       digitalWrite( (recv_val == 0 ? 11 :  9), HIGH);
+      digitalWrite( (recv_val == 0 ?  9 : 11), LOW);
       reset2 = millis() + 500;
     }
   }
