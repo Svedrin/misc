@@ -47,12 +47,20 @@ double vcc;
 
 
 unsigned int set_pwm_for_voltage(unsigned int pin, double wantvolts){
+  // The OpAmp amplifies the voltage we feed to it using:
+  // Uout = v * Uin
+  // v = 1 + (R1/R2)
+  // R1 and R2 being the voltage divider we use for the OpAmp's feedback loop.
+  // This means we need to feed the Uin such as:
+  // Uin = Uout / v
+  double u_in;
   unsigned int pwm_value;
   if( wantvolts >= vcc ){
     pwm_value = 255;
   }
   else{
-    pwm_value = wantvolts / vcc * 255;
+    u_in = wantvolts / (1 + (10000/(double)4700.0));
+    pwm_value = round(u_in / 5.0 * 255);
   }
   analogWrite(pin, pwm_value);
 }
