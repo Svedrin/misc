@@ -48,7 +48,8 @@ int sender_pause = 500;
 unsigned long long pause_until = 0;
 CanDrive can(PIN_SENDER, PIN_MONITOR);
 
-boolean toggleVal = false;
+boolean toggleVal1 = false;
+boolean toggleVal2 = false;
 
 void setup() {
   pinMode(PIN_ROLE, INPUT);
@@ -78,12 +79,12 @@ void loop() {
       can.send(251, analogRead(PIN_SOURCE) * 10);
     }
     else if( digitalRead(11) == LOW ){
-      can.send(450, toggleVal);
-      toggleVal = !toggleVal;
+      can.send(450, toggleVal1);
+      toggleVal1 = !toggleVal1;
     }
     else if( digitalRead(10) == LOW ){
-      can.send(451, toggleVal);
-      toggleVal = !toggleVal;
+      can.send(451, toggleVal2);
+      toggleVal2 = !toggleVal2;
     }
     else{
       can.send(42, analogRead(PIN_SOURCE));
