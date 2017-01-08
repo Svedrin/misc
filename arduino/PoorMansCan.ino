@@ -14,6 +14,11 @@
 
   Also, hardwire port 4 to VCC for the sender and GND for the receiver.
 
+
+  For the schematic, see:
+
+  https://bytebucket.org/Svedrin/misc/raw/0e557145/arduino/PoorMansCan.png
+
   Noteworthy Versions:
 
     * Moved code into the CanDrive library (2017-01-01)
