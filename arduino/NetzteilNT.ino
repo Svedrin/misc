@@ -31,6 +31,8 @@
 #define R1 ((double)10000)
 #define R2 ((double) 4700)
 
+// #define DEBUG
+
 CanDrive can(CAN_PIN_SENDER, CAN_PIN_MONITOR);
 
 void setup() {
@@ -39,7 +41,9 @@ void setup() {
 //   can.pin_mirror =  9;
   can.pin_crcled = 10;
   can.init();
+#ifdef DEBUG
   Serial.begin(9600);
+#endif
 }
 
 unsigned long long lasttime = 0;
@@ -82,12 +86,14 @@ void loop() {
 
     vcc = (analog_val / (double)1023.0 * 5) * (R1 + R2) / R2;
 
+#ifdef DEBUG
     Serial.print("Input = ");
     Serial.print(vcc);
     Serial.print(" OUT1 = ");
     Serial.print(voltage_out1);
     Serial.print(" OUT2 = ");
     Serial.println(voltage_out2);
+#endif
   }
 
   can.handle_message();
