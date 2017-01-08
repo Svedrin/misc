@@ -17,7 +17,7 @@
 
    For the schematic, see:
 
-   https://bytebucket.org/Svedrin/misc/raw/56ac8a08/arduino/NetzteilNT.png
+   https://bytebucket.org/Svedrin/misc/raw/7296aee6/arduino/NetzteilNT.png
 
 */
 
