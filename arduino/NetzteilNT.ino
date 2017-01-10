@@ -32,6 +32,8 @@
 #define PIN_OUT2           6
 #define CAN_ID_OUT2      251
 
+#define PIN_FAN           11
+
 #define R1 ((double)10000)
 #define R2 ((double) 4700)
 
@@ -42,6 +44,7 @@ CanDrive can(CAN_PIN_SENDER, CAN_PIN_MONITOR);
 void setup() {
   pinMode(PIN_OUT1, OUTPUT);
   pinMode(PIN_OUT2, OUTPUT);
+  pinMode(PIN_FAN,  OUTPUT);
 //   can.pin_mirror =  9;
   can.pin_crcled = 10;
   can.init();
@@ -89,6 +92,8 @@ void loop() {
     // Voltage Divider:   VCC = U2 * (R1 + R2) / R2
 
     vcc = (analog_val / (double)1023.0 * 5) * (R1 + R2) / R2;
+
+    digitalWrite( PIN_FAN, voltage_out1 > 1 || voltage_out2 > 1 );
 
 #ifdef DEBUG
     Serial.print("Input = ");
