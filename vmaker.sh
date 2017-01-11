@@ -321,7 +321,9 @@ service udev    stop || /bin/true
 # root password = init123
 usermod --password '\$6\$5/wXIu6E\$P4qgpWiECnhO0TH/PwLJCSPgHX5Fl6GSCz1VOKn6LYGq6lBqW8ULKTUzusGZUfcIej5RrEI8lKgkq48n/Mm.41' root
 
-apt-get install -y --download-only linux-image-generic openssh-server ssh
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get install -y linux-image-generic grub2
+
+apt-get install -y --download-only openssh-server ssh
 
 EOSCRIPT
 
@@ -348,7 +350,9 @@ set -x
 grub-pc	grub-pc/install_devices	multiselect	/dev/vda
 EOF
 
-DEBIAN_FRONTEND=noninteractive apt-get install -y linux-image-generic openssh-server ssh
+DEBIAN_FRONTEND=noninteractive apt-get install -y openssh-server ssh
+
+grub-install --recheck /dev/vda
 
 mv /etc/rc.local      /etc/rc.local.done
 mv /etc/rc.local.orig /etc/rc.local
@@ -375,6 +379,18 @@ cleanup
 CLEANUP_STAGE=0
 
 
+# Install grub
+
+guestfish -a "$IMAGEFILE" run                            \
+: mount /dev/vmsys/root /                                \
+: mkdir-p /boot/grub                                     \
+: write /boot/grub/device.map "(hd0) /dev/sda"           \
+: copy-in "parts/etc-default-grub" "/tmp"                \
+: mv "/tmp/etc-default-grub" "/etc/default/grub"         \
+: command "grub-install /dev/sda"                        \
+: command "update-grub"
+
+
 # See if we're building an RBD image, and if so, convert
 if [ "${RBD_MODE:-false}" = "true" ]; then
     qemu-img convert -p -O raw "$IMAGEFILE" "rbd:$RBD_POOL/$RBD_IMAGE"
@@ -387,13 +403,11 @@ if [ "${VIRTINST:-false}" = "true" ]; then
     if [ "${RBD_MODE:-false}" = "false" ]; then
         virt-install --disk "$IMAGEFILE,format=raw,cache=writeback,io=threads" --boot hd \
             --network bridge="$NETWORK_BRIDGE" \
-            --boot 'kernel=/vmlinuz,initrd=/initrd.img,kernel_args="root=/dev/vmsys/root ro"' \
             -v --accelerate -n ${VMNAME} -r 4096 --arch=x86_64 --vnc --os-variant="$OSVARIANT" \
             --vcpus 2 --noautoconsole --print-xml | virsh define /dev/stdin
     else
         virt-install --disk "vol=$RBD_POOL/$RBD_IMAGE,format=raw,cache=writeback,io=threads" --boot hd \
             --network bridge="$NETWORK_BRIDGE" \
-            --boot 'kernel=/vmlinuz,initrd=/initrd.img,kernel_args="root=/dev/vmsys/root ro"' \
             -v --accelerate -n ${VMNAME} -r 4096 --arch=x86_64 --vnc --os-variant="$OSVARIANT" \
             --vcpus 2 --noautoconsole --print-xml | python parts/fix-rbd-disk-xml.py $RBD_POOL | virsh define /dev/stdin
     fi
