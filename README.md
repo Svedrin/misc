@@ -21,7 +21,7 @@ VM creator that works purely from bash.
 
 *   Supports Debian Jessie and Ubuntu Xenial.
 
-*   Defaults to building Debian guests when run on Debian and Ubuntu guest when run on Ubuntu.
+*   Defaults to building Debian guests when run on Debian and Ubuntu guests when run on Ubuntu (overridable using --os).
 
 *   Builds strictly use debootstrap. No golden images or iso installations needed.
 
