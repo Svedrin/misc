@@ -4,9 +4,9 @@ VM creator that works purely from bash.
 
 ## Prerequisites: ##
 
-*   You're using libvirt to run VMs.
+*       apt-get install libvirt-bin libguestfs-tools debootstrap virtinst python-xmltodict
 
-*   apt-get install libvirt-bin libguestfs-tools debootstrap virtinst python-xmltodict
+*   You're using libvirt to run VMs. (Actually, that's not strictly necessary, only if you want to autostart the VMs or auto-pacemakerize them.)
 
 *   If you're intending to use a Ceph pool to store your images, the pool needs to be configured as a libvirt storage pool (*and* it needs to be running).
 
