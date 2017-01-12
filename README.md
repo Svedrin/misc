@@ -4,7 +4,8 @@ VM creator that works purely from bash.
 
 ## Prerequisites: ##
 
-*       apt-get install libvirt-bin libguestfs-tools debootstrap virtinst python-xmltodict
+*   ```apt-get install libvirt-bin libguestfs-tools debootstrap virtinst python-xmltodict```
+
 
 *   You're using libvirt to run VMs. (Actually, that's not strictly necessary, only if you want to autostart the VMs or auto-pacemakerize them.)
 
