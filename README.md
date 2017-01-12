@@ -127,3 +127,7 @@ This way, the bridge and gateway will be adapted automatically according to the 
 *   Network config adaptation only works with static IPs (there's no --network option, so the IP is the only thing you can pass in).
 
 *   The root password is hardcoded as "init123", and root is the only login available. I use puppet to set a new password and import keys and stuff.
+
+## Further reading: ##
+
+See https://blog.svedr.in/posts/imageless-vm-builds-with-libguestfs.html
