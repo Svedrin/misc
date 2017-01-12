@@ -21,7 +21,7 @@ VM creator that works purely from bash.
 
 *   Supports Debian Jessie and Ubuntu Xenial.
 
-*   Defaults to building Debian guests when run on Debian and Ubuntu guests when run on Ubuntu (overridable using --os).
+*   Defaults to building Debian guests when run on Debian and Ubuntu guests when run on Ubuntu (overrideable using --os).
 
 *   Builds strictly use debootstrap. No golden images or iso installations needed.
 
@@ -32,15 +32,15 @@ VM creator that works purely from bash.
 
 *   The initial debootstrap archive is cached by default and *not* downloaded every time.
 
-
 *   The target VM image can reside in a Ceph pool.
 
 *   VMs can be automatically registered with libvirt. In that case, they're also automatically started.
 
 *   Network configuration is handled through a bash function that you can override in the settings. The function will
     receive the IP address passed in the *-i* argument and then return gateway, netmask and DNS settings accordingly.
+    See the example below on how to do this.
 
-*   Keyboard layout is de with nodeadkeys. (Non-overrideable, but I'll accept pull requests in that direction.)
+*   Keyboard layout is de:nodeadkeys. (Non-overrideable, but I'll accept pull requests in that direction.)
 
 *   Ubuntu's insane 5 minute boot delay when no network is available is reconfigured to 10 seconds.
 
@@ -124,9 +124,10 @@ This way, the bridge and gateway will be adapted automatically according to the 
 
 *   Only one build can run at a time because the guest is always mounted to */mnt*. (That also means that nothing *else* may be mounted at */mnt* during that time.)
 
-*   Network config adaptation only works with static IPs (there's no --network option, so the IP is the only thing you can pass in).
+*   Network config adaptation only works with static IPs (there's no --network option, so the IP is the only thing you can pass in (that is, you can always use env vars)).
 
 *   The root password is hardcoded as "init123", and root is the only login available. I use puppet to set a new password and import keys and stuff.
+
 
 ## Further reading: ##
 
