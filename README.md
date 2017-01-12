@@ -6,7 +6,6 @@ VM creator that works purely from bash.
 
 *   ```apt-get install libvirt-bin libguestfs-tools debootstrap virtinst python-xmltodict```
 
-
 *   You're using libvirt to run VMs. (Actually, that's not strictly necessary, only if you want to autostart the VMs or auto-pacemakerize them.)
 
 *   If you're intending to use a Ceph pool to store your images, the pool needs to be configured as a libvirt storage pool (*and* it needs to be running).
@@ -126,3 +125,5 @@ This way, the bridge and gateway will be adapted automatically according to the 
 *   Only one build can run at a time because the guest is always mounted to */mnt*. (That also means that nothing *else* may be mounted at */mnt* during that time.)
 
 *   Network config adaptation only works with static IPs (there's no --network option, so the IP is the only thing you can pass in).
+
+*   The root password is hardcoded as "init123", and root is the only login available. I use puppet to set a new password and import keys and stuff.
