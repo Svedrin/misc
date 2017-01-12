@@ -19,6 +19,8 @@ VM creator that works purely from bash.
     * 2GB /var/log (ext4)
     * 8GB unassigned -- create your data LVs here.
 
+*   Supports Debian Jessie and Ubuntu Xenial.
+
 *   Defaults to building Debian guests when run on Debian and Ubuntu guest when run on Ubuntu.
 
 *   Builds strictly use debootstrap. No golden images or iso installations needed.
@@ -30,7 +32,6 @@ VM creator that works purely from bash.
 
 *   The initial debootstrap archive is cached by default and *not* downloaded every time.
 
-*   Supports Debian Jessie and Ubuntu Xenial.
 
 *   The target VM image can reside in a Ceph pool.
 
@@ -90,8 +91,37 @@ VM creator that works purely from bash.
         root@pevh010:~/vmaker# ./vmaker.sh -f rbd:peha/peha070-n1.img -n peha070-n1 -i 10.10.5.59 --puppet --virt-install
 
 
+## Example settings for multiple networks: ##
+
+This is a `settings.sh` example for when you need to support multiple target networks with different settings:
+
+    get_network () {
+        echo "NETWORK_METHOD=static"
+        echo "NETWORK_IPADDR=$IPADDR"
+
+        echo 'NETWORK_NAMESERVERS="192.168.0.1"'
+        echo "NETWORK_DOMAIN=local.lan"
+        echo "NETWORK_NETMASK=24"
+
+        if [ "`echo $IPADDR | cut -d. -f1-3`" = 192.168.0 ]; then
+            BRIDGE=haus0
+            GATEWAY=192.168.0.1
+        elif [ "`echo $IPADDR | cut -d. -f1-3`" = 10.5.0 ]; then
+            BRIDGE=svdr0
+            GATEWAY=10.5.0.1
+        fi
+
+        echo "NETWORK_BRIDGE=$BRIDGE"
+        echo "NETWORK_GATEWAY=$GATEWAY"
+    }
+
+This way, the bridge and gateway will be adapted automatically according to the IP the VM is configured with.
+
+
 ## Known bugs and limitations: ##
 
 *   Only tested thoroughly with Ubuntu. I (sadly) use the Debian version less regularly.
 
 *   Only one build can run at a time because the guest is always mounted to */mnt*. (That also means that nothing *else* may be mounted at */mnt* during that time.)
+
+*   Network config adaptation only works with static IPs (there's no --network option, so the IP is the only thing you can pass in).
