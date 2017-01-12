@@ -321,7 +321,7 @@ service udev    stop || /bin/true
 # root password = init123
 usermod --password '\$6\$5/wXIu6E\$P4qgpWiECnhO0TH/PwLJCSPgHX5Fl6GSCz1VOKn6LYGq6lBqW8ULKTUzusGZUfcIej5RrEI8lKgkq48n/Mm.41' root
 
-/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get install -y linux-image-generic grub2
+/usr/bin/env DEBIAN_FRONTEND=noninteractive apt-get install -y $KERNEL_PACKAGE grub2
 
 apt-get install -y --download-only openssh-server ssh
 
