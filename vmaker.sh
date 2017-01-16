@@ -48,16 +48,16 @@ fi
 while [ -n "${1:-}" ]; do
     case "$1" in
         -h|--help)
-            echo "Usage: $0 [options] <imagefile> <os> <hostname>"
+            echo "Usage: $0 [options] -f <imagefile> -n <hostname>"
             echo
             echo "Options:"
             echo " -h --help             This help text"
             echo "    --virt-install     Automatically register a KVM VM"
             echo "    --pcmk             Automatically register the VM with pacemaker (implies --virt-install)"
-            echo "    --puppet           Auto-Deploy and start the Puppet agent"
+            echo "    --puppet           Auto-Deploy and start the Puppet agent (useful with an autosign policy on the master)"
             echo " -o --os               OS variant [$OS]"
             echo " -i --ipaddr           IP Address [dhcp]"
-            echo " -f --imagefile        Image file"
+            echo " -f --imagefile        Image file (file path, or rbd:pool/image for Ceph)"
             echo " -n --hostname         Host name for the created VM"
             echo " -r --ram              RAM in MB [$RAM]"
             echo " -c --cpus             CPU Cores [$CPUS]"
@@ -142,7 +142,6 @@ cleanup() {
 }
 
 trap cleanup EXIT
-
 
 set -x
 
