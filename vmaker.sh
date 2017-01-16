@@ -59,6 +59,8 @@ while [ -n "${1:-}" ]; do
             echo " -i --ipaddr           IP Address [dhcp]"
             echo " -f --imagefile        Image file"
             echo " -n --hostname         Host name for the created VM"
+            echo " -r --ram              RAM in MB [$RAM]"
+            echo " -c --cpus             CPU Cores [$CPUS]"
             exit 0
             ;;
 
@@ -92,6 +94,16 @@ while [ -n "${1:-}" ]; do
 
         -i|--ipaddr)
             IPADDR="$2"
+            shift
+            ;;
+
+        -r|--ram)
+            RAM="$2"
+            shift
+            ;;
+
+        -c|--cpus)
+            CPUS="$2"
             shift
             ;;
 
@@ -403,13 +415,13 @@ if [ "${VIRTINST:-false}" = "true" ]; then
     if [ "${RBD_MODE:-false}" = "false" ]; then
         virt-install --disk "$IMAGEFILE,format=raw,cache=writeback,io=threads" --boot hd \
             --network bridge="$NETWORK_BRIDGE" \
-            -v --accelerate -n ${VMNAME} -r 4096 --arch=x86_64 --vnc --os-variant="$OSVARIANT" \
-            --vcpus 2 --noautoconsole --print-xml | virsh define /dev/stdin
+            -v --accelerate -n ${VMNAME} -r "$RAM" --arch=x86_64 --vnc --os-variant="$OSVARIANT" \
+            --vcpus "$CPUS" --noautoconsole --print-xml | virsh define /dev/stdin
     else
         virt-install --disk "vol=$RBD_POOL/$RBD_IMAGE,format=raw,cache=writeback,io=threads" --boot hd \
             --network bridge="$NETWORK_BRIDGE" \
-            -v --accelerate -n ${VMNAME} -r 4096 --arch=x86_64 --vnc --os-variant="$OSVARIANT" \
-            --vcpus 2 --noautoconsole --print-xml | python parts/fix-rbd-disk-xml.py $RBD_POOL | virsh define /dev/stdin
+            -v --accelerate -n ${VMNAME} -r "$RAM" --arch=x86_64 --vnc --os-variant="$OSVARIANT" \
+            --vcpus "$CPUS" --noautoconsole --print-xml | python parts/fix-rbd-disk-xml.py $RBD_POOL | virsh define /dev/stdin
     fi
 
     virsh start "${VMNAME}"

@@ -17,6 +17,9 @@ CACHEDIR="/var/cache/vmaker"
 DOMAIN="example.com"
 BRIDGE="virbr0"
 
+RAM=4096
+CPUS=2
+
 get_network () {
     # get_network is a stub which should be overwritten in settings.sh.
     #
