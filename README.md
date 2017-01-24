@@ -122,8 +122,6 @@ This way, the bridge and gateway will be adapted automatically according to the 
 
 *   Only tested thoroughly with Ubuntu. I (sadly) use the Debian version less regularly.
 
-*   Only one build can run at a time because the guest is always mounted to */mnt*. (That also means that nothing *else* may be mounted at */mnt* during that time.)
-
 *   Network config adaptation only works with static IPs (there's no --network option, so the IP is the only thing you can pass in (that is, you can always use env vars)).
 
 *   The root password is hardcoded as "init123", and root is the only login available. I use puppet to set a new password and import keys and stuff.

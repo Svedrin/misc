@@ -120,6 +120,7 @@ if [ -z "${IMAGEFILE:-}" ] || [ -z "${VMNAME:-}" ]; then
 fi
 
 
+MNT="/tmp/vmaker-${VMNAME}"
 
 ########################################
 #                                      #
@@ -131,13 +132,14 @@ CLEANUP_STAGE=0
 
 cleanup() {
     if [ "$CLEANUP_STAGE" -ge 2 ]; then
-        umount /mnt/{dev,proc,sys}
+        umount "$MNT"/{dev,proc,sys}
     fi
 
     if [ "$CLEANUP_STAGE" -ge 1 ]; then
-        while ! umount /mnt/; do
+        while ! umount "$MNT"; do
             sleep 1
         done
+        rmdir "$MNT"
     fi
 }
 
@@ -190,6 +192,10 @@ if [ "`echo $IMAGEFILE | cut -d: -f1`" = "rbd" ]; then
     IMAGEFILE="/tmp/$VMNAME.img"
 fi
 
+if [ -e "$MNT" ]; then
+    rmdir "$MNT"
+fi
+mkdir -p "$MNT"
 
 qemu-img create "$IMAGEFILE" 15G
 
@@ -207,7 +213,7 @@ guestfish -a "$IMAGEFILE" run   \
 guestmount -a "$IMAGEFILE"      \
 -m /dev/vmsys/root              \
 -m /dev/vmsys/varlog:/var/log   \
---rw -o dev /mnt
+--rw -o dev "$MNT"
 
 CLEANUP_STAGE=1
 
@@ -220,11 +226,11 @@ CLEANUP_STAGE=1
 
 # Debootstrap sometimes exits with 1 even though the installation worked perfectly fine.
 # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=526978
-debootstrap --unpack-tarball="$CACHEDIR/$OS.tgz" $OS /mnt || /bin/true
+debootstrap --unpack-tarball="$CACHEDIR/$OS.tgz" $OS "$MNT" || /bin/true
 
-mount --bind /dev  /mnt/dev
-mount --bind /proc /mnt/proc
-mount --bind /sys  /mnt/sys
+mount --bind /dev  "$MNT/dev"
+mount --bind /proc "$MNT/proc"
+mount --bind /sys  "$MNT/sys"
 
 CLEANUP_STAGE=2
 
@@ -236,7 +242,7 @@ CLEANUP_STAGE=2
 ########################################
 
 
-cp os/$OS/sources.list /mnt/etc/apt/sources.list
+cp os/$OS/sources.list "$MNT/etc/apt/sources.list"
 
 
 # Configure networking
@@ -246,16 +252,16 @@ source parts/networking.sh
 
 # Configure mounts
 
-<<EOF cat > /mnt/etc/fstab
+<<EOF cat > "$MNT/etc/fstab"
 # <filesystem>        <mount point>  <type>  <options>              <dump> <pass>
 /dev/vmsys/root       /              ext4    errors=remount-ro      0      1
 /dev/vmsys/varlog     /var/log       ext4    defaults               0      2
 EOF
 
-ln -sf /proc/mounts /mnt/etc/mtab
+ln -sf /proc/mounts "$MNT/etc/mtab"
 
 
-<<EOF cat > /mnt/etc/default/keyboard
+<<EOF cat > "$MNT/etc/default/keyboard"
 # KEYBOARD CONFIGURATION FILE
 
 # Consult the keyboard(5) manual page.
@@ -269,7 +275,7 @@ BACKSPACE="guess"
 EOF
 
 
-<<EOSCRIPT cat > /mnt/install.sh
+<<EOSCRIPT cat > "$MNT/install.sh"
 #!/bin/bash
 
 set -e
@@ -339,15 +345,15 @@ apt-get install -y --download-only openssh-server ssh
 EOSCRIPT
 
 if [ "${PUPPIFY:-false}" = "true" ]; then
-    echo apt-get install -y --download-only puppet >> /mnt/install.sh
+    echo apt-get install -y --download-only puppet >> "$MNT/install.sh"
 fi
 
 
 # Prepare postinst script to be run at first boot
 
-mv /mnt/etc/rc.local  /mnt/etc/rc.local.orig
+mv "$MNT/etc/rc.local" "$MNT/etc/rc.local.orig"
 
-<<EOSCRIPT cat > /mnt/etc/rc.local
+<<EOSCRIPT cat > "$MNT/etc/rc.local"
 #!/bin/bash
 
 exec >> /var/log/sysprep.log
@@ -371,19 +377,19 @@ mv /etc/rc.local.orig /etc/rc.local
 EOSCRIPT
 
 if [ "${PUPPIFY:-false}" = "true" ]; then
-    echo apt-get -y install puppet >> /mnt/etc/rc.local
-    echo puppet agent --enable     >> /mnt/etc/rc.local
-    echo service puppet restart    >> /mnt/etc/rc.local
+    echo apt-get -y install puppet >> "$MNT/etc/rc.local"
+    echo puppet agent --enable     >> "$MNT/etc/rc.local"
+    echo service puppet restart    >> "$MNT/etc/rc.local"
 fi
 
-chmod +x /mnt/etc/rc.local
+chmod +x "$MNT/etc/rc.local"
 
-chmod +x /mnt/install.sh
-chroot /mnt /install.sh
-rm /mnt/install.sh
+chmod +x "$MNT/install.sh"
+chroot "$MNT" /install.sh
+rm "$MNT/install.sh"
 
 if [ "$OS" = "xenial" ]; then
-    sed -i 's#TimeoutStartSec=5min#TimeoutStartSec=10sec#g' /mnt/lib/systemd/system/networking.service
+    sed -i 's#TimeoutStartSec=5min#TimeoutStartSec=10sec#g' "$MNT/lib/systemd/system/networking.service"
 fi
 
 cleanup

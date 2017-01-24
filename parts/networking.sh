@@ -16,7 +16,7 @@
 
 if [ "$NETWORK_METHOD" = "dhcp" ]; then
 
-<<EOF cat > /mnt/etc/network/interfaces
+<<EOF cat > "$MNT/etc/network/interfaces"
 # interfaces(5) file used by ifup(8) and ifdown(8)
 # Include files from /etc/network/interfaces.d:
 source-directory /etc/network/interfaces.d
@@ -31,7 +31,7 @@ EOF
 
 else
 
-<<EOF cat > /mnt/etc/network/interfaces
+<<EOF cat > "$MNT/etc/network/interfaces"
 # interfaces(5) file used by ifup(8) and ifdown(8)
 # Include files from /etc/network/interfaces.d:
 source-directory /etc/network/interfaces.d
@@ -53,11 +53,11 @@ fi
 
 # /etc/hostname
 
-echo $VMNAME > /mnt/etc/hostname
+echo $VMNAME > "$MNT/etc/hostname"
 
 # /etc/hosts
 
-<<EOF cat > /mnt/etc/hosts
+<<EOF cat > "$MNT/etc/hosts"
 127.0.0.1       localhost
 127.0.1.1       $VMNAME.$NETWORK_DOMAIN $VMNAME
 
