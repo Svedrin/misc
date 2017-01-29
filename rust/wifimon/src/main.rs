@@ -9,6 +9,27 @@ extern crate yaml_rust;
 use yaml_rust::{YamlLoader,Yaml};
 
 
+#[derive(Hash, Eq, PartialEq, Debug)]
+struct WifiAPCount {
+    known:   i32,
+    unknown: i32
+}
+
+impl WifiAPCount {
+    fn new() -> WifiAPCount {
+        WifiAPCount { known: 0, unknown: 0 }
+    }
+
+    fn found_known(&mut self) {
+        self.known += 1;
+    }
+
+    fn found_unknown(&mut self) {
+        self.unknown += 1;
+    }
+}
+
+
 fn haz(conf: &Yaml, wifi: &Wifi) -> Option<bool> {
     match conf["networks"][wifi.ssid.as_str()]["aps"] {
         Yaml::Array(ref aps) => {
@@ -26,6 +47,7 @@ fn haz(conf: &Yaml, wifi: &Wifi) -> Option<bool> {
     };
 }
 
+
 fn main() {
     let mut f = File::open("wifimon.conf").unwrap();
     let mut s = String::new();
@@ -34,8 +56,7 @@ fn main() {
     let conf = &conf_wat[0];
 //     println!("{:?}", conf);
 
-    let mut counters_known   : HashMap<String, i32> = HashMap::new();
-    let mut counters_unknown : HashMap<String, i32> = HashMap::new();
+    let mut counters : HashMap<String, WifiAPCount> = HashMap::new();
 
     match wifiscanner::scan() {
         Ok(networks) => {
@@ -43,18 +64,12 @@ fn main() {
 //                 println!("{:?}: {:?} (known: {:?})", wifi.mac, wifi.ssid, haz(conf, &wifi));
                 match haz(conf, &wifi) {
                     Some(true)  => {
-                        let x = match counters_known.get(&wifi.ssid) {
-                            Some(x) => x + 1,
-                            None    => 1
-                        };
-                        counters_known.insert(wifi.ssid.clone(), x);
+                        counters.entry(wifi.ssid).or_insert(WifiAPCount::new())
+                            .found_known();
                     }
                     Some(false) => {
-                        let x = match counters_unknown.get(&wifi.ssid) {
-                            Some(x) => x + 1,
-                            None    => 1
-                        };
-                        counters_unknown.insert(wifi.ssid.clone(), x);
+                        counters.entry(wifi.ssid).or_insert(WifiAPCount::new())
+                            .found_unknown();
                     }
                     None => ()
                 };
@@ -65,24 +80,8 @@ fn main() {
 
     println!("# TYPE wifi_access_points gauge");
 
-    match conf["networks"] {
-        Yaml::Hash(ref networks) => {
-            for yamlkey in networks.keys() {
-                match yamlkey {
-                    &Yaml::String(ref key) => {
-                        println!("wifi_access_points{{ssid=\"{}\",type=\"known\"}} {}", key, match counters_known.get(key) {
-                            Some(x) => *x,
-                            None => 0
-                        });
-                        println!("wifi_access_points{{ssid=\"{}\",type=\"unknown\"}} {}", key, match counters_unknown.get(key) {
-                            Some(x) => *x,
-                            None => 0
-                        });
-                    },
-                    _ => ()
-                }
-            }
-        }
-        _ => ()
+    for (ssid, aps) in &counters {
+        println!("wifi_access_points{{ssid=\"{}\",type=\"known\"}} {}",   ssid, aps.known);
+        println!("wifi_access_points{{ssid=\"{}\",type=\"unknown\"}} {}", ssid, aps.unknown);
     }
 }
