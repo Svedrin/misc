@@ -5,3 +5,5 @@ c
 *.pyc
 sctp/bin
 *.so
+
+rust/

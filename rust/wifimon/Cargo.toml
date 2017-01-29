@@ -1,0 +1,8 @@
+[package]
+name = "wifimon"
+version = "0.1.0"
+authors = ["Michael Ziegler <michael.ziegler@proemion.com>"]
+
+[dependencies]
+wifiscanner = "0.3.*"
+yaml-rust = "*"
