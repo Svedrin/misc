@@ -11,6 +11,8 @@ use yaml_rust::{YamlLoader,Yaml};
 extern crate iron;
 use iron::prelude::*;
 use iron::status;
+use iron::mime::{Mime,TopLevel,SubLevel};
+use iron::headers::ContentType;
 
 extern crate router;
 use router::Router;
@@ -55,7 +57,9 @@ fn haz(conf: &Yaml, wifi: &Wifi) -> Option<bool> {
 
 
 fn handle_index(_: &mut Request) -> IronResult<Response> {
-    Ok(Response::with((status::Ok, r#"<h1>WifiMon</h1><a href="/metrics">Metrics</a>"#)))
+    let mut resp = Response::with((status::Ok, r#"<h1>WifiMon</h1><a href="/metrics">Metrics</a>"#));
+    resp.headers.set(ContentType(Mime(TopLevel::Text, SubLevel::Html, vec![])));
+    Ok(resp)
 }
 
 
