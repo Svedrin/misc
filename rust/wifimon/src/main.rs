@@ -2,10 +2,28 @@ use std::io::prelude::*;
 use std::fs::File;
 
 extern crate wifiscanner;
+use wifiscanner::Wifi;
 
 extern crate yaml_rust;
 use yaml_rust::{YamlLoader,Yaml};
 
+
+fn haz(conf: &Yaml, wifi: &Wifi) -> Option<bool> {
+    match conf["networks"][wifi.ssid.as_str()]["aps"] {
+        Yaml::Array(ref aps) => {
+            for ap in aps {
+                if match ap {
+                    &Yaml::String(ref v) => *v == wifi.mac,
+                    _ => false
+                } {
+                    return Some(true);
+                }
+            }
+            return Some(false);
+        },
+        _ => return None
+    };
+}
 
 fn main() {
     let mut f = File::open("wifimon.conf").unwrap();
@@ -20,23 +38,7 @@ fn main() {
     match result {
         Ok(networks) => {
             for wifi in networks {
-                println!("{:?}: {:?}", wifi.mac, wifi.ssid);
-                match conf["networks"][wifi.ssid.as_str()]["aps"] {
-                    Yaml::Array(ref aps) => {
-                        for ap in aps {
-                            if match ap {
-                                &Yaml::String(ref v) => *v == wifi.mac,
-                                _ => false
-                            } {
-                                println!("OMFG FOUND");
-                            }
-                            else {
-                                println!("OH NOEZ");
-                            }
-                        }
-                    },
-                    _ => ()
-                }
+                println!("{:?}: {:?} (known: {:?})", wifi.mac, wifi.ssid, haz(conf, &wifi));
             }
         },
         Err(_) => ()
