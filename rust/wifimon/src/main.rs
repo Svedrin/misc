@@ -8,6 +8,12 @@ use wifiscanner::Wifi;
 extern crate yaml_rust;
 use yaml_rust::{YamlLoader,Yaml};
 
+extern crate iron;
+use iron::prelude::*;
+use iron::status;
+
+extern crate router;
+use router::Router;
 
 #[derive(Hash, Eq, PartialEq, Debug)]
 struct WifiAPCount {
@@ -44,16 +50,31 @@ fn haz(conf: &Yaml, wifi: &Wifi) -> Option<bool> {
             return Some(false);
         },
         _ => return None
-    };
+    }
 }
 
 
-fn main() {
-    let mut f = File::open("wifimon.conf").unwrap();
-    let mut s = String::new();
-    f.read_to_string(&mut s).unwrap();
-    let conf_wat = YamlLoader::load_from_str(s.as_str()).unwrap();
-    let conf = &conf_wat[0];
+fn handle_index(_: &mut Request) -> IronResult<Response> {
+    Ok(Response::with((status::Ok, r#"<h1>WifiMon</h1><a href="/metrics">Metrics</a>"#)))
+}
+
+
+fn handle_metrics(_: &mut Request) -> IronResult<Response> {
+    let conf = match File::open("wifimon.conf") {
+        Ok(mut f) => {
+            let mut s = String::new();
+            match f.read_to_string(&mut s) {
+                Ok(_) =>
+                    match YamlLoader::load_from_str(s.as_str()) {
+                        Ok(f) => Some(f),
+                        Err(err) => return Ok(Response::with((status::InternalServerError, format!("Failed to parse wifimon.conf: {}", err))))
+                    },
+                Err(err) => return Ok(Response::with((status::InternalServerError, format!("Failed to read wifimon.conf: {}", err))))
+            }
+        },
+        Err(_) => None
+    };
+
 //     println!("{:?}", conf);
 
     let mut counters : HashMap<String, WifiAPCount> = HashMap::new();
@@ -62,26 +83,43 @@ fn main() {
         Ok(networks) => {
             for wifi in networks {
 //                 println!("{:?}: {:?} (known: {:?})", wifi.mac, wifi.ssid, haz(conf, &wifi));
-                match haz(conf, &wifi) {
-                    Some(true)  => {
-                        counters.entry(wifi.ssid).or_insert(WifiAPCount::new())
-                            .found_known();
-                    }
-                    Some(false) => {
+                match conf {
+                    Some(ref conf) => match haz(&conf[0], &wifi) {
+                        Some(true)  => {
+                            counters.entry(wifi.ssid).or_insert(WifiAPCount::new())
+                                .found_known();
+                        }
+                        Some(false) => {
+                            counters.entry(wifi.ssid).or_insert(WifiAPCount::new())
+                                .found_unknown();
+                        }
+                        None => ()
+                    },
+                    None => {
                         counters.entry(wifi.ssid).or_insert(WifiAPCount::new())
                             .found_unknown();
                     }
-                    None => ()
                 };
             }
         },
         Err(_) => ()
     }
 
-    println!("# TYPE wifi_access_points gauge");
+    let mut result = vec!["# TYPE wifi_access_points gauge\n".to_string()];
 
     for (ssid, aps) in &counters {
-        println!("wifi_access_points{{ssid=\"{}\",type=\"known\"}} {}",   ssid, aps.known);
-        println!("wifi_access_points{{ssid=\"{}\",type=\"unknown\"}} {}", ssid, aps.unknown);
+        result.push(format!(r#"wifi_access_points{{ssid="{}",type="known"}} {}"#,   ssid, aps.known)   + "\n");
+        result.push(format!(r#"wifi_access_points{{ssid="{}",type="unknown"}} {}"#, ssid, aps.unknown) + "\n");
     }
+
+    Ok(Response::with((status::Ok, result.join(""))))
+}
+
+fn main() {
+    let mut router = Router::new();
+
+    router.get("/",        handle_index,   "index");
+    router.get("/metrics", handle_metrics, "metrics");
+
+    Iron::new(router).http("localhost:3000").unwrap();
 }
