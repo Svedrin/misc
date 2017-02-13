@@ -190,6 +190,9 @@ if [ "`echo $IMAGEFILE | cut -d: -f1`" = "rbd" ]; then
     RBD_POOL="`echo $IMAGEFILE | cut -d: -f2 | cut -d/ -f1`"
     RBD_IMAGE="`echo $IMAGEFILE | cut -d: -f2 | cut -d/ -f2`"
     IMAGEFILE="/tmp/$VMNAME.img"
+
+    # See if virsh is ok
+    virsh pool-refresh "$RBD_POOL"
 fi
 
 if [ -e "$MNT" ]; then
