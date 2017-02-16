@@ -79,6 +79,9 @@ while [ -n "${1:-}" ]; do
 
         -o|--os)
             OS="$2"
+            if [ -e "os/$OS/vmaker.sh" ]; then
+                source "os/$OS/vmaker.sh"
+            fi
             shift
             ;;
 
