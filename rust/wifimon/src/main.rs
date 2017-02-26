@@ -3,7 +3,6 @@ use std::fs::File;
 use std::collections::HashMap;
 
 extern crate wifiscanner;
-use wifiscanner::Wifi;
 
 extern crate yaml_rust;
 use yaml_rust::{YamlLoader,Yaml};
@@ -38,16 +37,6 @@ impl WifiAPCount {
 }
 
 
-fn haz(conf: &Yaml, wifi: &Wifi) -> Option<bool> {
-    if let Yaml::Array(ref aps) = conf["networks"][wifi.ssid.as_str()]["aps"] {
-        for ap in aps {
-            if *ap == Yaml::String(wifi.mac.clone()) {
-                return Some(true);
-            }
-        }
-    }
-    return Some(false);
-}
 
 
 fn handle_index(_: &mut Request) -> IronResult<Response> {
@@ -75,17 +64,22 @@ fn handle_metrics(_: &mut Request) -> IronResult<Response> {
     let mut counters : HashMap<String, WifiAPCount> = HashMap::new();
 
     if let Ok(networks) = wifiscanner::scan() {
-        for wifi in networks {
+'wifi:  for wifi in networks {
             if let Some(ref conf_) = conf {
                 // If we have a config and it doesn't know this network, skip altogether
                 if conf_[0]["networks"][wifi.ssid.as_str()] == Yaml::BadValue {
-                    continue
+                    continue;
                 }
                 // If the AP is known, count as known and be done
-                if haz(&conf_[0], &wifi) == Some(true) {
-                    counters.entry(wifi.ssid).or_insert(WifiAPCount::new())
-                        .found_known();
-                    continue;
+                if let Yaml::Array(ref aps) = conf_[0]["networks"][wifi.ssid.as_str()]["aps"] {
+                    for ap in aps {
+                        if *ap == Yaml::String(wifi.mac.clone()) {
+                            // Found it!
+                            counters.entry(wifi.ssid).or_insert(WifiAPCount::new())
+                                .found_known();
+                            continue 'wifi;
+                        }
+                    }
                 }
             }
             // No config or unknown AP, so count as unknown
