@@ -67,13 +67,12 @@ fn handle_metrics(_: &mut Request) -> IronResult<Response> {
     let conf = match File::open("wifimon.conf") {
         Ok(mut f) => {
             let mut s = String::new();
-            match f.read_to_string(&mut s) {
-                Ok(_) =>
-                    match YamlLoader::load_from_str(s.as_str()) {
-                        Ok(f) => Some(f),
-                        Err(err) => return Ok(Response::with((status::InternalServerError, format!("Failed to parse wifimon.conf: {}", err))))
-                    },
-                Err(err) => return Ok(Response::with((status::InternalServerError, format!("Failed to read wifimon.conf: {}", err))))
+            if let Err(err) = f.read_to_string(&mut s) {
+                return Ok(Response::with((status::InternalServerError, format!("Failed to read wifimon.conf: {}", err))));
+            }
+            match YamlLoader::load_from_str(s.as_str()) {
+                Ok(f)    => Some(f),
+                Err(err) => return Ok(Response::with((status::InternalServerError, format!("Failed to parse wifimon.conf: {}", err))))
             }
         },
         Err(_) => None
