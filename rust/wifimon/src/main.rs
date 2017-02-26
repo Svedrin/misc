@@ -120,6 +120,9 @@ fn handle_metrics(_: &mut Request) -> IronResult<Response> {
 }
 
 fn main() {
+    // TODO: Move to
+    // http://fengsp.github.io/pencil/pencil/
+
     let mut router = Router::new();
 
     router.get("/",        handle_index,   "index");
