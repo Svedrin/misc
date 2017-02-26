@@ -78,30 +78,25 @@ fn handle_metrics(_: &mut Request) -> IronResult<Response> {
         Err(_) => None
     };
 
-//     println!("{:?}", conf);
-
     let mut counters : HashMap<String, WifiAPCount> = HashMap::new();
 
     if let Ok(networks) = wifiscanner::scan() {
         for wifi in networks {
-//                 println!("{:?}: {:?} (known: {:?})", wifi.mac, wifi.ssid, haz(conf, &wifi));
-            match conf {
-                Some(ref conf) => match haz(&conf[0], &wifi) {
-                    Some(true)  => {
-                        counters.entry(wifi.ssid).or_insert(WifiAPCount::new())
-                            .found_known();
-                    }
-                    Some(false) => {
-                        counters.entry(wifi.ssid).or_insert(WifiAPCount::new())
-                            .found_unknown();
-                    }
-                    None => ()
-                },
-                None => {
-                    counters.entry(wifi.ssid).or_insert(WifiAPCount::new())
-                        .found_unknown();
+            if let Some(ref conf_) = conf {
+                // If we have a config and it doesn't know this network, skip altogether
+                if conf_[0]["networks"][wifi.ssid.as_str()] == Yaml::BadValue {
+                    continue
                 }
-            };
+                // If the AP is known, count as known and be done
+                if haz(&conf_[0], &wifi) == Some(true) {
+                    counters.entry(wifi.ssid).or_insert(WifiAPCount::new())
+                        .found_known();
+                    continue;
+                }
+            }
+            // No config or unknown AP, so count as unknown
+            counters.entry(wifi.ssid).or_insert(WifiAPCount::new())
+                .found_unknown();
         }
     }
 
