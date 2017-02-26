@@ -83,30 +83,27 @@ fn handle_metrics(_: &mut Request) -> IronResult<Response> {
 
     let mut counters : HashMap<String, WifiAPCount> = HashMap::new();
 
-    match wifiscanner::scan() {
-        Ok(networks) => {
-            for wifi in networks {
+    if let Ok(networks) = wifiscanner::scan() {
+        for wifi in networks {
 //                 println!("{:?}: {:?} (known: {:?})", wifi.mac, wifi.ssid, haz(conf, &wifi));
-                match conf {
-                    Some(ref conf) => match haz(&conf[0], &wifi) {
-                        Some(true)  => {
-                            counters.entry(wifi.ssid).or_insert(WifiAPCount::new())
-                                .found_known();
-                        }
-                        Some(false) => {
-                            counters.entry(wifi.ssid).or_insert(WifiAPCount::new())
-                                .found_unknown();
-                        }
-                        None => ()
-                    },
-                    None => {
+            match conf {
+                Some(ref conf) => match haz(&conf[0], &wifi) {
+                    Some(true)  => {
+                        counters.entry(wifi.ssid).or_insert(WifiAPCount::new())
+                            .found_known();
+                    }
+                    Some(false) => {
                         counters.entry(wifi.ssid).or_insert(WifiAPCount::new())
                             .found_unknown();
                     }
-                };
-            }
-        },
-        Err(_) => ()
+                    None => ()
+                },
+                None => {
+                    counters.entry(wifi.ssid).or_insert(WifiAPCount::new())
+                        .found_unknown();
+                }
+            };
+        }
     }
 
     let mut result = vec!["# TYPE wifi_access_points gauge\n".to_string()];
