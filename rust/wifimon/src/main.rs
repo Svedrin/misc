@@ -65,7 +65,7 @@ fn handle_metrics(_: &mut Request) -> IronResult<Response> {
                 return Ok(Response::with((status::InternalServerError, format!("Failed to read wifimon.conf: {}", err))));
             }
             match YamlLoader::load_from_str(s.as_str()) {
-                Ok(f)    => Some(f),
+                Ok(f)    => Some(f[0]),
                 Err(err) => return Ok(Response::with((status::InternalServerError, format!("Failed to parse wifimon.conf: {}", err))))
             }
         },
@@ -78,11 +78,11 @@ fn handle_metrics(_: &mut Request) -> IronResult<Response> {
         for wifi in networks {
             if let Some(ref conf_) = conf {
                 // If we have a config and it doesn't know this network, skip altogether
-                if conf_[0]["networks"][wifi.ssid.as_str()] == Yaml::BadValue {
+                if conf_["networks"][wifi.ssid.as_str()] == Yaml::BadValue {
                     continue
                 }
                 // If the AP is known, count as known and be done
-                if haz(&conf_[0], &wifi) == Some(true) {
+                if haz(&conf_, &wifi) == Some(true) {
                     counters.entry(wifi.ssid).or_insert(WifiAPCount::new())
                         .found_known();
                     continue;
