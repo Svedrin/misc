@@ -39,20 +39,14 @@ impl WifiAPCount {
 
 
 fn haz(conf: &Yaml, wifi: &Wifi) -> Option<bool> {
-    match conf["networks"][wifi.ssid.as_str()]["aps"] {
-        Yaml::Array(ref aps) => {
-            for ap in aps {
-                if match ap {
-                    &Yaml::String(ref v) => *v == wifi.mac,
-                    _ => false
-                } {
-                    return Some(true);
-                }
+    if let Yaml::Array(ref aps) = conf["networks"][wifi.ssid.as_str()]["aps"] {
+        for ap in aps {
+            if *ap == Yaml::String(wifi.mac.clone()) {
+                return Some(true);
             }
-            return Some(false);
-        },
-        _ => return None
+        }
     }
+    return Some(false);
 }
 
 
