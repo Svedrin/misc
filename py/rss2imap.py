@@ -18,6 +18,12 @@ from BeautifulSoup import BeautifulSoup
 from time     import time, mktime
 from datetime import datetime
 
+from lockutils import AlreadyLocked, acquire_lock, release_lock
+
+try:
+    LOCK_TUPLE = acquire_lock("/var/lock/rss2imap.lock", 10)
+except AlreadyLocked:
+    sys.exit(0)
 
 conf = json.load(open(os.path.expanduser("~/.rss2imap.conf")))
 
@@ -124,7 +130,12 @@ def select(*queues):
     for queue in queues:
         go(listen_and_forward, queue)
     while True:
-        yield combined.get()
+        try:
+            yield combined.get()
+        except:
+            # interpreter shutdown may cause a
+            # NoneType is not callable exception
+            break
 
 
 @go
@@ -296,4 +307,7 @@ if hasattr(sys, "setcheckinterval"):
 
 for dirname, feeds in conf["feeds"].items():
     for feedname, feedinfo in feeds.items():
-        go_nodaemon(process_feed, dirname, feedname, feedinfo)
+        th = go_nodaemon(process_feed, dirname, feedname, feedinfo)
+        th.name = feedname
+
+release_lock(LOCK_TUPLE)
