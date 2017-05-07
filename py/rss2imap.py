@@ -8,7 +8,7 @@ import imaplib
 import requests
 import sys
 import hashlib
-import json
+import yaml
 import os.path
 import threading
 import traceback
@@ -25,32 +25,27 @@ try:
 except AlreadyLocked:
     sys.exit(0)
 
-conf = json.load(open(os.path.expanduser("~/.rss2imap.conf")))
+conf = yaml.load(open(os.path.expanduser("~/.rss2imap.conf"), "rb"))
 
 # Conf is a structure such as this:
 #
-# {
-#    "imap": {
-#        "host": "localhost",
-#        "user": "your IMAP login name",
+#    ---
+#    "imap":
+#        "host": "localhost"
+#        "user": "your IMAP login name"
 #        "pass": "your IMAP password"
-#    },
-#    "feeds": {
-#        "Golem": {    <-- IMAP directory                  v Feeds to put in there
-#            "Golem Security": "http://rss.golem.de/rss.php?feed=RSS1.0&tp=sec",
-#            "Golem Internet": "http://rss.golem.de/rss.php?feed=RSS1.0&tp=inet",
+#    "feeds":
+#        "Golem":      <-- IMAP directory                  v Feeds to put in there
+#            "Golem Security": "http://rss.golem.de/rss.php?feed=RSS1.0&tp=sec"
+#            "Golem Internet": "http://rss.golem.de/rss.php?feed=RSS1.0&tp=inet"
 #            "Golem Apps":     "http://rss.golem.de/rss.php?feed=RSS1.0&tp=apps"
-#        },
-#        "Comics": {
-#            "QC":             "http://www.questionablecontent.net/QCRSS.xml",
-#            "xkcd":           "http://xkcd.com/rss.xml",
-#            "wumo":           "http://feeds.feedburner.com/wulffmorgenthaler",
+#        "Comics":
+#            "QC":             "http://www.questionablecontent.net/QCRSS.xml"
+#            "xkcd":           "http://xkcd.com/rss.xml"
+#            "wumo":           "http://feeds.feedburner.com/wulffmorgenthaler"
 #            "ahoipolloi":     "http://feed43.com/ahoipolloi.xml"
-#            "Dilbert":        { "url": "http://feeds.feedburner.com/DilbertDailyStrip?format=xml", "proxy": "dilbert" },
-#            "tpfd":           { "url": "http://www.toothpastefordinner.com/rss/rss.php",           "proxy": "tpfd" },
-#        }
-#    }
-# }
+#            "Dilbert":        { "url": "http://feeds.feedburner.com/DilbertDailyStrip?format=xml", "proxy": "dilbert" }
+#            "tpfd":           { "url": "http://www.toothpastefordinner.com/rss/rss.php",           "proxy": "tpfd" }
 
 
 content_template = """
