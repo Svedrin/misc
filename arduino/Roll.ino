@@ -221,7 +221,7 @@ void loop() {
             break;
 
         case HALT_WAIT:
-            if( now - active_since > 3000 ){
+            if( now - active_since > 1000 ){
                 last_halt_position = constrain(current_position, 0, 100);
                 NEWSTATE(HALT)
             }
