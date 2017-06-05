@@ -27,6 +27,8 @@ typedef enum {
     HALT,
     MANUAL_DOWN,
     MANUAL_UP,
+    MANUAL_DOWN_DEBOUNCE,
+    MANUAL_UP_DEBOUNCE,
     AUTO_DOWN,
     AUTO_UP
 } state_t;
@@ -165,12 +167,14 @@ void loop() {
             break;
 
         case MANUAL_UP:
+        case MANUAL_UP_DEBOUNCE:
         case AUTO_UP:
             digitalWrite(PIN_GATE_DOWN, LOW);
             digitalWrite(PIN_GATE_UP,   HIGH);
             break;
 
         case MANUAL_DOWN:
+        case MANUAL_DOWN_DEBOUNCE:
         case AUTO_DOWN:
             digitalWrite(PIN_GATE_DOWN, HIGH);
             digitalWrite(PIN_GATE_UP,   LOW);
@@ -181,6 +185,7 @@ void loop() {
 
     switch(active_state){
         case MANUAL_DOWN:
+        case MANUAL_DOWN_DEBOUNCE:
         case AUTO_DOWN:
             // It takes 20 seconds to go from 0% to 100%. (Gravity helps.)
             // 200 = 23[s] * 1000[ms/s] / 100[%].
@@ -188,6 +193,7 @@ void loop() {
             break;
 
         case MANUAL_UP:
+        case MANUAL_UP_DEBOUNCE:
         case AUTO_UP:
             // It takes 23 seconds to go from 100% to 0%.
             // 230 = 23[s] * 1000[ms/s] / 100[%].
@@ -203,13 +209,13 @@ void loop() {
             if( user_state == MANUAL_UP ){
                 if( current_position > 0 ){
                     target_position = -1;
-                    NEWSTATE(MANUAL_UP)
+                    NEWSTATE(MANUAL_UP_DEBOUNCE)
                 }
             }
             else if( user_state == MANUAL_DOWN ){
                 if( current_position < 100 ){
                     target_position = -1;
-                    NEWSTATE(MANUAL_DOWN)
+                    NEWSTATE(MANUAL_DOWN_DEBOUNCE)
                 }
             }
             else if( auto_state == AUTO_UP ){
@@ -224,6 +230,18 @@ void loop() {
             if( now - active_since > 1000 ){
                 last_halt_position = constrain(current_position, 0, 100);
                 NEWSTATE(HALT)
+            }
+            break;
+
+        case MANUAL_DOWN_DEBOUNCE:
+            if( now - active_since > 500 ){
+                NEWSTATE(MANUAL_DOWN)
+            }
+            break;
+
+        case MANUAL_UP_DEBOUNCE:
+            if( now - active_since > 500 ){
+                NEWSTATE(MANUAL_UP)
             }
             break;
 
