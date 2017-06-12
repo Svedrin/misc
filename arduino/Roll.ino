@@ -188,7 +188,7 @@ void loop() {
         case MANUAL_DOWN_DEBOUNCE:
         case AUTO_DOWN:
             // It takes 20 seconds to go from 0% to 100%. (Gravity helps.)
-            // 200 = 23[s] * 1000[ms/s] / 100[%].
+            // 200 = 20[s] * 1000[ms/s] / 100[%].
             current_position = last_halt_position + ((now - active_since) / 200.0);
             break;
 
@@ -207,16 +207,12 @@ void loop() {
     switch(active_state){
         case HALT:
             if( user_state == MANUAL_UP ){
-                if( current_position > 0 ){
-                    target_position = -1;
-                    NEWSTATE(MANUAL_UP_DEBOUNCE)
-                }
+                target_position = -1;
+                NEWSTATE(MANUAL_UP_DEBOUNCE)
             }
             else if( user_state == MANUAL_DOWN ){
-                if( current_position < 100 ){
-                    target_position = -1;
-                    NEWSTATE(MANUAL_DOWN_DEBOUNCE)
-                }
+                target_position = -1;
+                NEWSTATE(MANUAL_DOWN_DEBOUNCE)
             }
             else if( auto_state == AUTO_UP ){
                 NEWSTATE(AUTO_UP)
@@ -228,7 +224,7 @@ void loop() {
 
         case HALT_WAIT:
             if( now - active_since > 1000 ){
-                last_halt_position = constrain(current_position, 0, 100);
+                last_halt_position = current_position;
                 NEWSTATE(HALT)
             }
             break;
@@ -246,14 +242,19 @@ void loop() {
             break;
 
         case MANUAL_DOWN:
-            if( user_state != MANUAL_DOWN || current_position >= 100 ){
+            if( user_state != MANUAL_DOWN ){
                 target_position = current_position;
                 NEWSTATE(HALT_WAIT)
             }
             break;
 
         case MANUAL_UP:
-            if( user_state != MANUAL_UP || current_position <= 0 ){
+            if( user_state != MANUAL_UP ){
+                // Used for calibration: If our app's zero is lower than *real* zero, the user
+                // can just manually go to "real" zero and we'll use it as new zero. The hardware
+                // will switch off eventually anyway, so this is correct.
+                if(current_position < 0)
+                    current_position = 0;
                 target_position = current_position;
                 NEWSTATE(HALT_WAIT)
             }
@@ -261,6 +262,9 @@ void loop() {
 
         case AUTO_DOWN:
             if( current_position >= target_position ){
+                // At the 100% position, the blind can still be shut farther to achieve more
+                // darkness. Just take a note of that position in our usual percentage so we
+                // open correctly as far as we need to.
                 target_position = current_position;
                 NEWSTATE(HALT_WAIT)
             }
