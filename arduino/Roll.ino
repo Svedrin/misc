@@ -1,6 +1,7 @@
 // kate: hl c++
 
 #include "ESP8266WiFi.h"
+#include <ESP8266WebServer.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 
@@ -17,6 +18,8 @@ const char* mqtt_server = "rabbitmq.local.lan";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
+ESP8266WebServer server(80);
+
 
 long lastMsg = 0;
 char msg[150];
@@ -33,12 +36,20 @@ typedef enum {
     AUTO_UP
 } state_t;
 
+typedef enum {
+    PROM_NEUTRAL,
+    PROM_CONTROLLED,
+    PROM_IGNORING
+} promstate_t;
+
 int last_halt_position = 0;
 int target_position    = 0;
 int current_position   = 0;
 
 state_t active_state = INIT;
 int     active_since = 0;
+
+promstate_t prom_state = PROM_NEUTRAL;
 
 
 #define NEWSTATE(state) { active_state = state; active_since = now; Serial.print("New state: "); Serial.print(state); Serial.println(""); }
@@ -57,6 +68,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
     if( root["id"] == ESP.getChipId() ){
         target_position = constrain(root["target_position"], 0, 100);
+        if( prom_state == PROM_CONTROLLED )
+            prom_state = PROM_IGNORING;
     }
 }
 
@@ -112,6 +125,36 @@ void setup(void)
 
     client.setServer(mqtt_server, 1883);
     client.setCallback(callback);
+
+    server.on("/", HTTP_GET, [](){
+        server.sendHeader("Connection", "close");
+        server.send(200, "text/html", "<h1>Roll!</h1>");
+    });
+    server.on("/promhook", HTTP_POST, [](){
+        server.sendHeader("Connection", "close");
+
+        StaticJsonBuffer<2048> jsonBuffer;
+        JsonObject& root = jsonBuffer.parseObject(server.arg("plain"));
+
+        if( root.success() && root.containsKey("status") ){
+            if( strcmp( root["status"], "firing" ) == 0 ){
+                if( prom_state == PROM_NEUTRAL ){
+                    target_position = 100;
+                    prom_state = PROM_CONTROLLED;
+                }
+            }
+            else if( strcmp( root["status"], "resolved" ) == 0 ){
+                if( prom_state == PROM_CONTROLLED ){
+                    target_position = 0;
+                }
+                prom_state = PROM_NEUTRAL;
+            }
+        }
+
+        server.send(200, "text/plain", "OK");
+    });
+    server.begin();
+
 }
 
 void loop() {
@@ -119,6 +162,7 @@ void loop() {
         reconnect();
     }
 
+    server.handleClient();
     client.loop();
 
     long now = millis();
@@ -208,10 +252,14 @@ void loop() {
         case HALT:
             if( user_state == MANUAL_UP ){
                 target_position = -1;
+                if( prom_state == PROM_CONTROLLED )
+                    prom_state = PROM_IGNORING;
                 NEWSTATE(MANUAL_UP_DEBOUNCE)
             }
             else if( user_state == MANUAL_DOWN ){
                 target_position = -1;
+                if( prom_state == PROM_CONTROLLED )
+                    prom_state = PROM_IGNORING;
                 NEWSTATE(MANUAL_DOWN_DEBOUNCE)
             }
             else if( auto_state == AUTO_UP ){
