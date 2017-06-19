@@ -106,6 +106,7 @@ void setup(void)
 
     // Connect to WiFi
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+    WiFi.mode(WIFI_STA);
     while (WiFi.status() != WL_CONNECTED) {
         delay(500);
         Serial.print(".");
