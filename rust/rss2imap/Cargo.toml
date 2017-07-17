@@ -1,0 +1,13 @@
+[package]
+name = "rss2imap"
+version = "0.1.0"
+authors = ["Michael Ziegler <michael.ziegler@proemion.com>"]
+
+[dependencies]
+yaml-rust = "0.3"
+imap = "0.3.3"
+openssl = "*"
+
+[dependencies.rss]
+version = "0.7"
+features = ["from_url"]
