@@ -1,19 +1,16 @@
+extern crate imap;
+extern crate openssl;
+extern crate rss;
+extern crate yaml_rust;
+
 use std::env;
 use std::fs::File;
 use std::io::prelude::*;
 use std::thread;
-
-extern crate rss;
 use rss::Channel;
-
-extern crate yaml_rust;
-use yaml_rust::{Yaml,YamlLoader};
-
-extern crate openssl;
-use openssl::ssl::{SslConnectorBuilder, SslMethod};
-
-extern crate imap;
 use imap::client::Client;
+use openssl::ssl::{SslConnectorBuilder, SslMethod};
+use yaml_rust::{Yaml,YamlLoader};
 
 const CONTENT_TEMPLATE: &str =
 r#"<div style="background-color: #ededed; border: 1px solid grey; margin: 5px;">
@@ -25,13 +22,14 @@ r#"<div style="background-color: #ededed; border: 1px solid grey; margin: 5px;">
 {content}"#;
 
 
-
-fn main() {
+fn run() -> Result<(), String> {
     let mut conffile = File::open(
         env::home_dir()
-            .expect("Where's your homedir?")
-            .join(".rss2imap.conf"))
-        .expect("config file not found");
+            .ok_or("Where's your homedir?")?
+            .join(".rss2imap.conf")
+        )
+        .ok()
+        .ok_or("Config file ~/.rss2imap.conf not found")?;
 
     let mut contents = String::new();
     conffile.read_to_string(&mut contents)
@@ -39,19 +37,19 @@ fn main() {
 
     let confs = YamlLoader::load_from_str(contents.as_str()).unwrap();
     if confs.len() < 1 {
-        panic!("Conf is empty");
+        return Err(String::from("Conf is empty"));
     }
     let conf = &confs[0];
 
     let imaphost = conf["imap"]["host"]
         .as_str()
-        .expect("Imap host is not a string");
+        .ok_or("Imap host is not a string")?;
     let imapuser = conf["imap"]["user"]
         .as_str()
-        .expect("Imap user is not a string");
+        .ok_or("Imap user is not a string")?;
     let imappass = conf["imap"]["pass"]
         .as_str()
-        .expect("Imap pass is not a string");
+        .ok_or("Imap pass is not a string")?;
 
     let mut imap_socket = Client::secure_connect(
         (&imaphost[..], 993),
@@ -60,30 +58,32 @@ fn main() {
             .unwrap()
             .build()
         )
-        .expect("Could not connect to IMAP server");
+        .ok()
+        .ok_or("Could not connect to IMAP server")?;
 
     imap_socket.login(imapuser, imappass)
-        .expect("Imap login failed");
+        .ok()
+        .ok_or("Imap login failed")?;
 
     let mut children = vec![];
 
     for (imapdir, feeds) in conf["feeds"]
         .as_hash()
-        .expect("feeds is not a dict")
+        .ok_or("feeds is not a dict")?
     {
         let dirname = imapdir
             .as_str()
-            .expect("dirname is not a string")
+            .ok_or("dirname is not a string")?
             .clone()
             .to_owned();
 
         for (_feedname, feedconf) in feeds
             .as_hash()
-            .expect(format!("config for {} is not a dict", dirname).as_str())
+            .ok_or(format!("config for {} is not a dict", dirname).as_str())?
         {
             let feedname = _feedname
                 .as_str()
-                .expect("feedname is not a string")
+                .ok_or("feedname is not a string")?
                 .clone()
                 .to_owned();
             let feedurl =
@@ -91,10 +91,10 @@ fn main() {
                     &Yaml::String(ref url) => Some(url.as_str()),
                     &Yaml::Hash(_) => Some(feedconf["url"]
                         .as_str()
-                        .expect(format!("config for feed {} does not have a url string", feedname).as_str())),
+                        .ok_or(format!("config for feed {} does not have a url string", feedname).as_str())?),
                     _ => None
                 }
-                .expect(format!("config for feed {} is not a string or hash", feedname).as_str())
+                .ok_or(format!("config for feed {} is not a string or hash", feedname).as_str())?
                 .clone()
                 .to_owned();
 
@@ -104,7 +104,13 @@ fn main() {
                 thread::Builder::new()
                     .name(feedname.clone())
                     .spawn(move || {
-                        let channel = Channel::from_url(&feedurl).unwrap();
+                        let channel = match Channel::from_url(&feedurl) {
+                            Ok(chan) => chan,
+                            Err(err) => {
+                                println!("Error parsing feed {}: {}", feedname, err);
+                                return;
+                            }
+                        };
                         for item in channel.items().iter() {
                             println!("{:?} -> {:?}", dirname,
                                 CONTENT_TEMPLATE
@@ -113,6 +119,7 @@ fn main() {
                                     .replace("{link}",    item.link().unwrap_or_else(|| "no link"))
                                     .replace("{content}", item.description().unwrap_or_else(|| "no content"))
                             );
+                            return;
                         }
                     })
                     .expect(format!("Could not start parser thread for feed {:?}", _feedname).as_str())
@@ -125,5 +132,11 @@ fn main() {
         let _ = child.join();
     }
 
+    Ok(())
+}
 
+fn main() {
+    if let Err(err) = run() {
+        println!("Error: {}", err);
+    }
 }
