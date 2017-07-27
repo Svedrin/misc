@@ -23,19 +23,18 @@ r#"<div style="background-color: #ededed; border: 1px solid grey; margin: 5px;">
 
 
 fn run() -> Result<(), String> {
-    let mut conffile = File::open(
+    let mut conffile = String::new();
+    File::open(
         env::home_dir()
             .ok_or("Where's your homedir?")?
             .join(".rss2imap.conf")
         )
-        .ok()
-        .ok_or("Config file ~/.rss2imap.conf not found")?;
+        .map_err(|err| format!("Could not open config file [~/.rss2imap.conf]: {}", err))?
+        .read_to_string(&mut conffile)
+        .map_err(|err| format!("Could not read config file [~/.rss2imap.conf]: {}", err))?;
 
-    let mut contents = String::new();
-    conffile.read_to_string(&mut contents)
-        .expect("could not read config file");
-
-    let confs = YamlLoader::load_from_str(contents.as_str()).unwrap();
+    let confs = YamlLoader::load_from_str(conffile.as_str())
+        .map_err(|err| format!("Config is not valid YAML: {}", err))?;
     if confs.len() < 1 {
         return Err(String::from("Conf is empty"));
     }
@@ -58,12 +57,10 @@ fn run() -> Result<(), String> {
             .unwrap()
             .build()
         )
-        .ok()
-        .ok_or("Could not connect to IMAP server")?;
+        .map_err(|err| format!("Could not connect to IMAP server: {}", err))?;
 
     imap_socket.login(imapuser, imappass)
-        .ok()
-        .ok_or("Imap login failed")?;
+        .map_err(|err| format!("Imap login failed: {}", err))?;
 
     let mut children = vec![];
 
