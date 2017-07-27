@@ -91,10 +91,10 @@ fn run() -> Result<(), String> {
                     &Yaml::String(ref url) => Some(url.as_str()),
                     &Yaml::Hash(_) => Some(feedconf["url"]
                         .as_str()
-                        .ok_or(format!("config for feed {} does not have a url string", feedname).as_str())?),
+                        .ok_or(format!("config for feed {} does not have a url string", feedname))?),
                     _ => None
                 }
-                .ok_or(format!("config for feed {} is not a string or hash", feedname).as_str())?
+                .ok_or(format!("config for feed {} is not a string or hash", feedname))?
                 .clone()
                 .to_owned();
 
@@ -115,9 +115,9 @@ fn run() -> Result<(), String> {
                             println!("{:?} -> {:?}", dirname,
                                 CONTENT_TEMPLATE
                                     .replace("{feed}",    feedname.as_str())
-                                    .replace("{title}",   item.title().unwrap_or_else(|| "no title"))
-                                    .replace("{link}",    item.link().unwrap_or_else(|| "no link"))
-                                    .replace("{content}", item.description().unwrap_or_else(|| "no content"))
+                                    .replace("{title}",   item.title().unwrap_or("no title"))
+                                    .replace("{link}",    item.link().unwrap_or("no link"))
+                                    .replace("{content}", item.description().unwrap_or("no content"))
                             );
                             return;
                         }
