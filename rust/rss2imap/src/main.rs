@@ -124,7 +124,7 @@ fn run() -> Result<(), String> {
         }
     }
 
-    while let Some(child) = children.pop() {
+    for child in children.drain(..) {
         let _ = child.join();
     }
 
