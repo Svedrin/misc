@@ -62,7 +62,7 @@ fn run() -> Result<(), String> {
     imap_socket.login(imapuser, imappass)
         .map_err(|err| format!("Imap login failed: {}", err))?;
 
-    let mut children = vec![];
+    let children = &mut vec![];
 
     for (imapdir, feeds) in conf["feeds"]
         .as_hash()
@@ -124,8 +124,7 @@ fn run() -> Result<(), String> {
         }
     }
 
-    for child in children {
-        // Wait for the thread to finish. Returns a result.
+    while let Some(child) = children.pop() {
         let _ = child.join();
     }
 
