@@ -23,14 +23,14 @@ r#"<div style="background-color: #ededed; border: 1px solid grey; margin: 5px;">
 
 
 fn run() -> Result<(), String> {
-    let mut conffile = String::new();
+    let conffile = &mut String::new();
     File::open(
         env::home_dir()
             .ok_or("Where's your homedir?")?
             .join(".rss2imap.conf")
         )
         .map_err(|err| format!("Could not open config file [~/.rss2imap.conf]: {}", err))?
-        .read_to_string(&mut conffile)
+        .read_to_string(conffile)
         .map_err(|err| format!("Could not read config file [~/.rss2imap.conf]: {}", err))?;
 
     let confs = YamlLoader::load_from_str(conffile.as_str())
