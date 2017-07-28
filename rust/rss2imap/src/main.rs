@@ -50,7 +50,7 @@ fn run() -> Result<(), String> {
         .as_str()
         .ok_or("Imap pass is not a string")?;
 
-    let mut imap_socket = Client::secure_connect(
+    let imap_socket = &mut Client::secure_connect(
         (&imaphost[..], 993),
         &imaphost[..],
         SslConnectorBuilder::new(SslMethod::tls())
