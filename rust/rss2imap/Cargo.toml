@@ -8,6 +8,9 @@ yaml-rust = "0.3"
 imap = "0.3.3"
 openssl = "*"
 crossbeam = "*"
+sha1 = "0.2.0"
+mime_multipart = "*"
+hyper = "*"
 
 [dependencies.rss]
 version = "0.7"
