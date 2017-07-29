@@ -64,9 +64,11 @@ fn build_email(feedname: &str, item: &rss::Item) -> Result<String, String> {
     let node = Node::Multipart((build_headers(vec![
         (
             "Content-Type".to_string(),
-            format!("multipart/related; boundary=\"{}\"",
+            format!(
+                "multipart/related; boundary=\"{}\"",
                 String::from_utf8(generate_boundary())
-                    .map_err(|err| err.to_string())?).to_string()
+                    .map_err(|err| err.to_string())?
+            ).to_string()
         ),
         ("From".to_string(),          feedname.to_string()),
         ("Subject".to_string(),       item.title().unwrap_or("no title").to_string()),
@@ -76,9 +78,11 @@ fn build_email(feedname: &str, item: &rss::Item) -> Result<String, String> {
         Node::Multipart((build_headers(vec![
             (
                 "Content-Type".to_string(),
-                format!("multipart/alternative; boundary=\"{}\"",
-                        String::from_utf8(generate_boundary())
-                            .map_err(|err| err.to_string())?).to_string()
+                format!(
+                    "multipart/alternative; boundary=\"{}\"",
+                    String::from_utf8(generate_boundary())
+                        .map_err(|err| err.to_string())?
+                ).to_string()
             )
         ]), vec![
             Node::Part(Part {
