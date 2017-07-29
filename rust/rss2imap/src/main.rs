@@ -90,7 +90,7 @@ fn run() -> Result<(), String> {
                 }
                 .ok_or(format!("config for feed {} is not a string or hash", feedname))?;
 
-            jobs.push( (dirname.to_owned(), feedname.to_owned(), feedurl.to_owned()) );
+            jobs.push( (dirname, feedname, feedurl) );
         }
     }
 
