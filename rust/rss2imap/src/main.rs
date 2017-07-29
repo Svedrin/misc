@@ -1,3 +1,4 @@
+extern crate crossbeam;
 extern crate imap;
 extern crate openssl;
 extern crate rss;
@@ -6,7 +7,6 @@ extern crate yaml_rust;
 use std::env;
 use std::fs::File;
 use std::io::prelude::*;
-use std::thread;
 use rss::Channel;
 use imap::client::Client;
 use openssl::ssl::{SslConnectorBuilder, SslMethod};
@@ -62,7 +62,7 @@ fn run() -> Result<(), String> {
     imap_socket.login(imapuser, imappass)
         .map_err(|err| format!("Imap login failed: {}", err))?;
 
-    let children = &mut vec![];
+    let jobs = &mut vec![];
 
     for (imapdir, feeds) in conf["feeds"]
         .as_hash()
@@ -70,9 +70,7 @@ fn run() -> Result<(), String> {
     {
         let dirname = imapdir
             .as_str()
-            .ok_or("dirname is not a string")?
-            .clone()
-            .to_owned();
+            .ok_or("dirname is not a string")?;
 
         for (_feedname, feedconf) in feeds
             .as_hash()
@@ -80,9 +78,8 @@ fn run() -> Result<(), String> {
         {
             let feedname = _feedname
                 .as_str()
-                .ok_or("feedname is not a string")?
-                .clone()
-                .to_owned();
+                .ok_or("feedname is not a string")?;
+
             let feedurl =
                 match feedconf {
                     &Yaml::String(ref url) => Some(url.as_str()),
@@ -91,42 +88,35 @@ fn run() -> Result<(), String> {
                         .ok_or(format!("config for feed {} does not have a url string", feedname))?),
                     _ => None
                 }
-                .ok_or(format!("config for feed {} is not a string or hash", feedname))?
-                .clone()
-                .to_owned();
+                .ok_or(format!("config for feed {} is not a string or hash", feedname))?;
 
-            let dirname = dirname.clone();
-
-            children.push(
-                thread::Builder::new()
-                    .name(feedname.clone())
-                    .spawn(move || {
-                        let channel = match Channel::from_url(&feedurl) {
-                            Ok(chan) => chan,
-                            Err(err) => {
-                                println!("Error parsing feed {}: {}", feedname, err);
-                                return;
-                            }
-                        };
-                        for item in channel.items().iter() {
-                            println!("{:?} -> {:?}", dirname,
-                                CONTENT_TEMPLATE
-                                    .replace("{feed}",    feedname.as_str())
-                                    .replace("{title}",   item.title().unwrap_or("no title"))
-                                    .replace("{link}",    item.link().unwrap_or("no link"))
-                                    .replace("{content}", item.description().unwrap_or("no content"))
-                            );
-                            return;
-                        }
-                    })
-                    .expect(format!("Could not start parser thread for feed {:?}", _feedname).as_str())
-            );
+            jobs.push( (dirname.to_owned(), feedname.to_owned(), feedurl.to_owned()) );
         }
     }
 
-    for child in children.drain(..) {
-        let _ = child.join();
-    }
+    crossbeam::scope(|scope| {
+        for (dirname, feedname, feedurl) in jobs.drain(..) {
+            scope.spawn(move || {
+                let channel = match Channel::from_url(&feedurl) {
+                    Ok(chan) => chan,
+                    Err(err) => {
+                        println!("Error parsing feed {}: {}", feedname, err);
+                        return;
+                    }
+                };
+                for item in channel.items().iter() {
+                    println!("{:?} -> {:?}", dirname,
+                        CONTENT_TEMPLATE
+                            .replace("{feed}",    &feedname)
+                            .replace("{title}",   item.title().unwrap_or("no title"))
+                            .replace("{link}",    item.link().unwrap_or("no link"))
+                            .replace("{content}", item.description().unwrap_or("no content"))
+                    );
+                    return;
+                }
+            });
+        }
+    });
 
     Ok(())
 }
