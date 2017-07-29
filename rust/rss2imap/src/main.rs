@@ -61,43 +61,49 @@ fn build_email(feedname: &str, item: &rss::Item) -> Result<String, String> {
      * Thunderbird doesn't render the email correctly without it.
      */
 
-    let node = Node::Multipart((build_headers(vec![
-        (
-            "Content-Type".to_string(),
-            format!(
-                "multipart/related; boundary=\"{}\"",
-                String::from_utf8(generate_boundary())
-                    .map_err(|err| err.to_string())?
-            ).to_string()
-        ),
-        ("From".to_string(),          feedname.to_string()),
-        ("Subject".to_string(),       item.title().unwrap_or("no title").to_string()),
-        ("X-RSS2IMAP-ID".to_string(), hash_id(item).unwrap_or("no ID".to_string())),
-        ("Date".to_string(),          "TODO".to_string()),
-    ]), vec![
-        Node::Multipart((build_headers(vec![
+    let node = Node::Multipart((
+        build_headers(vec![
             (
                 "Content-Type".to_string(),
                 format!(
-                    "multipart/alternative; boundary=\"{}\"",
+                    "multipart/related; boundary=\"{}\"",
                     String::from_utf8(generate_boundary())
                         .map_err(|err| err.to_string())?
                 ).to_string()
-            )
-        ]), vec![
-            Node::Part(Part {
-                headers: build_headers(vec![
-                    ("Content-Type".to_string(), "text/html; charset=\"utf-8\"".to_string())
+            ),
+            ("From".to_string(),          feedname.to_string()),
+            ("Subject".to_string(),       item.title().unwrap_or("no title").to_string()),
+            ("X-RSS2IMAP-ID".to_string(), hash_id(item).unwrap_or("no ID".to_string())),
+            ("Date".to_string(),          "TODO".to_string()),
+        ]),
+        vec![
+            Node::Multipart((
+                build_headers(vec![
+                    (
+                        "Content-Type".to_string(),
+                        format!(
+                            "multipart/alternative; boundary=\"{}\"",
+                            String::from_utf8(generate_boundary())
+                                .map_err(|err| err.to_string())?
+                        ).to_string()
+                    )
                 ]),
-                body: CONTENT_TEMPLATE
-                    .replace("{feed}",    feedname)
-                    .replace("{title}",   item.title().unwrap_or("no title"))
-                    .replace("{link}",    item.link().unwrap_or("no link"))
-                    .replace("{content}", item.description().unwrap_or("no content"))
-                    .into_bytes()
-            } )
-        ]))
-    ]));
+                vec![
+                    Node::Part(Part {
+                        headers: build_headers(vec![
+                            ("Content-Type".to_string(), "text/html; charset=\"utf-8\"".to_string())
+                        ]),
+                        body: CONTENT_TEMPLATE
+                            .replace("{feed}",    feedname)
+                            .replace("{title}",   item.title().unwrap_or("no title"))
+                            .replace("{link}",    item.link().unwrap_or("no link"))
+                            .replace("{content}", item.description().unwrap_or("no content"))
+                            .into_bytes()
+                    } )
+                ]
+            ))
+        ]
+    ));
 
     let mut stream = Cursor::new(vec![0; 4096]);
     let mut result = String::new();
