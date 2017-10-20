@@ -170,4 +170,18 @@ if __name__ == '__main__':
     print "Clone 1 (should preserve 'one'):                    ", cl1
     print "Clone 2 (should preserve 'one' and modify 'two'):   ", cl2
     print "Clone 3 (should preserve 'one' and modify 'three'): ", cl3
+    print
 
+    print "Let's make lots of clones of a dict that loudly complains when copied, and see what happens."
+    class ComplainingDict(dict):
+        def copy(self):
+            print "I am a dict that loudly complains when copied!"
+            return dict.copy(self)
+
+    orig = CowDict(ComplainingDict({"one": 1}))
+    print orig
+    for _ in range(10000):
+        orig.clone()
+
+    print "See how you haven't been drowned in complaints? :) Now clone it once more and update the clone:"
+    orig.clone()["two"] = 2
