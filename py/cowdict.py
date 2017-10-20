@@ -99,16 +99,18 @@ if __name__ == '__main__':
     # Note that those do *not* return a *new* dict, but they instead *update* the one they get.
 
     def calc_min_max(inputdata):
-        return inputdata.update({
+        inputdata.update({
             "min": min(inputdata["data"]),
             "max": max(inputdata["data"]),
         })
+        return inputdata
 
     def calc_sum_len(inputdata):
-        return inputdata.update({
+        inputdata.update({
             "sum": sum(inputdata["data"]),
             "len": len(inputdata["data"]),
         })
+        return inputdata
 
     def calc_avg(inputdata):
         inputdata["avg"] = inputdata["sum"] / float(inputdata["len"])
