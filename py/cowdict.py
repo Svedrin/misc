@@ -153,3 +153,22 @@ if __name__ == '__main__':
     print "Sum/Len:       ", sum_len
     print
     print "Orig:          ", maths
+    print
+
+    # Now let's see if modifying the original after .clone() affects the clones:
+    print "Now testing if modification of the original leaks into clones."
+
+    orig = CowDict({
+        "one": 1,
+        "two": 2,
+        "three": 3
+    })
+    cl1 = orig.clone()
+    cl2 = orig.clone().update({"two": "used to be int(2) but is not anymore"})
+    cl3 = orig.clone().update({"three": "used to be int(3) but is not anymore"})
+    orig.update({"one": "used to be int(1) but is not anymore"})
+    print "Orig ('one' should be modified):                    ", orig
+    print "Clone 1 (should preserve 'one'):                    ", cl1
+    print "Clone 2 (should preserve 'one' and modify 'two'):   ", cl2
+    print "Clone 3 (should preserve 'one' and modify 'three'): ", cl3
+
