@@ -31,7 +31,9 @@ class CowDict(object):
         self.data = {}
 
     def copy(self):
-        """ Return a new CowDict with an actual copy of our data. """
+        """ Return a new CowDict with an actual copy of our data.
+            (This kinda defeats the purpose of this class. Use clone instead.)
+        """
         return CowDict(self.data.copy())
 
     def clone(self):
