@@ -155,8 +155,7 @@ if __name__ == '__main__':
     print "Orig:          ", maths
     print
 
-    # Now let's see if modifying the original after .clone() affects the clones:
-    print "Now testing if modification of the original leaks into clones."
+    print "Now let's see if modifying the original after .clone() affects the clones."
 
     orig = CowDict({
         "one": 1,
