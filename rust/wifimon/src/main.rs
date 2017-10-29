@@ -107,5 +107,5 @@ fn main() {
     router.get("/",        handle_index,   "index");
     router.get("/metrics", handle_metrics, "metrics");
 
-    Iron::new(router).http("localhost:3000").unwrap();
+    Iron::new(router).http("0.0.0.0:3000").unwrap();
 }
