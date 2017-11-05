@@ -1,4 +1,6 @@
 // kate: hl c++
+// Schematic:      https://img.svedr.in/nerdkram/schaltplan-roll.png.html
+// Implementation: https://img.svedr.in/nerdkram/IMG_20171105_154456.jpg.html
 
 #include "ESP8266WiFi.h"
 #include <ESP8266WebServer.h>
