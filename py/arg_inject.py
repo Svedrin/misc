@@ -53,7 +53,7 @@ def main():
         FormatGreeting(),
         RandomCase(),
         Greet()
-        ]
+    ]
 
     for step in pipeline:
         step(scope)
