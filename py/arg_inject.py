@@ -60,14 +60,17 @@ def main():
     scope = {}
 
     stepscript = """[
+        # Here some preparations
         ChooseRandomGreeting(),
         ChooseRandomName(),
+
+        # Now we will do awesome things
         FormatGreeting(),
         RandomCase(),
         Greet()
     ]"""
 
-    pipeline = eval(stepscript, {}, StepLibrary.steps)
+    pipeline = eval(stepscript,  {'__builtins__': None}, StepLibrary.steps)
 
     for step in pipeline:
         step.run(scope)
