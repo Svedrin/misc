@@ -56,9 +56,16 @@ class Greet(AbstractStep):
         print formatted_greeting
 
 
-def main():
+def run_script(stepscript):
     scope = {}
 
+    pipeline = eval(stepscript,  {'__builtins__': None}, StepLibrary.steps)
+
+    for step in pipeline:
+        step.run(scope)
+
+
+def main():
     stepscript = """[
         # Here some preparations
         ChooseRandomGreeting(),
@@ -70,10 +77,7 @@ def main():
         Greet()
     ]"""
 
-    pipeline = eval(stepscript,  {'__builtins__': None}, StepLibrary.steps)
-
-    for step in pipeline:
-        step.run(scope)
+    run_script(stepscript)
 
 
 if __name__ == '__main__':
