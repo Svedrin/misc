@@ -5,11 +5,23 @@
 
 import random
 
+class StepLibrary(type):
+    """ Meta class that keeps a library of defined steps. """
+    steps = {}
+
+    def __init__( cls, name, bases, attrs ):
+        type.__init__( cls, name, bases, attrs )
+        if not name.startswith("Abstract"):
+            StepLibrary.steps[ name ] = cls
+
+
 class AbstractStep(object):
+    __metaclass__ = StepLibrary
+
     def step(self):
         raise NotImplemented
 
-    def __call__(self, scope):
+    def run(self, scope):
         step_argdef = self.step.__code__.co_varnames
         step_argval = [scope[arg] for arg in step_argdef[2:]]
         return self.step(scope, *step_argval)
@@ -47,16 +59,18 @@ class Greet(AbstractStep):
 def main():
     scope = {}
 
-    pipeline = [
+    stepscript = """[
         ChooseRandomGreeting(),
         ChooseRandomName(),
         FormatGreeting(),
         RandomCase(),
         Greet()
-    ]
+    ]"""
+
+    pipeline = eval(stepscript, {}, StepLibrary.steps)
 
     for step in pipeline:
-        step(scope)
+        step.run(scope)
 
 
 if __name__ == '__main__':
