@@ -15,21 +15,16 @@
 CanDrive can(PIN_SENDER, PIN_MONITOR);
 
 void setup() {
+  Serial.begin(74880);
   SPI.begin();
-  pinMode(PIN_SLAVESEL, OUTPUT);
+//  pinMode(PIN_SLAVESEL, OUTPUT);
 
   can.pin_mirror = PIN_MIRROR;
-//   can.pin_crcled = PIN_CRCLED;
+  can.pin_crcled = PIN_CRCLED;
   can.init();
-}
 
-uint16_t transfer16(uint16_t data){
-  // SPI should have this one as well, but apparently Debian's
-  // Arduino version doesn't yet have it, so here goes
-  uint16_t buf = 0;
-  buf |= (SPI.transfer(data >> 8) << 8);
-  buf |= SPI.transfer(data & 0xFF);
-  return buf;
+  Serial.println("hai!");
+  SPI.beginTransaction(SPISettings(15000000, MSBFIRST, SPI_MODE0));
 }
 
 void loop() {
@@ -44,16 +39,28 @@ void loop() {
   // didn't, recv_id is still 0, so we can just use that.
   can.recv(&recv_id, &recv_val);
 
-//   SPI.beginTransaction(SPISettings(14000000, MSBFIRST, SPI_MODE0));
-  digitalWrite(PIN_SLAVESEL, LOW);
+  /*if( recv_id != 0 ){
+    Serial.print(recv_id);
+    Serial.print(" -> ");
+    Serial.println(recv_val);
+  }*/
 
-  new_id  = transfer16(recv_id);
-  new_val = transfer16(recv_val);
-
-  digitalWrite(PIN_SLAVESEL, HIGH);
-//   SPI.endTransaction();
-
-  if( new_id != 0 ){
-    can.send(new_id, new_val);
+  SPI.transfer(0x02);
+  SPI.transfer(0x00);
+  new_id  = (
+    SPI.transfer((recv_id >> 0) & 0xFF) << 0 |
+    SPI.transfer((recv_id >> 8) & 0xFF) << 8 );
+  new_val = (
+    SPI.transfer((recv_val >> 0) & 0xFF) << 0 |
+    SPI.transfer((recv_val >> 8) & 0xFF) << 8);
+  for( int i = 0; i < (32 - 2 - 2); i++ ){
+    SPI.transfer(0);
   }
+
+  /*if( new_id != 0 && new_id != 65535 ){
+    can.send(new_id, new_val);
+    Serial.print(new_id);
+    Serial.print(" <- ");
+    Serial.println(new_val);
+  }*/
 }
