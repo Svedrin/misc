@@ -16,12 +16,19 @@ FAC_LA15 = math.exp(-INTERVAL / (15 * 60.))
 
 class DiskStats(object):
     def __init__(self):
+        self.disk_name   = None
         self.prev_time   = None
         self.used_millis = None
         self.percent     = None
         self.la1         = None
         self.la5         = None
         self.la15        = None
+
+    def for_disk(self, disk_name):
+        if self.disk_name is None:
+            self.disk_name = disk_name
+        assert self.disk_name == disk_name
+        return self
 
     def ingest(self, time, used_millis):
         def avg_if_not_none(self_la, fac, curr_percent):
@@ -40,9 +47,9 @@ class DiskStats(object):
         self.used_millis = used_millis
         return self
 
-    def print_(self, disk_name):
+    def print_(self):
         if self.percent is not None:
-            print "%-15s: %8.3f %8.3f %8.3f %8.3f" % (disk_name, self.percent, self.la1, self.la5, self.la15)
+            print "%-15s: %8.3f %8.3f %8.3f %8.3f" % (self.disk_name, self.percent, self.la1, self.la5, self.la15)
         return self
 
 
@@ -62,8 +69,9 @@ def main():
                     continue
 
                 statistico[disk_name]           \
+                    .for_disk(disk_name)        \
                     .ingest(now, disk_umillis)  \
-                    .print_(disk_name)
+                    .print_()
 
         print
         sleep(INTERVAL)
