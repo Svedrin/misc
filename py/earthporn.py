@@ -7,6 +7,7 @@ import re
 import feedparser
 import requests
 import traceback
+import sys
 import os.path
 
 from PIL import Image, ImageFont, ImageDraw
