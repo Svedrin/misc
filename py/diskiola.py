@@ -4,7 +4,7 @@ from time import time, sleep
 from collections import defaultdict
 
 # refer to:
-# https://github.com/haad/net-snmp/blob/master/agent/mibgroup/ucd-snmp/diskio.c
+# https://github.com/haad/net-snmp/blob/master/agent/mibgroup/ucd-snmp/diskio.c#L694
 # https://en.wikipedia.org/wiki/Moving_average#Application_to_measuring_computer_performance
 
 INTERVAL = 5.0
