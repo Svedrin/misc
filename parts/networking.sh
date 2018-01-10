@@ -16,6 +16,8 @@
 
 if [ "$NETWORK_METHOD" = "dhcp" ]; then
 
+IP_IN_HOSTS="127.0.1.1"
+
 <<EOF cat > "$MNT/etc/network/interfaces"
 # interfaces(5) file used by ifup(8) and ifdown(8)
 # Include files from /etc/network/interfaces.d:
@@ -30,6 +32,8 @@ allow-hotplug $NETWORK_INTERFACE
 EOF
 
 else
+
+IP_IN_HOSTS = "$NETWORK_IPADDR"
 
 <<EOF cat > "$MNT/etc/network/interfaces"
 # interfaces(5) file used by ifup(8) and ifdown(8)
@@ -59,7 +63,7 @@ echo $VMNAME > "$MNT/etc/hostname"
 
 <<EOF cat > "$MNT/etc/hosts"
 127.0.0.1       localhost
-127.0.1.1       $VMNAME.$NETWORK_DOMAIN $VMNAME
+$IP_IN_HOSTS    $VMNAME.$NETWORK_DOMAIN $VMNAME
 
 # The following lines are desirable for IPv6 capable hosts
 ::1     localhost ip6-localhost ip6-loopback
