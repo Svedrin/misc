@@ -33,7 +33,7 @@ EOF
 
 else
 
-IP_IN_HOSTS = "$NETWORK_IPADDR"
+IP_IN_HOSTS="$NETWORK_IPADDR"
 
 <<EOF cat > "$MNT/etc/network/interfaces"
 # interfaces(5) file used by ifup(8) and ifdown(8)
