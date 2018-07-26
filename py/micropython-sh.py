@@ -146,10 +146,12 @@ def wifi_ap(ssid, password=""):
     else:
         ap_if.active(False)
 
-__doc("curl(url, outfile=None, port=80)", "perform an HTTP get request and print the result to stdout or a file")
-def curl(url, outfile=None, port=80):
-    if outfile is None:
+__doc("curl(url, outpath=None (-> stdout), port=80)", "perform an HTTP get request and print the result to stdout or a file")
+def curl(url, outpath=None, port=80):
+    if outpath is None:
         outfile = sys.stdout
+    else:
+        outfile = open(outpath, "wb")
     _, _, host, path = url.split('/', 3)
     addr = socket.getaddrinfo(host, port)[0][-1]
     s = socket.socket()
@@ -170,6 +172,8 @@ def curl(url, outfile=None, port=80):
             else:
                 break
     s.close()
+    if outfile is not sys.stdout:
+        outfile.close()
 
 print("Functions:")
 for (cmd, help) in __docs:
