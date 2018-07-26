@@ -40,6 +40,7 @@ def cat_into(fname):
             try:
                 f.write(input('> ') + "\n")
             except EOFError:
+                print("EOF")
                 break
 
 __doc("exists(path)", "check if a path exists")
