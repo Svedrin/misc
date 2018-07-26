@@ -145,19 +145,29 @@ def wifi_ap(ssid, password=""):
     else:
         ap_if.active(False)
 
-__doc("curl(url)", "perform an HTTP get request and print the result to stdout")
-def curl(url):
+__doc("curl(url, outfile=None, port=80)", "perform an HTTP get request and print the result to stdout or a file")
+def curl(url, outfile=None, port=80):
+    if outfile is None:
+        outfile = sys.stdout
     _, _, host, path = url.split('/', 3)
-    addr = socket.getaddrinfo(host, 80)[0][-1]
+    addr = socket.getaddrinfo(host, port)[0][-1]
     s = socket.socket()
     s.connect(addr)
     s.send(bytes('GET /%s HTTP/1.1\r\nHost: %s\r\n\r\n' % (path, host), 'utf8'))
+    headers = True
     while True:
-        data = s.recv(100)
-        if data:
-            print(str(data, 'utf8'), end='')
-        else:
+        try:
+            data = s.readline()
+        except KeyboardInterrupt:
             break
+        if headers:
+            if data == b"\r\n":
+                headers = False
+        else:
+            if data:
+                outfile.write(data)
+            else:
+                break
     s.close()
 
 print("Functions:")
