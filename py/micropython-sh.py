@@ -38,7 +38,7 @@ def cat_into(fname):
     with open(fname, "wb") as f:
         while True:
             try:
-                f.write(input('> ') + "\n")
+                f.write(input() + "\n")
             except EOFError:
                 print("EOF")
                 break
