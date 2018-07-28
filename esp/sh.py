@@ -210,9 +210,10 @@ def run(fn, *args, **kwargs):
             with open("main.log", "ab") as logfd:
                 print(logmsg, file=logfd)
 
-print("Functions:")
-for (cmd, help) in __docs:
-    print("%-50s -- %s" % (cmd, help))
+def help_():
+    print("Functions:")
+    for (cmd, help) in __docs:
+        print("%-50s -- %s" % (cmd, help))
 
 """[1:])
 f.close()
