@@ -25,7 +25,7 @@ def ls(path=""):
         name, type, inode, size = entry
         if type == 0x4000:
             name += "/"
-        print("%-10s     %10db" % (name, size))
+        print("%10db  %-10s" % (size, name))
 
 __doc("cat(file)", "print file contents to stdout")
 def cat(fname):
