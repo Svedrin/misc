@@ -13,6 +13,7 @@ import os
 import sys
 import network
 import socket
+import time
 
 __docs = []
 def __doc(n, s):
@@ -174,6 +175,22 @@ def curl(url, outpath=None, port=80):
     s.close()
     if outfile is not sys.stdout:
         outfile.close()
+
+__doc("run(fn, *args, **kwargs)", "run a main() function in a loop and log exceptions to main.log")
+def run(fn, *args, **kwargs):
+    while True:
+        started_at = time.time()
+        try:
+            fn(*args, **kwargs)
+        except KeyboardInterrupt:
+            return
+        except Exception as err:
+            failed_at = time.time()
+            logmsg = "[%d] %r" % (failed_at - started_at, err)
+            print(logmsg)
+            with open("main.log", "ab") as logfd:
+                print(logmsg, file=logfd)
+
 
 print("Functions:")
 for (cmd, help) in __docs:
