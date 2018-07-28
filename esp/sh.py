@@ -179,6 +179,21 @@ def curl(url, outpath=None):
     s.close()
     if outfile is not sys.stdout:
         outfile.close()
+"""[1:])
+f.close()
+
+### -------------------------- FOURTH CHUNK ---------------------------------
+
+f = open("sh.py", "ab")
+f.write(r"""
+
+__doc("nl(file)", "print file contents to stdout, prefixed with line numbers")
+def nl(fname):
+    i = 1
+    with open(fname, "rb") as f:
+        for line in f:
+            sys.stdout.write(b"[%5i] %s" % (i, line))
+            i += 1
 
 __doc("run(fn, *args, **kwargs)", "run a main() function in a loop and log exceptions to main.log")
 def run(fn, *args, **kwargs):
@@ -194,7 +209,6 @@ def run(fn, *args, **kwargs):
             print(logmsg)
             with open("main.log", "ab") as logfd:
                 print(logmsg, file=logfd)
-
 
 print("Functions:")
 for (cmd, help) in __docs:
