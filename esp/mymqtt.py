@@ -35,4 +35,11 @@ class MQTTClient(mqtt.MQTTClient):
         mqtt.MQTTClient.__init__(self, self.client_id, conf["broker"], user=conf["username"], password=conf["password"])
 
     def publish(self, topic, value):
-        mqtt.MQTTClient.publish(self, self.namespace + topic, str(value))
+        try:
+            mqtt.MQTTClient.publish(self, self.namespace + topic, str(value))
+        except OSError as err:
+            if err.args[0] in (errno.ECONNABORTED, errno.ECONNRESET):
+                self.connect()
+                mqtt.MQTTClient.publish(self, self.namespace + topic, str(value))
+            else:
+                raise
