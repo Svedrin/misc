@@ -210,6 +210,16 @@ def run(fn, *args, **kwargs):
             with open("main.log", "ab") as logfd:
                 print(logmsg, file=logfd)
 
+__doc("format_c()", "reformat the flash")
+def format_c():
+    if input("Sure? [yN] ") != "y":
+        print("Cancelled")
+        return
+
+    from flashbdev import bdev
+    os.VfsFat.mkfs(bdev)
+
+
 def help_():
     print("Functions:")
     for (cmd, help) in __docs:
