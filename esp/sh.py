@@ -127,11 +127,11 @@ f = open("sh.py", "ab")
 f.write(r"""
 __doc("wifi_station(ssid, password, ap=None)", "connect to a WiFi AP")
 __doc("wifi_station(None)", "disconnect from WiFi AP")
-def wifi_station(ssid, password="", ap=None):
+def wifi_station(ssid, password=""):
     sta_if = network.WLAN(network.STA_IF)
     if ssid is not None:
         sta_if.active(True)
-        sta_if.connect(ssid, password, ap)
+        sta_if.connect(ssid, password)
     else:
         if sta_if.connected():
             sta_if.disconnect()
