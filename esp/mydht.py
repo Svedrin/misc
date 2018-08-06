@@ -19,7 +19,3 @@ def main():
         i += 1
         cl.check_msg()
         time.sleep(5)
-
-
-# curl("http://192.168.0.168:8000/mymqtt.py", "mymqtt.py")
-# curl("http://192.168.0.168:8000/mydht.py",  "mydht.py")
