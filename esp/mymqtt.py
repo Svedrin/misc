@@ -1,9 +1,10 @@
 # requires https://github.com/pycom/pycom-libraries/blob/master/lib/mqtt/mqtt.py
 
-import machine
-import ubinascii
+import errno
 import json
 import mqtt
+import machine
+import ubinascii
 
 
 def configure():
@@ -14,7 +15,6 @@ def configure():
         print("Loaded old config successfully. To discard it and start over, delete mqtt.json.")
     except:
         print("Config does not exist or is not valid JSON.")
-        pass
 
     conf["name"]      = input("Device name:    [%s] " % conf.get("name",     '')) or conf.get("name",     '')
     conf["broker"]    = input("Broker address: [%s] " % conf.get("broker",   '')) or conf.get("broker",   '')
