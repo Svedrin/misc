@@ -4,12 +4,13 @@ import mymqtt
 import time
 import json
 
-def main():
+def main(pin=4):
     cl = mymqtt.MQTTClient("sensor/%(name)s/")
     cl.connect()
+
     i = 0
 
-    d = dht.DHT22(machine.Pin(4))
+    d = dht.DHT22(machine.Pin(pin))
     while True:
         d.measure()
         print("boop!", i)

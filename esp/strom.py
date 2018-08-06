@@ -5,7 +5,7 @@ import mymqtt
 from machine import Pin
 
 
-def main():
+def main(pin=4):
     cl = mymqtt.MQTTClient("strom/%(name)s/")
     cl.connect()
 
@@ -31,5 +31,5 @@ def main():
             state["last_check"] = state["last_tick"]
 
 
-    p4 = Pin(4, Pin.IN)
+    p4 = Pin(pin, Pin.IN)
     p4.irq(trigger=Pin.IRQ_RISING, handler=callback)
