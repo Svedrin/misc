@@ -8,31 +8,24 @@
 
 #include <DHT.h>
 
-const char* mqtt_server = "rabbitmq.local.lan";
+#define SENSORNAME "derpity"
 
 #define DHTTYPE DHT22
 #define DHTPIN  4
-
-// #define USE_DEEPSLEEP
 
 DHT dht(DHTPIN, DHTTYPE, 11); // 11 works fine for ESP8266
 
 WiFiClient espClient;
 PubSubClient client(espClient);
 long lastMsg = 0;
-char msg[150];
-int value = 0;
-bool maySleep = false;
 
 void reconnect() {
     // Loop until we're reconnected
     while (!client.connected()) {
         Serial.print("Attempting MQTT connection...");
-        // Create a random client ID
-        String clientId = "ESP8266Client-";
-        clientId += String(random(0xffff), HEX);
         // Attempt to connect
-        if (client.connect(clientId.c_str(), "ardu", "ino")) {
+        String clientId = "ESP8266Client-" + String(ESP.getChipId(), HEX);
+        if (client.connect(clientId.c_str(), MQTT_USERNAME, MQTT_PASSWORD)) {
             Serial.println("connected");
         } else {
             Serial.print("failed, rc=");
@@ -47,8 +40,7 @@ void reconnect() {
 void setup(void)
 {
     // Start Serial
-//     Serial.begin(115200);
-    Serial.begin(74880);
+    Serial.begin(115200);
 
     // Connect to WiFi
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
@@ -68,7 +60,7 @@ void setup(void)
 
     dht.begin();
 
-    client.setServer(mqtt_server, 1883);
+    client.setServer(MQTT_HOST, MQTT_PORT);
 }
 
 void loop() {
@@ -79,25 +71,23 @@ void loop() {
     client.loop();
 
     long now = millis();
+    double temp;
+    double humd;
 
     if (lastMsg == 0 || now - lastMsg > 1 * 60 * 1000) {
         lastMsg = now;
 
-        snprintf(msg, sizeof(msg) - 1, "{ \"id\": %d, \"temperature\": %s, \"humidity\": %s }",
-            ESP.getChipId(),
-            String( dht.readTemperature(false) ).c_str(),
-            String( dht.readHumidity() ).c_str()
-        );
-        client.publish("sensors", msg);
-        Serial.println(msg);
-        maySleep = true;
+        temp = dht.readTemperature(false);
+        humd = dht.readHumidity();
+
+        client.publish("sensor/" SENSORNAME "/temperature", String(temp).c_str());
+        client.publish("sensor/" SENSORNAME "/humidity",    String(humd).c_str());
+
+        Serial.print("Temp = ");
+        Serial.print(temp);
+        Serial.print("; Humidity = ");
+        Serial.println(humd);
     }
 
-#ifdef USE_DEEPSLEEP
-    if( lastMsg != 0 && maySleep && now - lastMsg > 5000 ){
-        Serial.println("sleeping");
-        ESP.deepSleep( 1 * 60 * 1000000 );
-        maySleep = false;
-    }
-#endif
+    delay(1000);
 }
