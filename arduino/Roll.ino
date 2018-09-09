@@ -58,18 +58,22 @@ promstate_t prom_state = PROM_NEUTRAL;
 
 
 void callback(char* topic, byte* payload, unsigned int length) {
+    char buf[50];
+    if( length > sizeof(buf) - 1 ){
+        length = sizeof(buf) - 1;
+    }
+    memcpy(buf, payload, length);
+    buf[length] = 0;
+
     Serial.print("Message arrived [");
     Serial.print(topic);
-    Serial.print("] ");
+    Serial.print("] = ");
+    Serial.print(buf);
+    Serial.print(" => ");
 
-    // The message is supposed to be {"id": <hopefully ours>, "target_position": 75%}.
-    const int BUFFER_SIZE = JSON_OBJECT_SIZE(2);
-    StaticJsonBuffer<BUFFER_SIZE> jsonBuffer;
-
-    JsonObject& root = jsonBuffer.parseObject(payload);
-
-    if( root["id"] == ESP.getChipId() ){
-        target_position = constrain(root["target_position"], 0, 100);
+    if( strcmp(topic, "ctrl/roll/set_target_position") == 0 ){
+        target_position = constrain(atoi(buf), 0, 100);
+        Serial.println(target_position);
         if( prom_state == PROM_CONTROLLED )
             prom_state = PROM_IGNORING;
     }
@@ -79,16 +83,10 @@ void reconnect() {
     // Loop until we're reconnected
     while (!client.connected()) {
         Serial.print("Attempting MQTT connection...");
-        // Create a random client ID
-        String clientId = "ESP8266Client-";
-        clientId += String(random(0xffff), HEX);
-        // Attempt to connect
+        String clientId = "roll";
         if (client.connect(clientId.c_str(), "ardu", "ino")) {
             Serial.println("connected");
-            // Once connected, publish an announcement...
-            client.publish("outTopic", "hello world");
-            // ... and resubscribe
-            client.subscribe("inTopic");
+            client.subscribe("ctrl/roll/set_target_position");
         } else {
             Serial.print("failed, rc=");
             Serial.print(client.state());
@@ -170,21 +168,12 @@ void loop() {
 
     long now = millis();
 
-    if (now - lastMsg > 2000) {
+    if (now - lastMsg > 500) {
         lastMsg = now;
-
-        const int BUFFER_SIZE = JSON_OBJECT_SIZE(5);
-        StaticJsonBuffer<BUFFER_SIZE> jsonBuffer;
-
-        JsonObject& root = jsonBuffer.createObject();
-        root["id"]    = ESP.getChipId();
-        root["state"] = (long)active_state;
-        root["since"] = now - active_since;
-        root["current_position"] = current_position;
-        root["target_position"]  = target_position;
-
-        root.printTo(msg);
-        client.publish("outTopic", msg);
+        client.publish("ctrl/roll/target_position",  String(target_position).c_str());
+        client.publish("ctrl/roll/current_position", String(current_position).c_str());
+        client.publish("ctrl/roll/active_state",     String(active_state).c_str());
+        client.publish("ctrl/roll/active_since",     String(active_since).c_str());
     }
 
     // Read the states desired by the user and by our controller

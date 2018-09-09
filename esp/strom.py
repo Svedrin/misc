@@ -6,7 +6,7 @@ from machine import Pin
 
 
 def main(pin=4):
-    cl = mymqtt.MQTTClient("strom/%(name)s/")
+    cl = mymqtt.MQTTClient()
     cl.connect()
 
     state = dict(last_tick=0, last_check=0)
@@ -25,8 +25,8 @@ def main(pin=4):
                 state["delta"] = (state["last_tick"] - state["last_check"]) / 1000.
                 state["watts"] = 1.0 / state["delta"] * 3600.
                 print("Last tick at %(last_tick)d -- last check at %(last_check)d -- delta is %(delta).2f seconds -- consumption is %(watts).2f Watts" % state)
-                cl.publish("delta", state["delta"])
-                cl.publish("watts", state["watts"])
+                cl.publish("strom/%(name)s/delta", state["delta"])
+                cl.publish("strom/%(name)s/watts", state["watts"])
 
             state["last_check"] = state["last_tick"]
 

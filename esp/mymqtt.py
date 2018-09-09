@@ -26,20 +26,20 @@ def configure():
 
 
 class MQTTClient(mqtt.MQTTClient):
-    def __init__(self, namespace):
+    def __init__(self):
         with open("mqtt.json", "rb") as fd:
             conf = json.load(fd)
 
-        self.namespace = namespace % conf
+        self.name      = conf["name"]
         self.client_id = ubinascii.hexlify(machine.unique_id())
         mqtt.MQTTClient.__init__(self, self.client_id, conf["broker"], user=conf["username"], password=conf["password"])
 
     def publish(self, topic, value):
         try:
-            mqtt.MQTTClient.publish(self, self.namespace + topic, str(value))
+            mqtt.MQTTClient.publish(self, topic % dict(name=self.name), str(value))
         except OSError as err:
             if err.args[0] in (errno.ECONNABORTED, errno.ECONNRESET):
                 self.connect()
-                mqtt.MQTTClient.publish(self, self.namespace + topic, str(value))
+                mqtt.MQTTClient.publish(self, topic % dict(name=self.name), str(value))
             else:
                 raise

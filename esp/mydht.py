@@ -5,7 +5,7 @@ import time
 import json
 
 def main(pin=4):
-    cl = mymqtt.MQTTClient("sensor/%(name)s/")
+    cl = mymqtt.MQTTClient()
     cl.connect()
 
     i = 0
@@ -14,9 +14,8 @@ def main(pin=4):
     while True:
         d.measure()
         print("boop!", i)
-        cl.publish("temperature", d.temperature())
-        cl.publish("humidity",    d.humidity())
-        cl.publish("i",           i)
+        cl.publish("sensor/%(name)s/temperature", d.temperature())
+        cl.publish("sensor/%(name)s/humidity",    d.humidity())
+        cl.publish("sensor/%(name)s/i",           i)
         i += 1
-        cl.check_msg()
         time.sleep(5)
