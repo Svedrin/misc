@@ -10,8 +10,6 @@
 // this file #defines WIFI_SSID and WIFI_PASSWORD
 #include <WifiParams.h>
 
-const char* mqtt_server = "rabbitmq.local.lan";
-
 #define PIN_SWITCH_DOWN 12
 #define PIN_SWITCH_UP   13
 #define PIN_GATE_DOWN   14
@@ -83,8 +81,8 @@ void reconnect() {
     // Loop until we're reconnected
     while (!client.connected()) {
         Serial.print("Attempting MQTT connection...");
-        String clientId = "roll";
-        if (client.connect(clientId.c_str(), "ardu", "ino")) {
+        String clientId = "ESP8266Client-" + String(ESP.getChipId(), HEX);
+        if (client.connect(clientId.c_str(), MQTT_USERNAME, MQTT_PASSWORD)) {
             Serial.println("connected");
             client.subscribe("ctrl/roll/set_target_position");
         } else {
@@ -124,7 +122,7 @@ void setup(void)
 
     randomSeed(micros());
 
-    client.setServer(mqtt_server, 1883);
+    client.setServer(MQTT_HOST, MQTT_PORT);
     client.setCallback(callback);
 
     server.on("/", HTTP_GET, [](){
