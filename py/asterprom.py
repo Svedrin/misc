@@ -20,7 +20,7 @@ Prerequisites:
   On Debian, you can apt-get install prometheus-node-exporter and add this
   to the $ARGS variable in /etc/default/prometheus-node-exporter:
 
-  --collector.textfile.directory=/var/lib/prometheus/node-exporter"
+  --collector.textfile.directory=/var/lib/prometheus/node-exporter
 
 * Add a cron job that regularly runs asterprom:
 

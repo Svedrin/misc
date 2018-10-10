@@ -8,10 +8,10 @@
 
 #include <DHT.h>
 
-#define SENSORNAME "derpity"
+#define SENSORNAME "netzwerkschrank"
 
 #define DHTTYPE DHT22
-#define DHTPIN  4
+#define DHTPIN  5
 
 DHT dht(DHTPIN, DHTTYPE, 11); // 11 works fine for ESP8266
 
@@ -74,7 +74,7 @@ void loop() {
     double temp;
     double humd;
 
-    if (lastMsg == 0 || now - lastMsg > 1 * 60 * 1000) {
+    if (lastMsg == 0 || now - lastMsg > 1 * 30 * 1000) {
         lastMsg = now;
 
         temp = dht.readTemperature(false);
