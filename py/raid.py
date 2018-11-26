@@ -216,9 +216,14 @@ class AbstractRaidFilter(Filter):
 
         self.message("Creating %d %s with %d disks (%d data disks) per array" % (nr_raids, pluralize("array", nr_raids), raiddisks, datadisks))
 
+        if self.level == 1:
+            assume_clean = "[--assume-clean] "
+        else:
+            assume_clean = ""
+
         self.message(
-            "mdadm --create --verbose --chunk=%d /dev/mdX --level=%d --raid-devices=%d <device ...>" % (
-            chunksize / 1024, self.level, raiddisks))
+            "mdadm --create --verbose --chunk=%d /dev/mdX --level=%d --raid-devices=%d %s<device ...>" % (
+            chunksize / 1024, self.level, raiddisks, assume_clean))
 
         if datadisks not in (2, 4):
             self.error(devices="Should have exactly two or four data disks")
