@@ -1,0 +1,15 @@
+#!/bin/bash
+
+set -e
+set -u
+
+TMUXCMD="new-session -d ssh $1 ;"
+shift
+
+while [ -n "${1:-}" ]; do
+	TMUXCMD="$TMUXCMD split-window -d ssh $1 ;"
+	shift
+done
+
+TMUXCMD="$TMUXCMD set sync ; attach"
+tmux $TMUXCMD
