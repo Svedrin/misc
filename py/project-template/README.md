@@ -9,7 +9,7 @@ Nginx config:
 
 ```
 upstream hosts_template {
-    server 127.0.0.1:8080;
+    server 127.0.0.1:5000;
 }
 
 server {
