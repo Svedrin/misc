@@ -14,3 +14,7 @@ WORKDIR /app
 
 EXPOSE 5000
 CMD [ "uwsgi", "--ini", "uwsgi.ini" ]
+
+# build using: docker build -t myproject .
+# run using:   docker run --rm -it myproject
+# dev edition: docker run --rm -it -v $PWD:/app myproject
