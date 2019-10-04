@@ -1,5 +1,5 @@
-FROM raspbian/jessie
-RUN apt-get update && apt-get -y install dumb-init python py-flask
+FROM arm32v6/alpine
+RUN apk add --no-cache dumb-init python py-flask
 COPY ehzpoll-raspberry /bin/ehzpoll
 COPY ehzserve.py /bin/
 ENTRYPOINT ["dumb-init", "--"]
