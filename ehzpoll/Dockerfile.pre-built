@@ -1,0 +1,8 @@
+FROM raspbian/jessie
+RUN apt-get update && apt-get -y install dumb-init python py-flask
+COPY ehzpoll-raspberry /bin/ehzpoll
+COPY ehzserve.py /bin/
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["python", "/bin/ehzserve.py"]
+
+# docker run -v /dev/ttyUSBx:/dev/ttyUSB0 ehzpoll
