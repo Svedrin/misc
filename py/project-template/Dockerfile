@@ -1,7 +1,7 @@
 FROM alpine:latest
 
 # Install basic dependencies
-RUN apk add --no-cache python3 uwsgi-python3
+RUN apk add --no-cache python3 uwsgi-python3 dumb-init
 
 # Install dependencies first without copying the whole application,
 # so that Docker can cache the dependencies
@@ -13,6 +13,7 @@ COPY . /app
 WORKDIR /app
 
 EXPOSE 5000
+ENTRYPOINT ["dumb-init", "--"]
 CMD [ "uwsgi", "--ini", "uwsgi.ini" ]
 
 # build using: docker build -t myproject .
