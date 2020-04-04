@@ -16,12 +16,6 @@ MQTT_TPFX="ctrl/d3100"
 
 export LANG=C
 
-echo "Detecting cameras..."
-if [ -z "$(gphoto2 --auto-detect | tail -n +3)" ]; then
-    echo "No camera found (is it on?)"
-    exit 1
-fi
-
 # Subscribes to the command topic and writes received commands to stdout.
 function mqtt_in () {
     mosquitto_sub -h "$MQTT_HOST" -u "$MQTT_USER" -P "$MQTT_PASS" -t "$MQTT_TPFX/command"
