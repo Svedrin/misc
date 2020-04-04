@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Trigger a digital camera through MQTT commands.
+# Requires gphoto2 and mosquitto-clients.
+
 set -e
 set -u
 
@@ -19,7 +22,7 @@ if [ -z "$(gphoto2 --auto-detect | tail -n +3)" ]; then
     exit 1
 fi
 
-# Subscribes to the command topic and waits for commands.
+# Subscribes to the command topic and writes received commands to stdout.
 function mqtt_in () {
     mosquitto_sub -h "$MQTT_HOST" -u "$MQTT_USER" -P "$MQTT_PASS" -t "$MQTT_TPFX/command"
 }
@@ -33,20 +36,20 @@ function main () {
             BATTERY)
                 BATLEVEL="$(gphoto2 --summary | grep Battery | grep -Po '\([0-9]+\)' | tr -d '()')"
                 mosquitto_pub -h "$MQTT_HOST" -u "$MQTT_USER" -P "$MQTT_PASS" -t "$MQTT_TPFX/battery" -m "$BATLEVEL"
-    	    ;;
+                ;;
 
-    	SHOOT)
+            SHOOT)
                 echo "shooting"
                 DATE_DIR="$(date +%Y-%m-%d)"
                 mkdir -p "$IMAGES_DIR/$DATE_DIR"
                 cd "$IMAGES_DIR/$DATE_DIR"
-    
+
                 echo -n "Shooting at " >&2; date >&2
                 START_SHOT="$(date +%s)"
                 gphoto2 --capture-image-and-download --filename='%Y-%m-%d-%H-%M-%S.%C'
                 echo "done" >&2
                 echo "idle"
-    	    ;;
+                ;;
         esac
     done
 }
