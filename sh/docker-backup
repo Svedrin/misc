@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -e
+set -u
+
+mkdir -p /media/backup/docker
+
+docker ps --format '{{.ID}} {{.Names}}' | while read CONTAINER NAME; do
+    docker run --rm \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        assaflavie/runlike -p "$CONTAINER" \
+        > /media/backup/docker/$NAME.sh
+done
