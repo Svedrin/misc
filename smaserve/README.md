@@ -8,6 +8,8 @@ cd sbfspot/SBFspot
 make nosql
 mkdir -p /usr/local/share/smaserve
 cp nosql/bin/SBFspot /usr/local/share/smaserve/SBFspot
+cp SBFspot.cfg       /usr/local/share/smaserve/
+cp TagList*.txt      /usr/local/share/smaserve/
 ```
 
 # Config
@@ -15,10 +17,7 @@ cp nosql/bin/SBFspot /usr/local/share/smaserve/SBFspot
 You need to have [`SBFspot.cfg`](https://github.com/SBFspot/SBFspot/blob/master/SBFspot/SBFspot.cfg) and the Taglists available.
 
 If you use the original `SBFspot.cfg` from their repo, be sure to disable Bluetooth (unless you want to use it). The config from my
-repo has it disabled already.
-
-Also, from within the [`SBFspot` subdir of the original repo](https://github.com/SBFspot/SBFspot/tree/master/SBFspot),
-`cp TagList*.txt /usr/local/share/smaserve/`.
+repo has it disabled already. Also you'll probably want to set your correct GPS location.
 
 # Run it
 
