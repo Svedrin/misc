@@ -24,6 +24,7 @@ repo has it disabled already. Also you'll probably want to set your correct GPS 
 If `run_test.sh` produces some output that looks legit:
 
 ```
+cp smaserve.py /usr/local/share/smaserve/
 cp smaserve.service /etc/systemd/system/
 systemctl daemon-reload
 systemctl enable smaserve
