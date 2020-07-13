@@ -6,10 +6,12 @@ You'll need SBFspot: https://github.com/SBFspot/SBFspot/
 git clone git@github.com:SBFspot/SBFspot.git sbfspot
 cd sbfspot/SBFspot
 make nosql
+
 mkdir -p /usr/local/share/smaserve
 cp nosql/bin/SBFspot /usr/local/share/smaserve/SBFspot
 cp SBFspot.cfg       /usr/local/share/smaserve/
 cp TagList*.txt      /usr/local/share/smaserve/
+cp date_time_zonespec.csv /usr/local/share/smaserve/
 ```
 
 # Config
