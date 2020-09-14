@@ -3,7 +3,7 @@
 set -e
 set -u
 
-TMUXCMD="new-session -d ssh $1 ;"
+TMUXCMD="set default-terminal xterm-color ; new-session -d ssh $1 ; "
 shift
 
 while [ -n "${1:-}" ]; do
