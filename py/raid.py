@@ -1,8 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # kate: space-indent on; indent-width 4; replace-tabs on;
 
-from __future__ import division
 
 import sys
 import re
@@ -24,10 +23,10 @@ units = {
 
 
 def headline(line):
-    print "=" * len(line)
-    print line
-    print "=" * len(line)
-    print
+    print("=" * len(line))
+    print(line)
+    print("=" * len(line))
+    print()
 
 
 def from_number_with_unit(value, base=1024):
@@ -83,7 +82,7 @@ def to_number_with_unit(value, unit, base=1024):
 
 
 def printv(label, value, unit=""):
-    print "%-20s: %s%s" % (label, value, unit)
+    print("%-20s: %s%s" % (label, value, unit))
 
 def pluralize(string, value):
     if value > 1:
@@ -100,9 +99,7 @@ class FilterLibrary(type):
             FilterLibrary.filters[ name.replace("Filter", "").lower() ] = cls
 
 
-class Filter(object):
-    __metaclass__ = FilterLibrary
-
+class Filter(object, metaclass=FilterLibrary):
     def __init__(self, predecessor, options):
         self.confmsgs = []
         self.errors = []
@@ -151,12 +148,12 @@ class Filter(object):
         headline(self.__class__.__name__.replace("Filter", ""))
         if verbose:
             for message in self.confmsgs:
-                print "C: %s" % message
+                print("C: %s" % message)
         for message in self.messages:
-            print "I: %s" % message
+            print("I: %s" % message)
         for error in self.errors:
-            print "E: %(field)-20s: %(errorstr)s" % error
-        print
+            print("E: %(field)-20s: %(errorstr)s" % error)
+        print()
 
     def prepare_parser(self, parser):
         """ Stub to prepare OptionParser for derived filter classes. """
@@ -507,9 +504,9 @@ def main():
             currargs.append(arg)
 
     if listfilters:
-        print "Available filters:"
+        print("Available filters:")
         for filtername in FilterLibrary.filters:
-            print filtername
+            print(filtername)
         return 0
 
     data = topfilter()
@@ -530,16 +527,16 @@ def main():
             printv( "Total space (all devices)", to_number_with_unit(data["totalsize"] * data["devices"], "B") )
 
     if data["spares"]:
-        print
-        print "Spares:"
+        print()
+        print("Spares:")
         for spare in data["spares"]:
-            print pluralize("* %(devices)d %(type)s" % spare, spare["devices"])
+            print(pluralize("* %(devices)d %(type)s" % spare, spare["devices"]))
 
     if data["parity"]:
-        print
-        print "Parity:"
+        print()
+        print("Parity:")
         for spare in data["parity"]:
-            print pluralize("* %(devices)d %(type)s" % spare, spare["devices"])
+            print(pluralize("* %(devices)d %(type)s" % spare, spare["devices"]))
 
     return 0
 
