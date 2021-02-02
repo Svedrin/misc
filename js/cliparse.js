@@ -25,12 +25,10 @@ function cli_parse(commands, line) {
         } else if (candidates.length == 0) {
             throw "command not found: " + words[0];
         } else {
-            throw [
-                "command is ambiguous: '",
-                words[0],
-                "' candidates are: ",
+            throw (
+                `command is ambiguous: '${words[0]}', candidates are: ` +
                 candidates.join(", ")
-            ].join("");
+            );
         }
     }
     // Split the command line and call inner_parse
