@@ -4,8 +4,8 @@
 function cli_parse(commands, line) {
     // inner_parse function operates on a list of words
     function inner_parse(commands, words){
-        if (words.length == 0) {
-            throw "need one of " + Object.keys(commands).join(", ");
+        if (words.length == 0 || words[0] == "?") {
+            throw "Valid commands: " + Object.keys(commands).join(", ");
         }
         // Find candidates for the current command
         var candidates = (
@@ -23,7 +23,10 @@ function cli_parse(commands, line) {
                 return inner_parse(commands[candidates[0]], words.slice(1));
             }
         } else if (candidates.length == 0) {
-            throw "command not found: " + words[0];
+            throw (
+                `command not found: '${words[0]}', valid ones are: ` +
+                Object.keys(commands).join(", ")
+            );
         } else {
             throw (
                 `command is ambiguous: '${words[0]}', candidates are: ` +
