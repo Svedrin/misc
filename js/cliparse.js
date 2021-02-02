@@ -8,7 +8,7 @@ function cli_parse(commands, line) {
         var candidates = (
             Object.keys(commands)
                 .filter((candidate) => candidate.startsWith(words[0]))
-        );;
+        );
         console.log([commands, words[0], candidates]);
         if (candidates.length == 1) {
             // We're done if we found a function
@@ -55,4 +55,8 @@ function test() {
     fn();
 }
 
-test();
+try {
+    test();
+} catch(e) {
+    console.log(e);
+}
