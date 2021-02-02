@@ -4,6 +4,9 @@
 function cli_parse(commands, line) {
     // inner_parse function operates on a list of words
     function inner_parse(commands, words){
+        if (words.length == 0) {
+            throw "need one of " + Object.keys(commands).join(", ");
+        }
         // Find candidates for the current command
         var candidates = (
             Object.keys(commands)
