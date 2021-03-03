@@ -239,19 +239,21 @@ class AbstractRaidFilter(Filter):
                 "devices": (raiddisks - datadisks) * nr_raids
                 })
 
-            if raiddisks - datadisks == 1:
-                databits = data["usablesize"] * datadisks * 8
-                # The probability for one random read on a single disk to fail is 1/10**<urerate>.
-                # If we have more than one parity disk, this needs to fail on *all* disks in order
-                # for the read to have failed, meaning the probability for that is
-                # P(fail on one disk) ** <number of parity disks>.
-                # So the probability for one read to succeed is (1 - above), and the probability
-                # for ALL reads to succeed is (1 - above) ** (number of bits we have to read).
-                # TODO: Sadly, P(fail on one disk) ** <number of parity disks> is so close to zero
-                #       (around 1e-196) that 1 - P(fail on one disk) ** <number of parity disks> is
-                #       always 1.0. Wat do?
-                rebuildp = (1 - (1/10**data["urerate"])) ** databits
-                self.message( "This array has a probability of %.2f%% for a rebuild to succeed." % (rebuildp * 100) )
+            # We can read up to 10**<urerate> bits before one will fail.
+            # That means we can read up to raiddisks * 10**<urerate> bits from our array,
+            # and we will experience <raiddisks> errors along the way.
+            # So how many bits can we read while experiencing 0 errors?
+            #
+            paritydisks = raiddisks - datadisks
+            # During a rebuild we will read all the data disks - 1 that failed + 1 parity disk.
+            read_bits  = data["usablesize"] * 8
+            # We can read 10**URE bits per parity disk: extra parity disks means extra errors allowed
+            error_bits = 10**data["urerate"] * paritydisks
+            # We will do that experiment for each of our raid disks - 1 that failed + 1 parity disk,
+            # probability for each one to succeed is (1 - it fails),
+            # probability for one to fail is the percentage of the budget spent.
+            rebuildp = (1 - (read_bits / error_bits)) ** datadisks
+            self.message( "This array has a probability of %.2f%% for a rebuild to succeed." % (rebuildp * 100) )
 
         return self.conf({
             "devices":     nr_raids,
