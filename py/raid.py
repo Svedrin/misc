@@ -314,6 +314,15 @@ class Raid6Filter(AbstractRaidFilter):
     def get_datadisks(self, nr_disks):
         return nr_disks - 2
 
+class RaidZ3Filter(AbstractRaidFilter):
+    level = -3
+
+    def get_default_nrdisks(self, nr_disks, chunksize):
+        return min(nr_disks, 1024**2 / chunksize + 3)
+
+    def get_datadisks(self, nr_disks):
+        return nr_disks - 3
+
 class Raid10Filter(Raid1Filter, Raid0Filter):
     level = 10
 
