@@ -8,7 +8,7 @@ set -u
 if [ -e ".tool-versions" ]; then
     read _ TFVERSION <<< "$(grep -i terraform .tool-versions)"
     if [ -n "$TFVERSION" ]; then
-        TERRFAORM_VERSION="$TFVERSION"
+        TERRAFORM_VERSION="$TFVERSION"
         echo "Running terraform version $TFVERSION from asdf"
     fi
 fi
@@ -20,4 +20,4 @@ exec docker run -it --rm \
     -u "$(id -u):$(id -g)" \
     -v "$HOME:$HOME" \
     -w "$PWD" \
-    hashicorp/terraform:"${TERRFAORM_VERSION:-light}" "$@"
+    hashicorp/terraform:"${TERRAFORM_VERSION:-light}" "$@"
