@@ -18,8 +18,8 @@ class SomeData:
     some_value: str
 
 passed_in_from_api = {
-    some_value: "one",
-    other_value: "two"
+    "some_value": "one",
+    "other_value": "two"
 }
 
 somedata = SomeData.from_(passed_in_from_api)
