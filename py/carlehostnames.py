@@ -16,4 +16,4 @@ def mkname():
     ])
 
 if __name__ == '__main__':
-    print mkname()
+    print(mkname())
