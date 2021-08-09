@@ -11,7 +11,7 @@ def mkname():
         'k',
         random.choice(soft),
         random.choice(vows),
-        random.choice(hard),
+        random.choice(hard + soft),
         random.choice(soft),
     ])
 
