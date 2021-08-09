@@ -9,6 +9,21 @@ Since we're not interested in _all_ the fields, let's add a custom
 from_ method that essentially does Dataclass(**dict), but only
 includes those values from the dict for which the Dataclass actually
 has a field.
+
+Use:
+
+@with_from
+@dataclass
+class SomeData:
+    some_value: str
+
+passed_in_from_api = {
+    some_value: "one",
+    other_value: "two"
+}
+
+somedata = SomeData.from_(passed_in_from_api)
+assert somedata.some_value == "one"
 """
 
 def dataclass_from_dict(Dataclass, values):
