@@ -11,7 +11,7 @@
 #define SENSORNAME "netzwerkschrank"
 
 #define DHTTYPE DHT22
-#define DHTPIN  5
+#define DHTPIN  D4
 
 DHT dht(DHTPIN, DHTTYPE, 11); // 11 works fine for ESP8266
 
