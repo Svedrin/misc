@@ -21,8 +21,8 @@ def main():
             title = entry.title.split("[", 1)[0]
 
             if "-v" in sys.argv:
-                print title
-                print link
+                print(title)
+                print(link)
 
             if "imgur.com" in link:
                 page = requests.get(link).content
