@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Michael Ziegler <michael.ziegler@proemion.com>"]
 
 [dependencies]
-yaml-rust = "0.3"
+yaml-rust = "0.4"
 imap = "0.3.3"
 openssl = "*"
 crossbeam = "*"
