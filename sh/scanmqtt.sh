@@ -53,7 +53,7 @@ function main () {
 
                 OCRED_FILE="${TEMP_DIR}/scan_${FILE_TIME}_ocr.pdf"
                 if docker run --rm -v "${TEMP_DIR}:${TEMP_DIR}" jbarlow83/ocrmypdf \
-                    -l "$OCR_LANG" --jobs 4 "$TEMP_FILE" "$OCRED_FILE"; then
+                    -l "$OCR_LANG" --jobs 4 "$TEMP_FILE" "$OCRED_FILE" >&2; then
                     echo "OCR successful"
                     mv "$OCRED_FILE" "$TEMP_FILE"
                 else
