@@ -14,6 +14,7 @@ MQTT_PASS="supersecret"
 MQTT_TPFX="ctrl/hp6970"
 PRINTER="hpaio:/net/OfficeJet_Pro_6970"
 NC_DIR="/var/lib/docker/volumes/nextcloud-data/_data"
+OCR_LANG="deu+eng"
 
 [ -r "$HOME/.mqtt" ] && source "$HOME/.mqtt"
 
@@ -52,7 +53,7 @@ function main () {
 
                 OCRED_FILE="${TEMP_DIR}/scan_${FILE_TIME}_ocr.pdf"
                 if docker run --rm -v "${TEMP_DIR}:${TEMP_DIR}" jbarlow83/ocrmypdf \
-                    -l deu+eng --jobs 4 "$TEMP_FILE" "$OCRED_FILE"; then
+                    -l "$OCR_LANG" --jobs 4 "$TEMP_FILE" "$OCRED_FILE"; then
                     echo "OCR successful"
                     mv "$OCRED_FILE" "$TEMP_FILE"
                 else
