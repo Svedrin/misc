@@ -12,10 +12,13 @@ else
     ZEBRA_CONF="/etc/frr/zebra.conf"
 fi
 
-for VETH in $(grep -e '^interface veth' -e '^interface br-' "$ZEBRA_CONF" | cut '-d ' -f2); do
-    if [ ! -e "/sys/class/net/$VETH" ]; then
-        vtysh -c "conf t" -c "no interface $VETH"
-    fi
-done
-
-vtysh -c write
+{
+    echo conf t
+    for VETH in $(grep '^interface veth' "$ZEBRA_CONF" | cut '-d ' -f2); do
+        if [ ! -e "/sys/class/net/$VETH" ]; then
+            echo "no interface $VETH"
+        fi
+    done
+    echo end
+    echo write
+} | vtysh
