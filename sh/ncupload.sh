@@ -29,7 +29,7 @@ NC_URL="$(   <<<$SHARED_FOLDER cut -d/ -f 1-3)"
 while [ -n "${1:-}" ]; do
     # split $1 at a : (if any)
     LOCALNAME="$( <<<"$1" cut -d: -f1)"
-    REMOTENAME="$(<<<"$1" cut -d: -f2 -s)"
+    REMOTENAME="$(<<<"$1" cut -d: -f2- -s)"
     # if that didn't return anything (because no :something was specified),
     # fall back to basename
     if [ -z "$REMOTENAME" ]; then
