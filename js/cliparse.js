@@ -67,3 +67,7 @@ function test_cli_parse() {
 
 
 module.exports = {cli_parse, test_cli_parse};
+
+if (typeof require !== 'undefined' && require.main === module) {
+    test_cli_parse();
+}
