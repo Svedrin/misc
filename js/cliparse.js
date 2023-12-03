@@ -2,6 +2,7 @@
 // supporting command abbreviations.
 
 function cli_parse(commands, line) {
+    // https://github.com/Svedrin/misc/blob/master/js/cliparse.js
     // inner_parse function operates on a list of words
     function inner_parse(commands, words){
         if (words.length == 0 || words[0] == "?") {
@@ -16,7 +17,7 @@ function cli_parse(commands, line) {
         if (candidates.length == 1) {
             // We're done if we found a function
             if (typeof commands[candidates[0]] == "function") {
-                return commands[candidates[0]];
+                return [commands[candidates[0]], words.slice(1)];
             } else {
                 // Parse the rest of the words with the commands from our
                 // candidate
@@ -56,8 +57,9 @@ function test_cli_parse() {
         }
     }
     try {
-        fn = cli_parse(commands, "xmas li on");
-        fn();
+        var fn, args;
+        [fn, args] = cli_parse(commands, "xmas li on");
+        fn(args);
     } catch(e) {
         console.log(e);
     }
