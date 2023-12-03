@@ -39,7 +39,7 @@ function cli_parse(commands, line) {
 }
 
 
-function test() {
+function test_cli_parse() {
     commands = {
         xmas: {
             lights: {
@@ -55,12 +55,13 @@ function test() {
             }
         }
     }
-    fn = cli_parse(commands, "xmas li on");
-    fn();
+    try {
+        fn = cli_parse(commands, "xmas li on");
+        fn();
+    } catch(e) {
+        console.log(e);
+    }
 }
 
-try {
-    test();
-} catch(e) {
-    console.log(e);
-}
+
+module.exports = {cli_parse, test_cli_parse};
