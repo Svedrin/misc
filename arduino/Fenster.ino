@@ -8,10 +8,11 @@
 
 #include <DHT.h>
 
-#define SENSORNAME "aussen"
+#define SENSORNAME "keller"
 
 #define DHTTYPE DHT22
 #define DHTPIN  D4
+#define WINPIN  D5
 
 DHT dht(DHTPIN, DHTTYPE);
 
@@ -64,6 +65,8 @@ void setup(void)
 
     dht.begin();
 
+    pinMode(WINPIN, INPUT_PULLUP);
+
     client.setServer(MQTT_HOST, MQTT_PORT);
 }
 
@@ -80,6 +83,12 @@ void loop() {
 
     if (lastMsg == 0 || now - lastMsg > 1 * 30 * 1000) {
         lastMsg = now;
+
+        if(digitalRead(WINPIN) == HIGH){
+            client.publish("sensor/" SENSORNAME "/window",  "OPEN");
+        } else {
+            client.publish("sensor/" SENSORNAME "/window",  "CLOSED");
+        }
 
         temp = dht.readTemperature(false);
         humd = dht.readHumidity();

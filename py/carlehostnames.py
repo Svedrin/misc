@@ -11,9 +11,9 @@ def mkname():
         'k',
         random.choice(soft),
         random.choice(vows),
-        random.choice(hard),
+        random.choice(hard + soft),
         random.choice(soft),
     ])
 
 if __name__ == '__main__':
-    print mkname()
+    print(mkname())

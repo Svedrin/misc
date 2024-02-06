@@ -1,8 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # kate: space-indent on; indent-width 4; replace-tabs on;
 
-from __future__ import division
 
 import sys
 import re
@@ -24,10 +23,10 @@ units = {
 
 
 def headline(line):
-    print "=" * len(line)
-    print line
-    print "=" * len(line)
-    print
+    print("=" * len(line))
+    print(line)
+    print("=" * len(line))
+    print()
 
 
 def from_number_with_unit(value, base=1024):
@@ -83,7 +82,7 @@ def to_number_with_unit(value, unit, base=1024):
 
 
 def printv(label, value, unit=""):
-    print "%-20s: %s%s" % (label, value, unit)
+    print("%-20s: %s%s" % (label, value, unit))
 
 def pluralize(string, value):
     if value > 1:
@@ -100,9 +99,7 @@ class FilterLibrary(type):
             FilterLibrary.filters[ name.replace("Filter", "").lower() ] = cls
 
 
-class Filter(object):
-    __metaclass__ = FilterLibrary
-
+class Filter(object, metaclass=FilterLibrary):
     def __init__(self, predecessor, options):
         self.confmsgs = []
         self.errors = []
@@ -151,12 +148,12 @@ class Filter(object):
         headline(self.__class__.__name__.replace("Filter", ""))
         if verbose:
             for message in self.confmsgs:
-                print "C: %s" % message
+                print("C: %s" % message)
         for message in self.messages:
-            print "I: %s" % message
+            print("I: %s" % message)
         for error in self.errors:
-            print "E: %(field)-20s: %(errorstr)s" % error
-        print
+            print("E: %(field)-20s: %(errorstr)s" % error)
+        print()
 
     def prepare_parser(self, parser):
         """ Stub to prepare OptionParser for derived filter classes. """
@@ -242,19 +239,21 @@ class AbstractRaidFilter(Filter):
                 "devices": (raiddisks - datadisks) * nr_raids
                 })
 
-            if raiddisks - datadisks == 1:
-                databits = data["usablesize"] * datadisks * 8
-                # The probability for one random read on a single disk to fail is 1/10**<urerate>.
-                # If we have more than one parity disk, this needs to fail on *all* disks in order
-                # for the read to have failed, meaning the probability for that is
-                # P(fail on one disk) ** <number of parity disks>.
-                # So the probability for one read to succeed is (1 - above), and the probability
-                # for ALL reads to succeed is (1 - above) ** (number of bits we have to read).
-                # TODO: Sadly, P(fail on one disk) ** <number of parity disks> is so close to zero
-                #       (around 1e-196) that 1 - P(fail on one disk) ** <number of parity disks> is
-                #       always 1.0. Wat do?
-                rebuildp = (1 - (1/10**data["urerate"])) ** databits
-                self.message( "This array has a probability of %.2f%% for a rebuild to succeed." % (rebuildp * 100) )
+            # We can read up to 10**<urerate> bits before one will fail.
+            # That means we can read up to raiddisks * 10**<urerate> bits from our array,
+            # and we will experience <raiddisks> errors along the way.
+            # So how many bits can we read while experiencing 0 errors?
+            #
+            paritydisks = raiddisks - datadisks
+            # During a rebuild we will read all the data disks - 1 that failed + 1 parity disk.
+            read_bits  = data["usablesize"] * 8
+            # We can read 10**URE bits per parity disk: extra parity disks means extra errors allowed
+            error_bits = 10**data["urerate"] * paritydisks
+            # We will do that experiment for each of our raid disks - 1 that failed + 1 parity disk,
+            # probability for each one to succeed is (1 - it fails),
+            # probability for one to fail is the percentage of the budget spent.
+            rebuildp = (1 - (read_bits / error_bits)) ** datadisks
+            self.message( "This array has a probability of %.2f%% for a rebuild to succeed." % (rebuildp * 100) )
 
         return self.conf({
             "devices":     nr_raids,
@@ -314,6 +313,15 @@ class Raid6Filter(AbstractRaidFilter):
 
     def get_datadisks(self, nr_disks):
         return nr_disks - 2
+
+class RaidZ3Filter(AbstractRaidFilter):
+    level = -3
+
+    def get_default_nrdisks(self, nr_disks, chunksize):
+        return min(nr_disks, 1024**2 / chunksize + 3)
+
+    def get_datadisks(self, nr_disks):
+        return nr_disks - 3
 
 class Raid10Filter(Raid1Filter, Raid0Filter):
     level = 10
@@ -507,9 +515,9 @@ def main():
             currargs.append(arg)
 
     if listfilters:
-        print "Available filters:"
+        print("Available filters:")
         for filtername in FilterLibrary.filters:
-            print filtername
+            print(filtername)
         return 0
 
     data = topfilter()
@@ -530,16 +538,16 @@ def main():
             printv( "Total space (all devices)", to_number_with_unit(data["totalsize"] * data["devices"], "B") )
 
     if data["spares"]:
-        print
-        print "Spares:"
+        print()
+        print("Spares:")
         for spare in data["spares"]:
-            print pluralize("* %(devices)d %(type)s" % spare, spare["devices"])
+            print(pluralize("* %(devices)d %(type)s" % spare, spare["devices"]))
 
     if data["parity"]:
-        print
-        print "Parity:"
+        print()
+        print("Parity:")
         for spare in data["parity"]:
-            print pluralize("* %(devices)d %(type)s" % spare, spare["devices"])
+            print(pluralize("* %(devices)d %(type)s" % spare, spare["devices"]))
 
     return 0
 
