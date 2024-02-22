@@ -1,0 +1,460 @@
+vergleich von stddev mit sqrt(n) für 95% und ½sqrt(n) für 68%:
+
+fluxmon=> select cm.check_id, cp.value, sv.name, avg(cm.value), stddev(cm.value), stddev(cm.value) > 0.1 as derp95perc, stddev(cm.value) > 0.05 as derp68perc from monitoring_checkmeasurement cm inner join monitoring_sensorvariable sv on variable_id=sv.id inner join monitoring_checkparameter cp on cp.check_id=cm.check_id where cp.parameter_id=2 and sv.name = 'tot_ticks' group by cm.check_id, cp.value, sv.name  having avg(cm.value) > 0.001 and stddev(cm.value) > 0.001 order by cp.value ;
+
+
+Variablen für attic01/ovirt_vms01:
+
+fluxmon=>
+  select
+    cm.check_id,
+    cp.value,
+    sv.name,
+    avg(cm.value),
+    stddev(cm.value)
+  from
+    monitoring_checkmeasurement cm
+    inner join monitoring_sensorvariable sv on variable_id=sv.id
+    inner join monitoring_checkparameter cp on cp.check_id=cm.check_id
+  where
+    cp.parameter_id=2 and
+    cm.check_id=287
+  group by cm.check_id, cp.value, sv.name
+  order by cp.value ;
+
+
+
+Theoretisches Maximum IOPS berechnen (wr_ios / wr_ticks):
+
+fluxmon=>
+  select
+    cm.check_id,
+    cp.value as path,
+    cm.measured_at,
+    avg(cm.value) filter (where sv.name = 'wr_ios') as avg_ios,
+    avg(cm.value) filter (where sv.name = 'wr_ticks') as avg_ticks,
+    avg(cm.value) filter (where sv.name = 'wr_ios') / avg(cm.value) filter (where sv.name = 'wr_ticks') as max_ios
+  from
+    monitoring_checkmeasurement cm
+    inner join monitoring_sensorvariable sv on variable_id=sv.id
+    inner join monitoring_checkparameter cp on cp.check_id=cm.check_id
+  where
+    cp.parameter_id=2 and
+    cm.check_id=287
+  group by
+    cm.check_id,
+    cp.value,
+    cm.measured_at
+  order by cp.value, cm.measured_at ;
+
+ check_id |      measured_at       |          value           |     avg_ios      |     avg_ticks     |     max_ios      
+----------+------------------------+--------------------------+------------------+-------------------+------------------
+      287 | 2015-08-16 15:15:02+02 | /dev/attic01/ovirt_vms01 | 267.671836565677 |  0.20491107866612 | 1306.28289259957
+      287 | 2015-08-16 14:25:03+02 | /dev/attic01/ovirt_vms01 | 268.662597618636 | 0.171345577611925 | 1567.95758234929
+      287 | 2015-08-16 14:40:02+02 | /dev/attic01/ovirt_vms01 | 253.674634889183 | 0.203743783943429 | 1245.06686770683
+      287 | 2015-08-16 16:30:02+02 | /dev/attic01/ovirt_vms01 | 245.982576884785 | 0.176891148246417 | 1390.58725845411
+      287 | 2015-08-16 16:35:03+02 | /dev/attic01/ovirt_vms01 |  280.16627617083 | 0.148064358031917 |  1892.1925566343
+      287 | 2015-08-16 16:15:03+02 | /dev/attic01/ovirt_vms01 | 276.081785281601 | 0.174966506929435 | 1577.91219660656
+      287 | 2015-08-16 15:05:02+02 | /dev/attic01/ovirt_vms01 | 269.672804027931 | 0.165771221078833 | 1626.77696570557
+      287 | 2015-08-16 15:10:02+02 | /dev/attic01/ovirt_vms01 | 259.363337856962 | 0.208746165812242 |  1242.4819246273
+      287 | 2015-08-16 16:10:02+02 | /dev/attic01/ovirt_vms01 | 257.201871047686 | 0.156189520570278 | 1646.72937152629
+      287 | 2015-08-16 15:55:02+02 | /dev/attic01/ovirt_vms01 | 269.432376039175 | 0.167912746322536 | 1604.59751829462
+
+
+
+fluxmon=>
+  select
+    cm.check_id,
+    cm.measured_at,
+    cp.value,
+    avg(cm.value) filter (where sv.name = 'wr_ios') as ref_avg_ios,
+    avg(cm.value) filter (where sv.name = 'wr_ios')   over (partition by cm.measured_at) as avg_ios,
+    avg(cm.value) filter (where sv.name = 'wr_ticks') over (partition by cm.measured_at) as avg_ticks,
+    avg(cm.value) filter (where sv.name = 'wr_ios')   over (partition by cm.measured_at) / avg(cm.value) filter (where sv.name = 'wr_ticks') over (partition by cm.measured_at) as max_ios
+  from
+    monitoring_checkmeasurement cm
+    inner join monitoring_sensorvariable sv on variable_id=sv.id
+    inner join monitoring_checkparameter cp on cp.check_id=cm.check_id
+  where
+    cp.parameter_id=2 and
+    cm.check_id=287
+  group by
+    cm.check_id,
+    cp.value,
+    cm.measured_at
+  order by cp.value ;
+
+
+
+
+
+  select
+    cm.check_id,
+    cp.value,
+    avg(cm.value) filter (where sv.name = 'wr_ios') as ref_avg_ios,
+    avg(cm.value) filter (where sv.name = 'wr_ios')   over (partition by cm.measured_at) as avg_ios,
+    avg(cm.value) filter (where sv.name = 'wr_ticks') over (partition by cm.measured_at) as avg_ticks,
+    avg(cm.value) filter (where sv.name = 'wr_ios')   over (partition by cm.measured_at) /
+    avg(cm.value) filter (where sv.name = 'wr_ticks') over (partition by cm.measured_at) as max_ios
+  from
+    monitoring_checkmeasurement cm
+    inner join monitoring_sensorvariable sv on variable_id=sv.id
+    inner join monitoring_checkparameter cp on cp.check_id=cm.check_id
+  where
+    cp.parameter_id=2 and
+    cm.check_id=287
+  group by
+    cm.check_id,
+    cp.value
+  order by cp.value ;
+
+
+
+
+
+
+komisch: warum ist bei folgendem bei ios_in_prog die standardabweichung sogar größer als der Durchschnittswert?
+(können wir vllt einfach IMMER die wurzelregeln für die grenzen benutzen, und bei gemessener stddev > sqrt(n) vielleicht sagen "hier is nich, gibts keine prediction dafür nich"?)
+
+
+fluxmon=> select cm.check_id, cp.value, sv.name, avg(cm.value), stddev(cm.value) from monitoring_checkmeasurement cm inner join monitoring_sensorvariable sv on variable_id=sv.id inner join monitoring_checkparameter cp on cp.check_id=cm.check_id where cp.parameter_id=2 and cm.check_id=287 group by cm.check_id, cp.value, sv.name  having avg(cm.value) > 0.001 and stddev(cm.value) > 0.001 order by cp.value ; check_id |          value           |    name     |        avg         |       stddev        
+----------+--------------------------+-------------+--------------------+---------------------
+      287 | /dev/attic01/ovirt_vms01 | wr_ios      |   259.563372929464 |    10.0465959913142
+      287 | /dev/attic01/ovirt_vms01 | wr_ticks    |  0.174235619773103 |  0.0212682227695821
+      287 | /dev/attic01/ovirt_vms01 | tot_ticks   |   0.12142583391106 |  0.0169279530008972
+      287 | /dev/attic01/ovirt_vms01 | ios_in_prog |                0.6 |   0.753937034925052
+      287 | /dev/attic01/ovirt_vms01 | rd_ticks    | 0.0150581564759745 | 0.00896643164771607
+      287 | /dev/attic01/ovirt_vms01 | wr_sectors  |   28204.0608822009 |     1198.7049357941
+      287 | /dev/attic01/ovirt_vms01 | rd_ios      |   1.21494604964819 |   0.699401523332221
+      287 | /dev/attic01/ovirt_vms01 | rd_sectors  |   90.9226177146983 |    70.7471842020351
+      287 | /dev/attic01/ovirt_vms01 | rq_ticks    |   0.18938581572984 |  0.0204494182305483
+
+
+
+
+In [144]: def testmu(k, n, p): return (n * p) - math.sqrt(n) <= k <= (n * p) + math.sqrt(n)
+
+In [145]: testmu(235, 1567, 0.17)
+Out[145]: True
+
+In [146]: testmu(235, 1567, 0.11)
+Out[146]: False
+
+In [147]: testmu(200, 1567, 0.11)
+Out[147]: True
+
+In [152]: def testmu2(k, n, p): return (n * p) - math.sqrt(n)/2. <= k <= (n * p) + math.sqrt(n)/2.
+
+In [153]: testmu2(235, 1567, 0.17)
+Out[153]: False
+
+In [154]: testmu2(235, 1567, 0.11)
+Out[154]: False
+
+In [155]: testmu2(200, 1567, 0.11)
+Out[155]: False
+
+
+CREATE OR REPLACE FUNCTION testmu(integer, integer, float) RETURNS boolean
+    AS 'select ($2 * $3) - SQRT($2) <= $1 AND 1 <= ($2 * $3) + SQRT($2);'
+    LANGUAGE SQL
+    IMMUTABLE
+    RETURNS NULL ON NULL INPUT;
+
+CREATE OR REPLACE FUNCTION testmu2(integer, integer, float) RETURNS boolean
+    AS 'select ($2 * $3) - (SQRT($2) / 2.0) <= $1 AND 1 <= ($2 * $3) + (SQRT($2) / 2.0);'
+    LANGUAGE SQL
+    IMMUTABLE
+    RETURNS NULL ON NULL INPUT;
+
+    select
+      cm.check_id,
+      cm.measured_at,
+      avg(cm.value) filter (where sv.name = 'wr_ios')   as wr_ios,
+      avg(cm.value) filter (where sv.name = 'wr_ticks') as wr_ticks,
+      avg(cm.value) filter (where sv.name = 'wr_ios') / avg(cm.value) filter (where sv.name = 'wr_ticks') as max_ios,
+      testmu(cast(avg(cm.value) filter (where sv.name = 'wr_ios') as integer), cast(avg(cm.value) filter (where sv.name = 'wr_ios') / avg(cm.value) filter (where sv.name = 'wr_ticks') as integer), avg(cm.value) filter (where sv.name = 'wr_ticks')) as testmu,
+      testmu2(cast(avg(cm.value) filter (where sv.name = 'wr_ios') as integer), cast(avg(cm.value) filter (where sv.name = 'wr_ios') / avg(cm.value) filter (where sv.name = 'wr_ticks') as integer), avg(cm.value) filter (where sv.name = 'wr_ticks')) as testmu2
+    from
+      monitoring_checkmeasurement cm
+      inner join monitoring_sensorvariable sv on variable_id=sv.id
+    where
+      cm.check_id=287
+    group by
+      cm.check_id,
+      cm.measured_at
+    order by cm.measured_at ;
+
+beides returnt überall true... ist ja aber auch logisch:
+  
+  ich hab ja gesagt "max_ios = wr_ios / wr_ticks", nehme dann n = max_ios, k = wr_ios, p = wr_ticks, und prüfe ob n * p - bla <= k <= n * p + bla.
+  wenn aber n = max_ios = wr_ios / wr_ticks und p = wr_ticks ist n * p = wr_ios / wr_ticks * wr_ticks = wr_ios, und wenn k = wr_ios, prüfe ich ob wr_ios - bla <= wr_ios <= wr_ios + bla.
+  ...sinn?
+  müde bin ich, geh zur ruh
+  ich werd also irgendeine form von historie brauchen, die mir n und p unabhg vom aktuellen messwert liefert.
+  * kann weibull sowas sein? lt wiki ist sie "gedächtnisbehaftet", was heißt das genau?
+  * oder nehmen wir einfach stumpf den bisherigen mittelwert und jut is?
+  * sowas wie hwpredict wär halt auch awesome zu haben
+  * funktioniert das mit dem mittelwert für alle?
+  * woher kriegen wir n z.b. bei der solaranlage raus? erfahrungswert? oder wenn wirs nicht wissen gibts halt einfach keine info?
+    * können wir das vom user lernen? also einen knopf "hey das ding hier ist grade broken"?
+
+
+ntile:
+
+select
+  cm.check_id,
+  cm.value,
+  ntile(100) over (order by cm.value)
+from
+  monitoring_checkmeasurement cm
+  inner join monitoring_sensorvariable sv on variable_id=sv.id
+where
+  cm.check_id=287 and
+  sv.name = 'wr_ios'
+group by
+  cm.check_id,
+  cm.value;
+
+
+bzw zusammengefasst:
+
+    select
+        check_id, entile,
+        CASE WHEN entile <= 50 THEN MAX(value) ELSE MIN(value) END,
+        min(value), max(value)
+    from (
+      select
+        cm.check_id,
+        cm.value,
+        ntile(100) over (order by cm.value) as entile
+      from
+        monitoring_checkmeasurement cm
+        inner join monitoring_sensorvariable sv on variable_id=sv.id
+      where
+        cm.check_id=287 and
+        sv.name = 'wr_ios'
+      group by
+        cm.check_id,
+        cm.value
+    ) as x
+    group by
+      x.check_id,
+      x.entile
+    order by x.entile;
+
+
+mal vergleichen mit ±sqrt(n), wenn wir annehmen dass n = 1600 (schöne wurzel und passt zu den ermittelten werten oben)
+
+fluxmon=>     select
+      cm.check_id, avg(value),
+      avg(cm.value) - sqrt(1600) as lft, avg(cm.value) + sqrt(1600) as rgt
+    from
+      monitoring_checkmeasurement cm
+      inner join monitoring_sensorvariable sv on variable_id=sv.id
+    where
+      cm.check_id=287 and
+      sv.name = 'wr_ios'
+    group by
+      cm.check_id;
+ check_id |       avg        |       lft        |       rgt
+----------+------------------+------------------+------------------
+      287 | 302.109410805295 | 262.109410805295 | 342.109410805295
+(1 row)
+
+    262 = 15%l, 302 = 72%l, 342 = 92%l
+
+    50%l = 286
+
+
+und 1/2sqrt?
+
+ check_id |       avg        |       lft        |       rgt
+----------+------------------+------------------+------------------
+      287 | 302.109410805295 | 282.109410805295 | 322.109410805295
+
+                                   44%l                    87%l
+
+
+          IOPS     Percentile      Meaning
+
+           262        15%l         ConfIntv 95% lft
+           282        44%l         ConfIntv 68% lft
+           286        50%l         Median
+           302        72%l         Average
+           322        87%l         ConfIntv 68% rgt
+           342        92%l         ConfIntv 95% rgt
+
+
+Stddev ist 83.23282324. Konfidenzintervalle nach µ ± k * σ:
+
+        1.28      195.634078652    408.584742959      80.0%
+        1.64      165.687891483    438.530930127      90.0%
+        1.96      139.069058445    465.149763166      95.0%
+        2.58       87.495069433    516.723752178      99.0%
+        3.00       52.557851070    551.66097054       99.7%
+
+
+min   229.136365378731
+max  1281.18419789548
+
+
+Extended Tabelle:
+
+
+            52                     k = 3    (99.7%)
+            87                     k = 2.58 (99.0%)
+           139                     k = 1.96 (95%)
+           165                     k = 1.64 (90%)
+           195                     k = 1.28 (80%)
+           229         1%l         Measured Minimum
+           262        15%l         µ -  sqrt(n)
+           282        44%l         µ - ½sqrt(n)
+           286        50%l         Median
+           302        72%l         µ (avg = Arithm. Mean)
+           322        87%l         µ + ½sqrt(n)
+           342        92%l         µ +  sqrt(n)
+           408        96%l         k = 1.28
+           438        97%l         k = 1.64
+           465        97%l         k = 1.96
+           516        98%l         k = 2.58
+           551        98%l         k = 3
+          1281       100%l         Measured Maximum
+
+
+
+wr_reqsz: wr_sectors * 512 / wr_ios
+
+CheckMeasurement.objects.raw("""
+select
+  -1 as id,
+  cm.check_id,
+  (select id from monitoring_sensorvariable where name=%s) as variable_id,
+  cm.measured_at,
+  (avg(cm.value) filter (where sv.name = %s)) * %s / (avg(cm.value) filter (where sv.name = %s)) as value
+from
+  monitoring_checkmeasurement cm
+  inner join monitoring_sensorvariable sv on variable_id=sv.id
+where
+  cm.check_id=%s and
+  cm.measured_at BETWEEN %s AND %s
+group by
+  cm.check_id,
+  cm.measured_at
+order by cm.measured_at ;
+""", ['wr_reqsz', 'wr_sectors', 512, 'wr_ios', 287, start, end])
+
+-> da fallen tatsächlich CheckMeasurement-Objekte bei raus...
+-> die avg()-filter-Dinger könnten aus meinem Parser rausfallen, die Variablennamen sind ja die gleichen
+-> dann einfach in der View verpacken und ab dafür
+-> problem: filter gibts nicht, d.h. in dem fall müssen wir das mit rein packen
+-> save() sollte noch erkennen wenn id = -1 → excepshun
+
+
+
+
+* summe aller wifi-clients über alle nodes:
+
+fluxmon=>
+  select
+    date_trunc('minute', cm.measured_at) measured_at,
+    sv.name,
+    sum(cm.value),
+    avg(cm.value)
+  from
+    monitoring_checkmeasurement cm
+    inner join monitoring_sensorvariable sv on variable_id=sv.id
+  where
+    sv.name = 'clients_wifi'
+  group by
+    sv.name,
+    date_trunc('minute', cm.measured_at)
+  order by measured_at ;
+
+* wer hatn die meisten clients zum Zeitpunkt X?
+
+  select
+    cm.check_id,
+    date_trunc('minute', cm.measured_at) measured_at,
+    sv.name,
+    cm.value
+  from
+    monitoring_checkmeasurement cm
+    inner join monitoring_sensorvariable sv on variable_id=sv.id
+  where
+    sv.name = 'clients_wifi' and
+    date_trunc('minute', cm.measured_at) = '2015-08-29 02:58:00+02'
+  order by cm.value DESC
+  limit 1;
+
+* wer hat die meisten clients?
+
+  select
+    date_trunc('minute', cm.measured_at) measured_at,
+    sv.name,
+    first_value( (cm.check_id, cm.value) ) over (partition by date_trunc('minute', cm.measured_at) order by cm.value DESC)
+  from
+    monitoring_checkmeasurement cm
+    inner join monitoring_sensorvariable sv on variable_id=sv.id
+  where
+    sv.name = 'clients_wifi'
+  order by measured_at ;
+
+* Host auflösen:
+
+  select
+    measured_at,
+    name,
+    hh.fqdn,
+    (f).value
+  from (
+    select distinct
+      date_trunc('hour', cm.measured_at) measured_at,
+      sv.name,
+      first_value(cm) over (partition by date_trunc('hour', cm.measured_at) order by cm.value DESC) as f
+    from
+      monitoring_checkmeasurement cm
+      inner join monitoring_sensorvariable sv on variable_id=sv.id
+    where
+      sv.name = 'clients_wifi'
+    order by measured_at
+  ) as x
+  inner join monitoring_check cc on (f).check_id = cc.id
+  inner join hosts_host hh on cc.target_host_id = hh.id;
+
+
+
+--------------------------------
+
+Wieviele Checkresults haben wir verarbeitet?
+
+
+fluxmon=> explain analyze select count(*) from monitoring_checkmeasurement where measured_at between '2015-09-05 10:18:00+02:00' and '2015-09-05 10:23:00+02:00';
+
+                                                                          QUERY PLAN
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=379182.13..379182.14 rows=1 width=0) (actual time=2722.942..2722.942 rows=1 loops=1)
+   ->  Seq Scan on monitoring_checkmeasurement  (cost=0.00..379182.12 rows=1 width=0) (actual time=2721.091..2722.648 rows=1740 loops=1)
+         Filter: ((measured_at >= '2015-09-05 10:18:00+02'::timestamp with time zone) AND (measured_at <= '2015-09-05 10:23:00+02'::timestamp with time zone))
+         Rows Removed by Filter: 16650279
+ Planning time: 0.134 ms
+ Execution time: 2723.003 ms
+(6 rows)
+
+
+fluxmon=> explain analyze select count(*) from monitoring_checkmeasurement where measured_at between '2015-09-05 10:23:00+02:00' and '2015-09-05 10:28:00+02:00';
+
+                                                                          QUERY PLAN
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=379182.13..379182.14 rows=1 width=0) (actual time=2437.768..2437.768 rows=1 loops=1)
+   ->  Seq Scan on monitoring_checkmeasurement  (cost=0.00..379182.12 rows=1 width=0) (actual time=2436.293..2437.473 rows=1740 loops=1)
+         Filter: ((measured_at >= '2015-09-05 10:23:00+02'::timestamp with time zone) AND (measured_at <= '2015-09-05 10:28:00+02'::timestamp with time zone))
+         Rows Removed by Filter: 16650279
+ Planning time: 0.225 ms
+ Execution time: 2437.863 ms
+(6 rows)
+
+
+Seh ich das richtig dass er zwar 2.437 sekunden braucht (tut er tatsächlich bis die Shell den Query Plan anzeigt), davon aber 2.436 Sekunden lang nichts macht? Was macht er solange?
+* iotop zeigt in der Zeit nichts an...
+* htop zeigt einen postgres-Prozess an der zwar 80% user-CPU verbrät, aber "idle" im Prozessnamen stehen hat..?

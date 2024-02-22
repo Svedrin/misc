@@ -1,0 +1,53 @@
+<div ng-show="state == 'init'">
+  Loading data...
+</div>
+<div ng-show="state == 'exception'">
+  <p>We're sorry, but this graph failed to load. The error was:</p>
+  <pre>{[ exception.str ]}</pre>
+  <div ng-show="exception.query">
+    <p>The statement we tried to execute was:</p>
+    <pre>{[ exception.query ]}</pre>
+    <p>The traceback is:</p>
+    <pre>{[ exception.traceback ]}</pre>
+  </div>
+</div>
+<div ng-class="{invisible: state != 'display'}">
+  <flot dataset="chartData" options="chartOptions" height="300px" callback="flotCallback"></flot>
+  <table class="table">
+    <thead>
+      <tr>
+        <th> </th>
+        <th>Cur</th>
+        <th ng-hide="isMobile">Min</th>
+        <th>Avg</th>
+        <th>Max</th>
+        <th ng-hide="isMobile">95%l</th>
+        <th> </th>
+        <th ng-hide="isMobile"> </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="varstats in graphState.stats">
+        <td>{[ varstats.variable.display || varstats.variable.name ]}</td>
+        <td>{[ varstats.last | scalenumber ]}</td>
+        <td ng-hide="isMobile">{[ varstats.min  | scalenumber ]}</td>
+        <td>{[ varstats.avg  | scalenumber ]}</td>
+        <td>{[ varstats.max  | scalenumber ]}</td>
+        <td ng-hide="isMobile">{[ varstats.p95  | scalenumber ]}</td>
+        <td>{[ varstats.variable.unit ]}</td>
+        <td ng-hide="isMobile"><span ng-show="varstats.variable.formula" class="glyphicon glyphicon-info-sign" title="{[ varstats.variable.name ]} = {[ varstats.variable.formula ]}"></span></td>
+      </tr>
+    </tbody>
+  </table>
+  <button type="button" class="btn btn-default btn-xs pull-right" ng-click="shareGraph()" title="Share" ng-hide="token">
+    <img style="width: 14px;" src="/static/share.png" />
+  </button>
+  <dl class="dl-horizontal">
+    <dt>Start:</dt>
+    <dd>{[ graphState.data_start | i18ndate ]}</dd>
+    <dt>End:</dt>
+    <dd>{[ graphState.data_end   | i18ndate ]}</dd>
+    <dt>Query time:</dt>
+    <dd>{[ graphState.query_time | number:2 ]} seconds</dd>
+  </dl>
+</div>

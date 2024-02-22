@@ -1,0 +1,30 @@
+[{rabbitmq_shovel,
+  [{shovels,
+    %% begin template
+    [{fluxmonToSomewhere,
+      [{sources,      [{brokers, ["amqp://"]}]},
+       {destinations, [{broker, "amqp://guest:guest@w.x.y.z"},
+                       {declarations,
+                          [{'exchange.declare',
+                                  [{exchange,    <<"fluxmon">>},
+                                   {type,        <<"direct">>},
+                                   durable]},
+                           {'queue.declare', 
+                                  [{queue,       <<"fluxmon">>},
+                                   durable]},
+                           {'queue.bind',
+                                  [{exchange,    <<"fluxmon">>},
+                                   {queue,       <<"fluxmon">>},
+                                   {routing_key, <<"fluxmon">>}]}
+                          ]}]},
+       {queue, <<"fluxmon">>},
+       {prefetch_count, 10},
+       {publish_properties, [{delivery_mode, 2}]},
+       {publish_fields, [{exchange,    <<"fluxmon">>},
+                         {routing_key, <<"fluxmon">>}]},
+       {reconnect_delay, 5}
+      ]},
+      %% end of template
+     ]
+   }]
+}].

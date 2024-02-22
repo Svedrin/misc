@@ -1,0 +1,103 @@
+
+# Query-Operatoren:
+#   https://docs.mongodb.org/manual/reference/operator/query/
+# Aggregation-Pipeline:
+#   https://docs.mongodb.org/manual/reference/operator/aggregation-pipeline/
+# Expressions:
+#   https://docs.mongodb.org/manual/meta/aggregation-quick-reference/#aggregation-expressions
+# $project: https://docs.mongodb.org/manual/reference/operator/aggregation/project/#pipe._S_project
+# $group:   https://docs.mongodb.org/manual/reference/operator/aggregation/group/#pipe._S_group
+
+
+# Average-Latency:
+
+db.raw.aggregate([
+  { $project: { "latency": {$subtract: ["$stored_at", "$measured_at"]} } },
+  { $group: { _id: 1, latency: { $avg: "$latency" } } }
+])
+
+# Ergebnis: { "_id" : 1, "latency" : 3641.8569958589533 }
+
+
+# Als Histogramm:
+# hidx = int(math.log(hostinfo["latency"], 2) * 10)
+# ping = 2 ** (hidx / 10.)
+
+db.raw.mapReduce(
+  function(){
+    var latency = this.stored_at - this.measured_at;
+    var hidx = Math.floor( Math.log2(latency) * 10 );
+    var ping = Math.pow(2, hidx / 10.);
+    emit(ping, 1);
+  },
+  function(key, values){
+    return Array.sum(values);
+  },
+  { out: { inline: 1 } }
+)
+
+# Map-Funktion als Einzeiler:
+
+  emit(Math.pow(2, Math.floor( Math.log2(this.stored_at - this.measured_at) * 10 ) / 10.), 1);
+
+# Übersetzt auf aggregate:
+
+db.raw.aggregate([
+  { $project: {
+    "latency": {
+      $pow: [ 2, { $divide: [ { $trunc: { $multiply: [ { $log: [ { $subtract: ["$stored_at", "$measured_at"] }, 2 ] }, 10 ] } }, 10.0 ] } ]
+    },
+    "count": { $literal: 1 }
+  } },
+  { $group: { _id: "$latency", count: { $sum: "$count" } } },
+  { $sort: { _id: 1 } }
+])
+
+# Irgendwie noch gruppiererb0bt nach Stunde, z.b.:
+
+db.raw.aggregate([
+  { $project: {
+    "measured_at": 1,
+    "latency": {
+      $pow: [ 2, { $divide: [ { $trunc: { $multiply: [ { $log: [ { $subtract: ["$stored_at", "$measured_at"] }, 2 ] }, 10 ] } }, 10.0 ] } ]
+    },
+    "count": { $literal: 1 }
+  } },
+  { $group: {
+    _id: { $concat: [
+      { $dateToString: { format: "%Y-%m-%d:%H::", date: "$measured_at" } },
+      { $substr: [ "$latency", 0, -1 ] }
+    ] },
+    count: { $sum: "$count" } } },
+  { $sort: { _id: 1 } }
+])
+
+
+
+
+
+
+
+
+db.raw.aggregate([
+  { $project: {
+    "measured_at": 1,
+    "latency": {
+      $pow: [ 2, { $divide: [ { $trunc: { $multiply: [ { $log: [ { $subtract: ["$stored_at", "$measured_at"] }, 2 ] }, 10 ] } }, 10.0 ] } ]
+    },
+    "count": { $literal: 1 }
+  } },
+  { $group: {
+    _id: {
+      date:    { $dateToString: { format: "%Y-%m-%d:%H", date: "$measured_at" } },
+      latency: "$latency"
+    },
+    count: { $sum: "$count" }
+  } },
+  { $group: {
+    _id: "$_id.date",
+    data: { $push: { latency: "$_id.latency", count: "$count" } },
+  } },
+  { $sort: { _id: 1 } }
+])
+

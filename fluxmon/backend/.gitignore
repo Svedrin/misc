@@ -1,0 +1,8 @@
+*~
+*.pyc
+*.orig
+*.bkp
+*.swp
+
+htdocs/
+static/bower_components/

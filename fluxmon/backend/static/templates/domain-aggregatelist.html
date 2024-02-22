@@ -1,0 +1,30 @@
+<div class="panel panel-default">
+  <div class="panel-body">
+    <table class="table table-hover">
+      <tbody>
+        <tr class="checktr"
+            ng-repeat="view in domain.views_set"
+            ui-sref="domain.view({name: view.name})">
+          <td>
+            {[ view.name ]}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<table class="table table-hover">
+  <thead>
+    <tr>
+      <th>Variable</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="checktr {% if check.current_alert %}warning{% else %}success{% endif %}"
+        ui-sref="domain.aggregate({name: aggregate.name})"
+        ng-repeat="aggregate in domain.aggregates_set" >
+      <td>{[ aggregate.display || aggregate.name ]}</td>
+    </tr>
+  </tbody>
+</table>

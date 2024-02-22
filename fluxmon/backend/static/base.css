@@ -1,0 +1,20 @@
+h1, h2 {
+  color: #003366;
+  border-bottom: 1px solid #003366;
+  page-break-after: avoid;
+}
+div.fieldWrapper {
+    width:  100%;
+    margin: 20px 0;
+}
+div.fieldWrapper input {
+    width: 100%;
+}
+
+dd ul {
+  margin: 0;
+}
+
+.no-padding {
+  padding: 0 !important;
+}

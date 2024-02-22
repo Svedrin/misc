@@ -1,0 +1,45 @@
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <span ng-show="user.first_name &amp;&amp; user.last_name">
+      {[ user.first_name ]} &ldquo;{[ user.username ]}&rdquo; {[ user.last_name ]}
+    </span>
+    <span ng-hide="user.first_name &amp;&amp; user.last_name">
+      {[ user.username ]}
+    </span>
+  </div>
+  <div class="panel-body">
+    <div class="row">
+      <div class="col-md-2"><img gravatar-src="user.email" gravatar-size="80"></div>
+      <div class="col-md-8">
+        <dl class="dl-horizontal">
+          <dt>Joined:</dt>
+          <dd>{[ user.date_joined ]}</dd>
+          <dt>Staff:</dt>
+          <dd>
+            <span ng-show="user.is_staff">Yes</span>
+            <span ng-hide="user.is_staff">No</span>
+          </dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="panel panel-default">
+  <div class="panel-heading">Most viewed graphs</div>
+  <div class="panel-body">
+    <table class="table table-hover">
+      <tbody>
+      <tr ui-sref="node.check.varlist({nodeId: check.target_host.id, check: check.uuid})"
+          ng-repeat="check in mostViewedChecks" >
+        <td>
+          {[ check.target_host.fqdn ]}
+          <span ng-if="check.target_host.fqdn != check.exec_host.fqdn">(as seen by {[ check.exec_host.fqdn ]})</span>
+        </td>
+        <td>{[ check.uuid ]}</td>
+        <td>{[ check.sensor.name ]}</td>
+        <td><span ng-repeat="param in check.checkparameter_set">{[ param.parameter ]}={[ param.value ]}</span></td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

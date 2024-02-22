@@ -1,0 +1,34 @@
+<dl class="dl-horizontal" ng-show="showDetails">
+  <dt>Check:</dt>
+  <dd>
+    <span ng-hide="editing">
+      <a href="#" ui-sref="node.check.varlist">{[ check.display || check.uuid ]}</a>
+      <button type="button" class="btn btn-default btn-xs" ng-click="startEdit()" title="Edit (or hit e)"><span class="glyphicon glyphicon-pencil"></span></button>
+    </span>
+    <div ng-show="editing" class="input-group fieldWrapper">
+      <input type="text" class="form-control" name="display" id="id_display" ng-model="check.display" placeholder="{[ check.uuid ]}" ng-enter="submit()" />
+      <span class="input-group-btn">
+        <button class="btn btn-default" ng-click="submit()" >Submit</button>
+      </span>
+    </div>
+  </dd>
+  <dt>Sensor:</dt>
+  <dd>{[ check.sensor.name ]}</dd>
+  <dt>Executed on host:</dt>
+  <dd><a href="#" ui-sref="node.checklist({nodeId: check.exec_host.id})">{[ check.exec_host.fqdn ]}</a></dd>
+  <dt>Parameters:</dt>
+  <dd>
+    <ul class="list-unstyled">
+      <li ng-repeat="checkparam in check.checkparameter_set">{[ checkparam.parameter ]} = {[ checkparam.value ]}</li>
+    </ul>
+  </dd>
+  <dt>Last update:</dt>
+  <dd>{[ check.updated_at | i18ndate ]}</dd>
+</dl>
+
+<dl class="dl-horizontal" ng-hide="showDetails">
+  <dt>Check:</dt>
+  <dd><a href="#" ui-sref="node.check.varlist">{[ check.display || check.uuid ]}</a></dd>
+</dl>
+
+<div ui-view></div>

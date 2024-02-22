@@ -1,0 +1,27 @@
+Fragestellung:
+Was ist die Einheit von wr_sectors [sct/s] * 512 [B/sct] / wr_ios [IO/s]?
+
+Antwort:
+  => sct / s * B / sct * s / IO | s, sct kürzen sich weg
+  => B/IO
+
+Wie automatisiert berechnen?
+Was ist mit Addition/Subtraktion?
+-> Geht nur wenn Einheiten gleich!
+
+Need wahrscheinlich Parse-Tree... aber erstmal einfach anfangen.
+
+Wie wär's mit Liste oder so:
+* Einheit taucht nach * auf: reinpushen
+* Einheit taucht nach / auf: rauslöschen
+Wenn Einheit beim Löschen nicht in der Liste ist, in Nennerliste adden
+
+Also Beispiel von oben:
+sct     ->     [sct] / []
+/ s     ->     [sct] / [s]
+* B     ->  [sct, B] / [s]
+/ sct   ->       [B] / [s]
+* s     ->       [B] / []
+/ IO    ->       [B] / [IO]
+
+scheint zu funzen o0

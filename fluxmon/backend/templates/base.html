@@ -1,0 +1,89 @@
+{% load l10n %}
+<!DOCTYPE html>
+<html ng-app="FluxmonApp">
+  <head>
+    <title ng-bind="title">Fluxmon</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport"     content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <link rel='stylesheet'    href='https://fonts.googleapis.com/css?family=PT+Sans' type='text/css'>
+    <link rel="stylesheet"    href="/static/bower_components/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet"    href="/static/bower_components/angular-ui-tree/dist/angular-ui-tree.min.css">
+    <link rel="stylesheet"    href="/static/base.css">
+    <script type="text/javascript" src="/static/bower_components/hammerjs/hammer.min.js"></script>
+    <script type="text/javascript" src="/static/bower_components/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="/static/bower_components/angularjs/angular.min.js"></script>
+    <script type="text/javascript" src="/static/bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
+    <script type="text/javascript" src="/static/bower_components/jquery-flot/jquery.flot.js"></script>
+    <script type="text/javascript" src="/static/bower_components/jquery-flot/jquery.flot.time.js"></script>
+    <script type="text/javascript" src="/static/bower_components/jquery-flot/jquery.flot.selection.js"></script>
+    <script type="text/javascript" src="/static/bower_components/jquery-flot/jquery.flot.resize.js"></script>
+    <script type="text/javascript" src="/static/bower_components/jquery-flot/jquery.flot.threshold.js"></script>
+    <script type="text/javascript" src="/static/bower_components/angular-flot/angular-flot.js"></script>
+    <script type="text/javascript" src="/static/bower_components/angular-ui-tree/dist/angular-ui-tree.js"></script>
+    <script type="text/javascript" src="/static/bower_components/angular-gravatar/build/angular-gravatar.js"></script>
+    <script type="text/javascript" src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/jsi18n/"></script>
+    <script type="text/javascript" src="/static/ng.app.js"></script>
+    <script type="text/javascript" src="/static/scripts/i18ndate.js"></script>
+    <script type="text/javascript" src="/static/scripts/IndexCtrl.js"></script>
+    <script type="text/javascript" src="/static/scripts/ProfileCtrl.js"></script>
+    <script type="text/javascript" src="/static/scripts/SearchCtrl.js"></script>
+    <script type="text/javascript" src="/static/scripts/DomainCtrl.js"></script>
+    <script type="text/javascript" src="/static/scripts/NodeCtrl.js"></script>
+    <script type="text/javascript" src="/static/scripts/TokenCtrl.js"></script>
+    <script type="text/javascript" src="/static/scripts/GraphDirective.js"></script>
+    <script type="text/javascript" src="/static/scripts/StatisticsService.js"></script>
+  </head>
+  <body>
+    <div class="navbar navbar-default navbar-static-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#" ui-sref="index">Fluxmon</a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li data-toggle="collapse" data-target=".in"><a href="#" ui-sref="index">Home</a></li>
+            {% if not user.is_anonymous %}
+            <li data-toggle="collapse" data-target=".in"><a href="#" ui-sref="profile">{{ user }}</a></li>
+            <li data-toggle="collapse" data-target=".in"><a href="#" ui-sref="tree">Hosts</a></li>
+            <li><a href="#" ui-sref="search" searchbox>Search</a></li>
+            <li data-toggle="collapse" data-target=".in"><a href="{% url 'django.contrib.auth.views.logout' %}">Logout</a></li>
+            {% else %}
+            <li data-toggle="collapse" data-target=".in"><a href="{% url 'django.contrib.auth.views.login' %}">Login</a></li>
+            {% endif %}
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+
+    <!-- Begin page content -->
+    <div class="container" ng-show="showIndex()" ng-controller="IndexCtrl">
+      <div class="panel panel-warning" ng-hide="true">
+        <div class="panel-heading">
+          <h3 class="panel-title">Please enable JavaScript</h3>
+        </div>
+        <div class="panel-body">
+          <p>You seem to have JavaScript disabled. Unfortunately, without it, this page won't be much fun, so please enable it.</p>
+          <p>We won't do anything shady. Promise!</p>
+        </div>
+      </div>
+
+      {% block content %}
+      {% endblock %}
+    </div>
+
+    <div class="container" ui-view ng-hide="showIndex()">
+    </div>
+
+    <div id="footer">
+      <div class="container">
+      </div>
+    </div>
+  </body>
+</html>
+{# kate: space-indent on; indent-width 2; replace-tabs on; hl Django HTML Template; #}

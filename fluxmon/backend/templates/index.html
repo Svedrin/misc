@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{# kate: space-indent on; indent-width 2; replace-tabs on; hl Django HTML Template; #}
+{% block content %}
+<div class="row">
+  <div class="col-md-9">
+    <h1>Flux Performance Monitor</h1>
+    <h3>a system performance analysis tool</h3>
+  </div>
+</div>
+
+<div class="row" style="height: 20px"></div>
+
+<div class="row">
+  <div class="col-md-9">
+    Flux collects and tracks performance indicators (latency, throughput, load) from attached systems and analyzes the
+    data with statistical methods to ease interpretation, enabling you to gain insights about potential optimizations.
+  </div>
+</div>
+
+<div class="row" style="height: 40px"></div>
+
+<div class="row" style="height: 40px"></div>
+
+<div class="row">
+  <div class="col-md-3">
+    <h2>Auto discovery</h2>
+    <p>
+      Flux configures sensors and checks automatically so your systems are completely monitored. Stop worrying about
+      configuring checks by hand.
+    </p>
+  </div>
+
+  <div class="col-md-3">
+    <h2>Auto sync</h2>
+    <p>
+      Flux uses RabbitMQ to deliver results reliably and in real time. In case a connection breaks, you're covered by
+      RabbitMQ storing and syncing results when the connection is re-established.
+    </p>
+  </div>
+
+  <div class="col-md-3">
+    <h2>Auto analysis</h2>
+    <p>
+      Flux determines what behaviour is to be expected and what is likely to be a failure mathematically using
+      statistical methods.
+    </p>
+  </div>
+</div>
+
+<div class="row" style="height: 40px"></div>
+
+<div class="row">
+  <div class="col-md-9">
+    <img src="/static/architecture.png" alt="architecture" style="width: 100%"/>
+  </div>
+</div>
+
+<div class="row" style="height: 40px"></div>
+
+<div class="row">
+  <div class="col-md-3">
+    <h2>Collaborate</h2>
+    <p>
+      Share data and graphs with others to discuss results. ACLs give you full control over who can see what, and
+      sharing does not require registration.
+    </p>
+  </div>
+
+  <div class="col-md-3">
+    <h2>Do maths</h2>
+    <p>Add formulas to calculate further graphs from the data you collected using the Flux sensors.</p>
+  </div>
+
+  <div class="col-md-3">
+    <h2>Learn</h2>
+    <p>See what you can learn from the data you gathered to find room for improvements.</p>
+  </div>
+</div>
+
+<div class="row" style="height: 40px"></div>
+
+<div class="row">
+  <div class="col-md-9">
+    <h2>Flux is not...</h2>
+    <ul>
+      <li>a status monitor like Nagios, i. e. it does not detect outages or send notifications.</li>
+      <li>proactive, i.e. it does not warn you that things might take an ugly turn soon.</li>
+      <li>a replacement for an educated sysadmin.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="row" style="height: 40px"></div>
+
+<div class="row">
+  <div class="col-md-9" style="border-top: 1px solid gray; padding-top: 40px">
+    <p>Development is still under way, so unfortunately, there is not much to be seen here yet.</p>
+    <p>Contact Svedrin in the Freenode IRC network if you'd like to get in touch.</p>
+    <p>There's a <a href="https://trello.com/b/y9slyrds/fluxmon" target="_blank">Trello board</a> where I keep track of ideas and a
+      <a href="https://bitbucket.org/Svedrin/fluxd/" target="_blank">repository</a> containing the data collector.</p>
+    <p>Also, check out <a href="http://blog.svedr.in/posts/why-i-started-working-on-fluxmon.html">my blog post on what I'm doing here</a>.</p>
+  </div>
+</div>
+
+{% endblock %}
