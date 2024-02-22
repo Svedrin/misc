@@ -1,0 +1,10 @@
+*~
+*.pyc
+*.orig
+*.bkp
+*.swp
+
+fluxd.conf
+MANIFEST
+dist/
+.keys/
