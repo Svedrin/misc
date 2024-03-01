@@ -1,6 +1,28 @@
 /**
  * This extends a JavaScript date object with a basic strftime function.
  *
+ * Use:
+ *
+ *   > var a = new Date()
+ *   undefined
+ *   > a
+ *   2024-03-01T20:31:03.596Z
+ *   > a.strftime("%Y-%m-%d %H:%M")         // Format in local time
+ *   '2024-03-01 21:31'
+ *   > a.strftime("%Y-%m-%d %H:%M", true)   // Format in UTC
+ *   '2024-03-01 20:31'
+ *
+ * Implemented formatters:
+ *
+ *   Y - Full year
+ *   y - last two digits of the year
+ *   m - month as 01 - 12
+ *   d - day of month as 01 - 31
+ *   H - Hour as 01 - 24
+ *   M - Minute as 01 - 60
+ *   S - Second as 01 - 60
+ *   % - a literal % sign
+ *
  * The zpad function is inspired from here:
  * https://stackoverflow.com/questions/49330139/date-toisostring-but-local-time-instead-of-utc
  */
