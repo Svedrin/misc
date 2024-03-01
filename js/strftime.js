@@ -1,16 +1,6 @@
 /**
  * This extends a JavaScript date object with a basic strftime function.
- *
- * Use:
- *
- *   > var a = new Date()
- *   undefined
- *   > a
- *   2024-03-01T20:31:03.596Z
- *   > a.strftime("%Y-%m-%d %H:%M")         // Format in local time
- *   '2024-03-01 21:31'
- *   > a.strftime("%Y-%m-%d %H:%M", true)   // Format in UTC
- *   '2024-03-01 20:31'
+ * See https://www.man7.org/linux/man-pages/man3/strftime.3.html
  *
  * Implemented formatters:
  *
@@ -21,7 +11,24 @@
  *   H - Hour as 01 - 24
  *   M - Minute as 01 - 60
  *   S - Second as 01 - 60
+ *   F - Date as %Y-%m-%d
+ *   R - Time as %H:%M
+ *   T - Time as %H:%M:%S
+ *   s - seconds since the epoch
  *   % - a literal % sign
+ *
+ * Example:
+ *
+ *   > var a = new Date()
+ *   undefined
+ *   > a.strftime("%Y-%m-%d %H:%M")            // local time
+ *   '2024-03-01 21:45'
+ *   > a.strftime("%Y-%m-%d %H:%M", true)      // utc
+ *   '2024-03-01 20:45'
+ *   > a.strftime("%F %T")
+ *   '2024-03-01 21:45:26'
+ *   > a.strftime("%F %T", true)
+ *   '2024-03-01 20:45:26'
  *
  * The zpad function is inspired from here:
  * https://stackoverflow.com/questions/49330139/date-toisostring-but-local-time-instead-of-utc
@@ -60,6 +67,18 @@ Date.prototype.strftime = function(fmt, utc) {
                     break;
                 case 'S':
                     result += zpad(utc ? this.getUTCSeconds() : this.getSeconds());
+                    break;
+                case 'F':
+                    result += this.strftime('%Y-%m-%d', utc);
+                    break;
+                case 'R':
+                    result += this.strftime('%H:%M', utc);
+                    break;
+                case 'T':
+                    result += this.strftime('%H:%M:%S', utc);
+                    break;
+                case 's':
+                    result += parseInt(a.getTime() / 1000).toString();
                     break;
                 case '%':
                     result += '%';
