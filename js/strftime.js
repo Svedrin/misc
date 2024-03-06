@@ -44,6 +44,25 @@ Date.prototype.strftime = function(fmt, utc) {
     var locale = (process.env["LANG"] || "en_US.UTF-8").split(".")[0].replace("_", "-");
     var replace = false;
     var result  = '';
+    var formatters = {
+        'Y': date => (utc ? date.getUTCFullYear() : date.getFullYear()),
+        'y': date => (utc ? date.getUTCFullYear() : date.getFullYear()).toString().slice(-2),
+        'm': date => zpad((utc ? date.getUTCMonth() : date.getMonth()) + 1),
+        'd': date => zpad(utc ? date.getUTCDate() : date.getDate()),
+        'H': date => zpad(utc ? date.getUTCHours() : date.getHours()),
+        'M': date => zpad(utc ? date.getUTCMinutes() : date.getMinutes()),
+        'S': date => zpad(utc ? date.getUTCSeconds() : date.getSeconds()),
+        'F': date => date.strftime('%Y-%m-%d', utc),
+        'R': date => date.strftime('%H:%M', utc),
+        'T': date => date.strftime('%H:%M:%S', utc),
+        'a': date => date.toLocaleDateString(locale, { weekday: "short" }),
+        'A': date => date.toLocaleDateString(locale, { weekday: "long" }),
+        'b': date => date.toLocaleDateString(locale, { month: "short" }),
+        'B': date => date.toLocaleDateString(locale, { month: "long" }),
+        'c': date => date.toLocaleString(locale),
+        's': date => parseInt(date.getTime() / 1000).toString(),
+        '%': date => '%',
+    }
     for (var chr of fmt) {
         if (!replace) {
             if (chr == '%') {
@@ -52,59 +71,7 @@ Date.prototype.strftime = function(fmt, utc) {
                 result += chr;
             }
         } else {
-            switch (chr) {
-                case 'Y':
-                    result += (utc ? this.getUTCFullYear() : this.getFullYear());
-                    break;
-                case 'y':
-                    result += (utc ? this.getUTCFullYear() : this.getFullYear()).toString().slice(-2);
-                    break;
-                case 'm':
-                    result += zpad((utc ? this.getUTCMonth() : this.getMonth()) + 1);
-                    break;
-                case 'd':
-                    result += zpad(utc ? this.getUTCDate() : this.getDate());
-                    break;
-                case 'H':
-                    result += zpad(utc ? this.getUTCHours() : this.getHours());
-                    break;
-                case 'M':
-                    result += zpad(utc ? this.getUTCMinutes() : this.getMinutes());
-                    break;
-                case 'S':
-                    result += zpad(utc ? this.getUTCSeconds() : this.getSeconds());
-                    break;
-                case 'F':
-                    result += this.strftime('%Y-%m-%d', utc);
-                    break;
-                case 'R':
-                    result += this.strftime('%H:%M', utc);
-                    break;
-                case 'T':
-                    result += this.strftime('%H:%M:%S', utc);
-                    break;
-                case 'a':
-                    result += this.toLocaleDateString(locale, { weekday: "short" });
-                    break;
-                case 'A':
-                    result += this.toLocaleDateString(locale, { weekday: "long" });
-                    break;
-                case 'b':
-                    result += this.toLocaleDateString(locale, { month: "short" });
-                    break;
-                case 'B':
-                    result += this.toLocaleDateString(locale, { month: "long" });
-                    break;
-                case 'c':
-                    result += this.toLocaleString(locale);
-                    break;
-                case 's':
-                    result += parseInt(a.getTime() / 1000).toString();
-                    break;
-                case '%':
-                    result += '%';
-                    break;
-            }
+            result += formatters[chr](this);
             replace = false;
         }
     }
