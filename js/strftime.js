@@ -14,6 +14,11 @@
  *   F - Date as %Y-%m-%d
  *   R - Time as %H:%M
  *   T - Time as %H:%M:%S
+ *   a - Weekday as Mon-Sun in current locale
+ *   A - Weekday as Monday-Sunday in current locale
+ *   b - Month as Jan-Dec in current locale
+ *   B - Month as January-December in current locale
+ *   c - Date and time string in current locale
  *   s - seconds since the epoch
  *   % - a literal % sign
  *
@@ -36,6 +41,7 @@
 
 Date.prototype.strftime = function(fmt, utc) {
     var zpad = n =>  ('0' + n).slice(-2);
+    var locale = (process.env["LANG"] || "en_US.UTF-8").split(".")[0].replace("_", "-");
     var replace = false;
     var result  = '';
     for (var chr of fmt) {
@@ -76,6 +82,21 @@ Date.prototype.strftime = function(fmt, utc) {
                     break;
                 case 'T':
                     result += this.strftime('%H:%M:%S', utc);
+                    break;
+                case 'a':
+                    result += this.toLocaleDateString(locale, { weekday: "short" });
+                    break;
+                case 'A':
+                    result += this.toLocaleDateString(locale, { weekday: "long" });
+                    break;
+                case 'b':
+                    result += this.toLocaleDateString(locale, { month: "short" });
+                    break;
+                case 'B':
+                    result += this.toLocaleDateString(locale, { month: "long" });
+                    break;
+                case 'c':
+                    result += this.toLocaleString(locale);
                     break;
                 case 's':
                     result += parseInt(a.getTime() / 1000).toString();
