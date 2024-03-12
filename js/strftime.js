@@ -64,15 +64,13 @@ Date.prototype.strftime = function(fmt, utc) {
         '%': date => '%',
     }
     for (var chr of fmt) {
-        if (!replace) {
-            if (chr == '%') {
-                replace = true;
-            } else {
-                result += chr;
-            }
-        } else {
+        if (replace) {
             result += formatters[chr](this);
             replace = false;
+        } else if (chr == '%') {
+            replace = true;
+        } else {
+            result += chr;
         }
     }
     return result;
