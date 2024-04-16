@@ -1,6 +1,7 @@
 /**
- * This extends a JavaScript date object with a basic strftime function.
- * See https://www.man7.org/linux/man-pages/man3/strftime.3.html
+ * This extends a JavaScript date object with localize and a basic strftime function.
+ * localize allows to get a Date object for a different time zone.
+ * For strftime, see https://www.man7.org/linux/man-pages/man3/strftime.3.html
  *
  * Implemented formatters:
  *
@@ -26,10 +27,12 @@
  *
  *   > var a = new Date()
  *   undefined
- *   > a.strftime("%Y-%m-%d %H:%M")            // local time
+ *   > a.strftime("%Y-%m-%d %H:%M")        // local time
  *   '2024-03-01 21:45'
- *   > a.strftime("%Y-%m-%d %H:%M", true)      // utc
+ *   > a.strftime("%Y-%m-%d %H:%M", true)  // utc
  *   '2024-03-01 20:45'
+ *   > a.localize("EST")                   // other timezone
+ *   2024-03-01T16:45:00.000Z
  *   > a.strftime("%F %T")
  *   '2024-03-01 21:45:26'
  *   > a.strftime("%F %T", true)
@@ -38,6 +41,14 @@
  * The zpad function is inspired from here:
  * https://stackoverflow.com/questions/49330139/date-toisostring-but-local-time-instead-of-utc
  */
+
+Date.prototype.localize = function(tzname) {
+    return new Date(
+        this.toLocaleString("en-US", {
+            timeZone: tzname
+        })
+    )
+}
 
 Date.prototype.strftime = function(fmt, utc) {
     var zpad = n =>  ('0' + n).slice(-2);
