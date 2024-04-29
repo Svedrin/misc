@@ -5,6 +5,10 @@
 #
 # <http://de.wikipedia.org/wiki/RSA-Kryptosystem#Verfahren>
 
+print("Wir brauchen zwei Primzahlen p und q. 13 und 89 funktionieren beispielsweise.")
+print("Primzahlen bis 100: 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97.")
+print()
+
 p = int( input( "p: " ) )
 q = int( input( "q: " ) )
 
@@ -19,17 +23,17 @@ print("Suche mögliche Schlüsselpaare:")
 keypairs = []
 
 for e in range( 1, (phi_n + 1), 2 ):
-	d = (phi_n + 1.0)/e
-	if d == int(d):
-		d = int(d)
-		
-		janein = input( "e = %d, d = %d -- dieses Schlüsselpaar benutzen? [jN] " % ( e, d ) )
-		
-		if janein == 'j':
-			pubkey, privkey = e, d
-			break
+    d = (phi_n + 1.0)/e
+    if d == int(d):
+        d = int(d)
+
+        janein = input( "e = %d, d = %d -- dieses Schlüsselpaar benutzen? [jN] " % ( e, d ) )
+
+        if janein == 'j':
+            pubkey, privkey = e, d
+            break
 else:
-	raise ValueError("Exhausted all possible key pairs, you need to choose one")
+    raise ValueError("Alle Möglichkeiten erschöpft")
 
 print()
 print("Öffentlicher Schlüssel = (%d,%d)" % ( pubkey,  n ))
@@ -37,21 +41,21 @@ print("Geheimer Schlüssel     = (%d,%d)" % ( privkey, n ))
 print()
 
 while(True):
-	msg = input( "Nachricht:     " )
-	if not msg:
-		break
-	
-	ciph = [ ((ord(char) ** pubkey) % n) for char in msg ]
-	
-	print("Verschlüsselt:", ciph)
-	
-	deciph = ""
-	for char in ciph:
-		deciph += chr((char ** privkey) % n)
-	
-	print("Entschlüsselt:", deciph)
-	print()
-	print()
+    msg = input( "Nachricht:     " )
+    if not msg:
+        break
+
+    ciph = [ ((ord(char) ** pubkey) % n) for char in msg ]
+
+    print("Verschlüsselt:", ciph)
+
+    deciph = ""
+    for char in ciph:
+        deciph += chr((char ** privkey) % n)
+
+    print("Entschlüsselt:", deciph)
+    print()
+    print()
 
 
 
