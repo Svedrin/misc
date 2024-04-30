@@ -19,10 +19,6 @@ def main():
     print("RSA-Modul: N = %d - φ(N) = %d" % ( n, phi_n ))
 
     print("Suche mögliche Schlüsselpaare:")
-
-
-    keypairs = []
-
     for e in range( 1, (phi_n + 1), 2 ):
         d = (phi_n + 1.0)/e
         if d == int(d):
