@@ -25,6 +25,9 @@ keypairs = []
 for e in range( 1, (phi_n + 1), 2 ):
     d = (phi_n + 1.0)/e
     if d == int(d):
+        # konvertiere float nach int. Wichtig weil float in der Größe der Zahlen
+        # limitiert ist, int in Python aber nicht. Wenn wir die Zahlen als float
+        # belassen würden, führt dies zu Overflows bei den Potenzierungen.
         d = int(d)
 
         janein = input( "e = %d, d = %d -- dieses Schlüsselpaar benutzen? [jN] " % ( e, d ) )
