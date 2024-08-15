@@ -1,10 +1,18 @@
 #!/bin/bash
+
+set -e
+set -u
+
+if [ -z "${1:-}" ]; then
+	echo "Usage: $0 <iface>"
+	exit 1
+fi
+
 echo 1 > /proc/sys/net/ipv4/ip_forward
 
-if [ -z "$1" ]
-then
-	echo "Usage: $0 <iface>";
-	exit 1;
+if [ -n "$(which nmcli)" ]; then
+	echo "Setting $1 not to be managed by NetworkManager."
+	nmcli device set $1 managed no
 fi
 
 echo "Setting $1 IP to 192.168.13.254/24."
