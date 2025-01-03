@@ -1,0 +1,51 @@
+#!/bin/bash
+#
+# Generates DKIM keys and updates KeyTable and SigningTable according to:
+# https://easydmarc.com/blog/how-to-configure-dkim-opendkim-with-postfix/
+
+set -e
+set -u
+
+KEYS_DIR="/etc/dkimkeys"
+KEY_BITS=1024
+KEY_SELECTOR="$HOSTNAME"
+
+if [ -z "${1:-}" ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+    echo "Usage: $0 <domain ...>"
+    exit 1
+fi
+
+if [ ! -e "$KEYS_DIR/KeyTable" ] || [ ! -e "$KEYS_DIR/SigningTable" ]; then
+    echo "Invalid configuration: KeyTable or SigningTable not found in $KEYS_DIR, please check"
+    exit 1
+fi
+
+
+while [ -n "${1:-}" ]; do
+    DOMAIN="$1"
+
+    echo "#####" "$DOMAIN" "#####"
+
+    mkdir -p "$KEYS_DIR/$DOMAIN"
+
+    # Generate the key if it doesn't exist
+    KEY_PATH="$KEYS_DIR/$DOMAIN/$KEY_SELECTOR.private"
+    if [ ! -e "$KEY_PATH" ]; then
+        /usr/sbin/opendkim-genkey -b "$KEY_BITS" -d "$DOMAIN" -D "$KEYS_DIR/$DOMAIN" -s "$KEY_SELECTOR" -v
+    fi
+
+    # Update KeyTable
+    if ! grep -q "$KEY_SELECTOR._domainkey.$DOMAIN" $KEYS_DIR/KeyTable; then
+        printf "$KEY_SELECTOR._domainkey.%-25s %s:$KEY_SELECTOR:$KEY_PATH\n" "$DOMAIN" "$DOMAIN" >> $KEYS_DIR/KeyTable
+    fi
+
+    # Update SigningTable
+    if ! grep -q "$KEY_SELECTOR._domainkey.$DOMAIN" $KEYS_DIR/SigningTable; then
+        printf "*@%-25s $KEY_SELECTOR._domainkey.%s\n" "$DOMAIN" "$DOMAIN" >> $KEYS_DIR/SigningTable
+    fi
+
+    # Print the DNS records
+    cat "$KEYS_DIR/$DOMAIN/$KEY_SELECTOR.txt"
+
+    shift
+done
