@@ -49,3 +49,6 @@ while [ -n "${1:-}" ]; do
 
     shift
 done
+
+chown -R opendkim: /etc/opendkim
+service opendkim reload
