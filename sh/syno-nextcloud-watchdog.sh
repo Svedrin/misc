@@ -17,7 +17,7 @@ RTNCODE="$(curl -k -i -s "https://$MYIP:444/login" | head -n1 | cut -d ' ' -f 2)
 ​
 if [ "$RTNCODE" = "404" ]; then
     echo "Restarting nextcloud"
-        /usr/syno/bin/synowebapi --exec api=SYNO.Docker.Container method="stop" version=1 name="nextcloud"
-        sleep 2
-        /usr/syno/bin/synowebapi --exec api=SYNO.Docker.Container method="start" version=1 name="nextcloud"
+    /usr/syno/bin/synowebapi --exec api=SYNO.Docker.Container method="stop" version=1 name="nextcloud"
+    sleep 2
+    /usr/syno/bin/synowebapi --exec api=SYNO.Docker.Container method="start" version=1 name="nextcloud"
 fi
