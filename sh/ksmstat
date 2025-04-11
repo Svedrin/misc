@@ -1,0 +1,50 @@
+#!/bin/bash
+
+set -e
+set -u
+
+run="$(cat /sys/kernel/mm/ksm/run)"
+
+if [ "$run" != 1 ]; then
+    echo "KSM not running"
+    exit 1
+fi
+
+pages_shared="$(cat /sys/kernel/mm/ksm/pages_shared)"
+pages_sharing="$(cat /sys/kernel/mm/ksm/pages_sharing)"
+pages_unshared="$(cat /sys/kernel/mm/ksm/pages_unshared)"
+pages_volatile="$(cat /sys/kernel/mm/ksm/pages_volatile)"
+MemTotal="$(grep MemTotal /proc/meminfo | awk '{ print $2 }')"
+
+printf "Shared:                      %.2f GB  (stores pages that are re-used)\n" \
+    "$(bc <<<"scale=5; $pages_shared   * 4096 / 1024 / 1024 / 1024" )"
+
+printf "Sharing:                     %.2f GB  (how much we would need without KSM)\n" \
+    "$(bc <<<"scale=5; $pages_sharing  * 4096 / 1024 / 1024 / 1024" )"
+
+printf "Unshared:                    %.2f GB  (not currently shared)\n" \
+    "$(bc <<<"scale=5; $pages_unshared * 4096 / 1024 / 1024 / 1024" )"
+
+printf "Volatile:                    %.2f GB  (not shared because contents change too often)\n" \
+    "$(bc <<<"scale=5; $pages_volatile * 4096 / 1024 / 1024 / 1024" )"
+
+echo
+
+printf "Ratio  Sharing / Shared:     %.2f x   (ratio of how often pages are re-used)\n" \
+    "$(bc <<<"scale=5; $pages_sharing / $pages_shared" )"
+
+printf "Ratio Unshared / Sharing:    %.2f x   (ratio of how many more pages we scanned just to find we can't share them)\n" \
+    "$(bc <<<"scale=5; $pages_unshared / $pages_sharing" )"
+
+printf "Ratio Volatile / Unshared:   %.2f %%   (percentage of unshared pages that are volatile)\n" \
+    "$(bc <<<"scale=5; $pages_volatile / $pages_unshared * 100" )"
+
+echo
+
+ram_saved_kb="$(bc <<<"scale=5; ( $pages_sharing - $pages_shared ) * 4096 / 1024" )"
+
+printf "RAM saved:                   %.2f GB\n" \
+    "$(bc <<<"scale=5; $ram_saved_kb / 1024 / 1024" )"
+
+printf "Percentage of total RAM:     %.2f %%\n" \
+    "$(bc <<<"scale=5; $ram_saved_kb / $MemTotal * 100" )"
