@@ -3,6 +3,8 @@
 set -e
 set -u
 
+export LANG=C
+
 run="$(cat /sys/kernel/mm/ksm/run)"
 
 if [ "$run" != 1 ]; then
