@@ -163,7 +163,7 @@
 
     // Protect internal link placeholders first (we'll insert anchors after markdown)
     const tokens = [];
-    src = src.replace(/【(\d+)\u2020([^】]+)】/g, (m, idx, label) => {
+    src = src.replace(/<a\s+[^>]*href="#([^"]+)"[^>]*>([^<]*)/gi, (m, idx, label) => {
       const t = `@@ILINK${tokens.length}@@`;
       tokens.push({ label: label.trim(), idx });
       return t;
@@ -252,12 +252,13 @@
     if (!state.top.length && json.nodes?.length) state.top = [json.nodes[0].uid];
 
     // Backlinks: scan all field strings for internal-link tokens
-    const rx = /【(\d+)\u2020([^】]+)】/g; // 【idx†Label】
+    const rx = /<a\s+[^>]*href="#([^"]+)"[^>]*>([^<]*)/gi;
     for (const n of state.byUid.values()) {
       for (const [k, v] of Object.entries(n.data || {})) {
         if (typeof v !== 'string') continue;
         let m;
         while ((m = rx.exec(v))) {
+          console.log(["Found:"] + m);
           const label = m[2].trim();
           if (!state.backlinksByLabel.has(label)) state.backlinksByLabel.set(label, []);
           state.backlinksByLabel.get(label).push(n.uid);
@@ -333,16 +334,13 @@
   function renderFieldValueHtml(key, value) {
     if (value == null) return '';
     // Convert internal link tokens to anchors
-    let html = String(value).replace(/【(\d+)\u2020([^】]+)】/g, (m, idx, label) => {
+    let html = String(value).replace(/<a\s+[^>]*href="#([^"]+)"[^>]*>([^<]*)/gi, (m, idx, label) => {
       return `<a href="#" class=\"internal-link\" data-link-label=\"${escapeHtml(label.trim())}\">${escapeHtml(label.trim())}</a>`;
     });
     if (key.toLowerCase() === 'description') {
       return renderMarkdown(String(value));
     }
-    return escapeHtml(html).replace(/&lt;a href=\"#\" class=\"internal-link\"[^&]*&gt;([^&]*)&lt;\/a&gt;/g, (m) => {
-      // unescape anchors inside fields that were escaped above
-      const tmp = document.createElement('textarea'); tmp.innerHTML = m; return tmp.value;
-    });
+    return html;
   }
 
   function renderNode(uid) {
@@ -399,7 +397,11 @@
     } else {
       sources.forEach(suid => {
         const sn = state.byUid.get(suid);
-        const a = document.createElement('a'); a.href = '#'; a.className = 'pill'; a.textContent = sn?.data?.Name || suid; a.addEventListener('click', e => { e.preventDefault(); selectNode(suid); });
+        const a = document.createElement('a');
+        a.href = '#';
+        a.className = 'pill';
+        a.textContent = sn?.data?.Name || suid;
+        a.addEventListener('click', e => { e.preventDefault(); selectNode(suid); });
         bl.append(a);
       });
     }
