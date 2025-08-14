@@ -217,14 +217,14 @@
     byUid: new Map(),
     nameToUids: new Map(),
     parent: new Map(),
-    backlinksByLabel: new Map(), // label (text after dagger) -> [sourceUid]
+    backlinksByUid: new Map(), // label (text after dagger) -> [sourceUid]
     top: [],
     current: null,
   };
 
   function resetState() {
     state.json = null; state.byUid.clear(); state.nameToUids.clear(); state.parent.clear();
-    state.backlinksByLabel.clear(); state.top = []; state.current = null;
+    state.backlinksByUid.clear(); state.top = []; state.current = null;
     $('#tree').innerHTML = '';
     $('#nodeTitle').textContent = 'File loaded';
     $('#breadcrumbs').textContent = '';
@@ -258,10 +258,9 @@
         if (typeof v !== 'string') continue;
         let m;
         while ((m = rx.exec(v))) {
-          console.log(["Found:"] + m);
-          const label = m[2].trim();
-          if (!state.backlinksByLabel.has(label)) state.backlinksByLabel.set(label, []);
-          state.backlinksByLabel.get(label).push(n.uid);
+          const uid = m[1].trim();
+          if (!state.backlinksByUid.has(uid)) state.backlinksByUid.set(uid, []);
+          state.backlinksByUid.get(uid).push(n.uid);
         }
       }
     }
@@ -389,8 +388,7 @@
     const fieldsEl = $('#fields'); fieldsEl.innerHTML = ''; fieldsEl.append(frag);
 
     // Backlinks
-    const label = (node.data?.Name || '').trim();
-    const sources = state.backlinksByLabel.get(label) || [];
+    const sources = state.backlinksByUid.get(uid) || [];
     const bl = $('#backlinks'); bl.innerHTML = '';
     if (!sources.length) {
       bl.innerHTML = '<span class="hint">No backlinks.</span>';
