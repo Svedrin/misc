@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TreeLine (.trln) Viewer</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --bg-panel: #ffffff;
+      --bg-hover: #f0f3f9;
+      --text: #0c1116;
+      --muted: #5b6b7c;
+      --accent: #2b6ef7;
+      --accent-2: #1e9e52;
+      --border: #dbe3ec;
+      --shadow: 0 8px 22px rgba(16,24,40,.08);
+      --radius: 14px;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; background: var(--bg); color: var(--text);
+      font: 14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Noto Sans", "Helvetica Neue", Arial, sans-serif;
+    }
+    header {
+      position: sticky; top: 0; z-index: 5; backdrop-filter: blur(8px);
+      background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,255,255,.85));
+      border-bottom: 1px solid var(--border);
+    }
+    .bar { display: flex; gap: 12px; align-items: center; padding: 10px 16px; }
+    .logo { font-weight: 700; letter-spacing: .3px; }
+    .logo small { color: var(--muted); font-weight: 500; }
+    .btn {
+      display: inline-flex; align-items: center; gap: .5rem; cursor: pointer;
+      background: var(--bg-hover); border: 1px solid var(--border); color: var(--text);
+      padding: 8px 12px; border-radius: 10px; transition: .15s ease background, .15s ease border;
+    }
+    .btn:hover { background: #e9eef7; border-color: #ced9e6; }
+    .btn input[type=file] { display:none; }
+    .search { flex: 1; min-width: 120px; }
+    .search input {
+      width: 100%; background: var(--bg-hover); border: 1px solid var(--border); color: var(--text);
+      padding: 10px 12px; border-radius: 10px; outline: none;
+    }
+    .wrap { height: calc(100% - 54px); display: grid; grid-template-columns: 400px 1fr; }
+    aside { border-right: 1px solid var(--border); background: var(--bg-panel); height: 100%; overflow: auto; }
+    main { height: 100%; overflow: auto; }
+
+    /* Tree */
+    .tree { padding: 12px; }
+    .tree ul { list-style: none; padding-left: 16px; margin: 0; }
+    .tree li { position: relative; margin: 3px 0; }
+    .twisty { width: 18px; height: 18px; display: inline-grid; place-items: center; margin-right: 6px;
+      border-radius: 6px; border: 1px solid var(--border); background: var(--bg-hover); cursor: pointer; }
+    .twisty::after { content: "▸"; font-size: 12px; color: var(--muted); }
+    .twisty[aria-expanded="true"]::after { content: "▾"; }
+    .node-label { cursor: pointer; padding: 4px 6px; border-radius: 8px; outline: none; }
+    .node-label:hover { background: var(--bg-hover); }
+    .node-label:focus { box-shadow: 0 0 0 3px rgba(43,110,247,.25); background: var(--bg-hover); }
+    .node-label.active { background: #e8f0ff; color: #0c2a66; border: 1px solid #c8dafc; }
+    .dim { color: var(--muted); }
+
+    /* Right panel */
+    .panel {
+      padding: 18px 22px; max-width: 1100px; margin: 0 auto; display: grid; gap: 16px;
+    }
+    .card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+    .card .head { display: flex; gap: 10px; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--border); background: linear-gradient(180deg, #ffffff, #f8fafc); }
+    .title { font-size: 18px; font-weight: 700; }
+    .crumbs { color: var(--muted); font-size: 12px; }
+    .content { padding: 16px; }
+    .fields { display: grid; gap: 8px; }
+    .fields .row { display: grid; grid-template-columns: 200px 1fr; gap: 12px; padding: 8px 0; border-bottom: 1px dashed var(--border); }
+    .fields .row:last-child { border: none; }
+    .fields .key { color: var(--muted); }
+
+    .markdown { line-height: 1.6; }
+    .markdown h1,.markdown h2,.markdown h3 { margin: .9em 0 .4em; }
+    .markdown pre { background: #f4f6f9; border: 1px solid var(--border); padding: 10px 12px; border-radius: 10px; overflow: auto; }
+    .markdown code { background: #f2f5fb; border: 1px solid var(--border); padding: .15em .35em; border-radius: 6px; }
+    .markdown a { color: var(--accent); text-decoration: none; }
+    .markdown a:hover { text-decoration: underline; }
+
+    .pill { display:inline-flex; align-items:center; gap:.4rem; font-size:12px; padding:4px 8px; border-radius:999px; border:1px solid var(--border); background: var(--bg-hover); color: var(--muted); }
+    .list { display:flex; flex-wrap:wrap; gap:8px; }
+
+    .muted { color: var(--muted); }
+    .hint { font-size: 12px; color: var(--muted); }
+
+    .dropzone { display:none; place-items:center; height: 120px; border: 2px dashed #cfd9e6; border-radius: var(--radius); background: #f3f6fb; color: var(--muted); }
+    .dropzone.show { display:grid; }
+
+    @media (max-width: 900px) {
+      .wrap { grid-template-columns: 1fr; }
+      aside { height: 45vh; }
+      main { height: calc(100% - 45vh); }
+      .fields .row { grid-template-columns: 140px 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="bar">
+      <div class="logo">TRLN Viewer <small>for TreeLine</small></div>
+      <label class="btn" title="Open a .trln file">
+        <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19 12v7H5v-7H3v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7z"/><path fill="currentColor" d="M11 16h2V5l3.5 3.5l1.4-1.4L12 1.3L6.1 7.1l1.4 1.4L11 5z"/></svg>
+        <span>Open .trln</span>
+        <input id="fileInput" type="file" accept=".trln,application/json" />
+      </label>
+      <div class="search"><input id="search" type="search" placeholder="Search nodes by name…" /></div>
+      <button class="btn" id="expandAll" title="Expand all">Expand</button>
+      <button class="btn" id="collapseAll" title="Collapse all">Collapse</button>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <aside>
+      <div id="dropzone" class="dropzone">Drop a .trln file here</div>
+      <div id="tree" class="tree" role="tree"></div>
+    </aside>
+    <main>
+      <div class="panel">
+        <div class="card">
+          <div class="head">
+            <div class="title" id="nodeTitle">Open a .trln file to begin</div>
+            <div class="crumbs" id="breadcrumbs"></div>
+          </div>
+          <div class="content">
+            <div id="rendered" class="markdown"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="head">
+            <div class="title">Fields</div>
+            <span class="pill" id="formatName">—</span>
+          </div>
+          <div class="content">
+            <div id="fields" class="fields"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="head"><div class="title">Backlinks</div></div>
+          <div class="content">
+            <div id="backlinks" class="list hint">No backlinks yet.</div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+  // --- Utility helpers ---
+  const $ = (sel, el=document) => el.querySelector(sel);
+  const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
+  const escapeHtml = (s) => s.replace(/[&<>\"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  // Minimal-ish Markdown (headings, lists, **bold**, *italic*, `code`, links, paragraphs)
+  function renderMarkdown(src) {
+    if (!src) return '';
+
+    // Protect internal link placeholders first (we'll insert anchors after markdown)
+    const tokens = [];
+    src = src.replace(/【(\d+)\u2020([^】]+)】/g, (m, idx, label) => {
+      const t = `@@ILINK${tokens.length}@@`;
+      tokens.push({ label: label.trim(), idx });
+      return t;
+    });
+
+    // Escape
+    src = src.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+    // Code blocks ```
+    src = src.replace(/```([\s\S]*?)```/g, (_, code) => `<pre><code>${code.replace(/\n$/,'')}</code></pre>`);
+    // Inline code
+    src = src.replace(/`([^`]+)`/g, '<code>$1</code>');
+    // Headings
+    src = src.replace(/^######\s*(.*)$/gm, '<h6>$1</h6>')
+             .replace(/^#####\s*(.*)$/gm, '<h5>$1</h5>')
+             .replace(/^####\s*(.*)$/gm, '<h4>$1</h4>')
+             .replace(/^###\s*(.*)$/gm, '<h3>$1</h3>')
+             .replace(/^##\s*(.*)$/gm, '<h2>$1</h2>')
+             .replace(/^#\s*(.*)$/gm, '<h1>$1</h1>');
+    // Links [text](url)
+    src = src.replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+    // Bold/Italic (order matters)
+    src = src.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    src = src.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+
+    // Lists (basic)
+    src = src.replace(/^(?:-\s+.+\n?)+/gm, block => {
+      const items = block.trim().split(/\n/).map(l => `<li>${l.replace(/^-[\s]+/, '')}</li>`).join('');
+      return `<ul>${items}</ul>`;
+    });
+
+    // Paragraphs: wrap plain text blocks
+    src = src.split(/\n{2,}/).map(chunk => {
+      if (/^\s*<h\d|^\s*<ul|^\s*<pre|^\s*<blockquote|^\s*<p/.test(chunk)) return chunk;
+      const c = chunk.replace(/\n/g, '<br/>');
+      return `<p>${c}</p>`;
+    }).join('\n');
+
+    // Restore internal link placeholders as anchors
+    tokens.forEach((t, i) => {
+      const anchor = `<a href="#" class="internal-link" data-link-label="${escapeHtml(t.label)}">${escapeHtml(t.label)}</a>`;
+      src = src.replaceAll(`@@ILINK${i}@@`, anchor);
+    });
+
+    return src;
+  }
+
+  // --- TRLN parsing and state ---
+  const state = {
+    json: null,
+    byUid: new Map(),
+    nameToUids: new Map(),
+    parent: new Map(),
+    backlinksByLabel: new Map(), // label (text after dagger) -> [sourceUid]
+    top: [],
+    current: null,
+  };
+
+  function resetState() {
+    state.json = null; state.byUid.clear(); state.nameToUids.clear(); state.parent.clear();
+    state.backlinksByLabel.clear(); state.top = []; state.current = null;
+    $('#tree').innerHTML = '';
+    $('#nodeTitle').textContent = 'File loaded';
+    $('#breadcrumbs').textContent = '';
+    $('#rendered').innerHTML = '';
+    $('#fields').innerHTML = '';
+    $('#backlinks').innerHTML = '<span class="hint">No backlinks yet.</span>';
+    $('#formatName').textContent = '—';
+  }
+
+  function buildIndexes(json) {
+    // Nodes
+    (json.nodes || []).forEach(n => {
+      state.byUid.set(n.uid, n);
+      const nm = n.data?.Name?.trim();
+      if (nm) {
+        if (!state.nameToUids.has(nm)) state.nameToUids.set(nm, []);
+        state.nameToUids.get(nm).push(n.uid);
+      }
+    });
+    // Parents
+    (json.nodes || []).forEach(n => (n.children||[]).forEach(ch => state.parent.set(ch, n.uid)));
+    // Top nodes
+    const propTop = json.properties?.topnodes || [];
+    state.top = propTop.filter(uid => state.byUid.has(uid));
+    if (!state.top.length && json.nodes?.length) state.top = [json.nodes[0].uid];
+
+    // Backlinks: scan all field strings for internal-link tokens
+    const rx = /【(\d+)\u2020([^】]+)】/g; // 【idx†Label】
+    for (const n of state.byUid.values()) {
+      for (const [k, v] of Object.entries(n.data || {})) {
+        if (typeof v !== 'string') continue;
+        let m;
+        while ((m = rx.exec(v))) {
+          const label = m[2].trim();
+          if (!state.backlinksByLabel.has(label)) state.backlinksByLabel.set(label, []);
+          state.backlinksByLabel.get(label).push(n.uid);
+        }
+      }
+    }
+  }
+
+  // --- Rendering ---
+  function renderTree() {
+    const container = $('#tree');
+    container.innerHTML = '';
+
+    const makeNode = (uid) => {
+      const node = state.byUid.get(uid);
+      const li = document.createElement('li');
+      li.dataset.uid = uid;
+      const hasChildren = !!(node.children && node.children.length);
+
+      const twist = document.createElement('span');
+      twist.className = 'twisty';
+      twist.dataset.uid = uid;
+      twist.setAttribute('aria-expanded', hasChildren ? 'false' : 'true');
+      if (!hasChildren) { twist.style.visibility = 'hidden'; }
+
+      const label = document.createElement('span');
+      label.className = 'node-label';
+      label.dataset.uid = uid;
+      label.setAttribute('role','treeitem');
+      label.tabIndex = 0; // focusable for keyboard nav
+      label.textContent = node.data?.Name || '(untitled)';
+
+      label.addEventListener('click', () => selectNode(uid));
+      twist.addEventListener('click', () => {
+        const expanded = twist.getAttribute('aria-expanded') === 'true';
+        twist.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+        ul.style.display = expanded ? 'none' : 'block';
+      });
+
+      const head = document.createElement('div');
+      head.append(twist, label);
+      li.append(head);
+
+      const ul = document.createElement('ul');
+      ul.style.display = 'none';
+      (node.children || []).forEach(ch => ul.append(makeNode(ch)));
+      li.append(ul);
+      return li;
+    };
+
+    const rootList = document.createElement('ul');
+    state.top.forEach(uid => rootList.append(makeNode(uid)));
+    container.append(rootList);
+  }
+
+  function applyFormatTemplate(node) {
+    // Attempt to render using the node's format outputlines if present
+    const fmtName = node.format;
+    const fmt = (state.json.formats || []).find(f => f.formatname === fmtName);
+    $('#formatName').textContent = fmtName || '—';
+    if (!fmt || !fmt.outputlines) return '';
+
+    const raw = (fmt.outputlines || []).join('\n');
+    // Replace placeholders {*Field*}
+    const html = raw.replace(/\{\*([^*]+)\*\}/g, (_, fld) => {
+      const val = node.data?.[fld] ?? '';
+      if (fld.toLowerCase() === 'description') return renderMarkdown(String(val));
+      return renderFieldValueHtml(fld, val);
+    });
+    return html;
+  }
+
+  function renderFieldValueHtml(key, value) {
+    if (value == null) return '';
+    // Convert internal link tokens to anchors
+    let html = String(value).replace(/【(\d+)\u2020([^】]+)】/g, (m, idx, label) => {
+      return `<a href="#" class=\"internal-link\" data-link-label=\"${escapeHtml(label.trim())}\">${escapeHtml(label.trim())}</a>`;
+    });
+    if (key.toLowerCase() === 'description') {
+      return renderMarkdown(String(value));
+    }
+    return escapeHtml(html).replace(/&lt;a href=\"#\" class=\"internal-link\"[^&]*&gt;([^&]*)&lt;\/a&gt;/g, (m) => {
+      // unescape anchors inside fields that were escaped above
+      const tmp = document.createElement('textarea'); tmp.innerHTML = m; return tmp.value;
+    });
+  }
+
+  function renderNode(uid) {
+    const node = state.byUid.get(uid);
+    if (!node) return;
+
+    // Active highlight
+    $$('.node-label').forEach(el => el.classList.remove('active'));
+    const active = Array.from($$('.node-label')).find(el => el.textContent === (node.data?.Name || ''));
+    if (active) active.classList.add('active');
+
+    $('#nodeTitle').textContent = node.data?.Name || '(untitled)';
+
+    // Breadcrumbs
+    const crumbs = [];
+    let cur = uid;
+    while (cur) {
+      const n = state.byUid.get(cur);
+      crumbs.push(n?.data?.Name || '(untitled)');
+      cur = state.parent.get(cur);
+    }
+    $('#breadcrumbs').textContent = crumbs.reverse().join(' / ');
+
+    // Formatted render
+    const formatted = applyFormatTemplate(node);
+    $('#rendered').innerHTML = formatted || '<span class="muted">(No format template or nothing to render.)</span>';
+
+    // Fields table
+    const fields = Object.entries(node.data || {});
+    const frag = document.createDocumentFragment();
+    if (!fields.length) {
+      const empty = document.createElement('div'); empty.className = 'hint'; empty.textContent = 'This node has no fields.'; frag.append(empty);
+    } else {
+      for (const [k, v] of fields) {
+        const row = document.createElement('div'); row.className = 'row';
+        const key = document.createElement('div'); key.className = 'key'; key.textContent = k;
+        const val = document.createElement('div');
+        if (k.toLowerCase() === 'description') {
+          val.className = 'markdown'; val.innerHTML = renderMarkdown(String(v));
+        } else {
+          val.innerHTML = renderFieldValueHtml(k, v);
+        }
+        row.append(key, val); frag.append(row);
+      }
+    }
+    const fieldsEl = $('#fields'); fieldsEl.innerHTML = ''; fieldsEl.append(frag);
+
+    // Backlinks
+    const label = (node.data?.Name || '').trim();
+    const sources = state.backlinksByLabel.get(label) || [];
+    const bl = $('#backlinks'); bl.innerHTML = '';
+    if (!sources.length) {
+      bl.innerHTML = '<span class="hint">No backlinks.</span>';
+    } else {
+      sources.forEach(suid => {
+        const sn = state.byUid.get(suid);
+        const a = document.createElement('a'); a.href = '#'; a.className = 'pill'; a.textContent = sn?.data?.Name || suid; a.addEventListener('click', e => { e.preventDefault(); selectNode(suid); });
+        bl.append(a);
+      });
+    }
+  }
+
+  function selectNode(uid) {
+    state.current = uid; renderNode(uid);
+  }
+
+  // Internal link navigation (event delegation)
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a.internal-link');
+    if (!a) return;
+    e.preventDefault();
+    const label = a.getAttribute('data-link-label');
+    const uids = state.nameToUids.get(label) || [];
+    if (!uids.length) return alert(`No node found for: ${label}`);
+    if (uids.length === 1) return selectNode(uids[0]);
+    // If ambiguous, prompt selection
+    const names = uids.map((u,i)=>`${i+1}. ${state.byUid.get(u)?.data?.Name || u}`).join('\n');
+    const pick = prompt(`Multiple nodes named "${label}". Choose:\n${names}`);
+    const idx = (parseInt(pick,10)|0) - 1; if (uids[idx]) selectNode(uids[idx]);
+  });
+
+  // Search
+  $('#search').addEventListener('input', (e) => {
+    const q = e.target.value.trim().toLowerCase();
+    $$('.node-label').forEach(n => {
+      const hit = n.textContent.toLowerCase().includes(q);
+      n.style.display = hit ? '' : 'none';
+    });
+  });
+
+  // Keyboard navigation in tree
+  const treeEl = $('#tree');
+  function visibleLabels() {
+    return $$('.node-label').filter(el => el.offsetParent !== null && el.style.display !== 'none');
+  }
+  function focusLabel(el) { if (el) el.focus(); }
+  function liFrom(el) { return el.closest('li'); }
+  function twistFrom(li) { return li?.querySelector('.twisty'); }
+  function ulFrom(li) { return li?.querySelector(':scope > ul'); }
+
+  treeEl.addEventListener('keydown', (e) => {
+    const active = document.activeElement?.classList.contains('node-label') ? document.activeElement : null;
+    if (!active) return; // only handle when a label has focus
+    const list = visibleLabels();
+    const idx = list.indexOf(active);
+    const li = liFrom(active);
+    const twist = twistFrom(li);
+    const childrenUl = ulFrom(li);
+
+    switch (e.key) {
+      case 'ArrowDown': {
+        e.preventDefault();
+        focusLabel(list[Math.min(idx + 1, list.length - 1)]);
+        break;
+      }
+      case 'ArrowUp': {
+        e.preventDefault();
+        focusLabel(list[Math.max(idx - 1, 0)]);
+        break;
+      }
+      case 'ArrowRight': {
+        e.preventDefault();
+        // expand if collapsible, otherwise go to first child
+        if (twist && twist.getAttribute('aria-expanded') === 'false') {
+          twist.click();
+        } else {
+          const firstChild = childrenUl?.querySelector('.node-label');
+          if (firstChild) focusLabel(firstChild);
+        }
+        break;
+      }
+      case 'ArrowLeft': {
+        e.preventDefault();
+        // collapse if expanded, otherwise go to parent
+        if (twist && twist.getAttribute('aria-expanded') === 'true' && childrenUl && childrenUl.style.display !== 'none') {
+          twist.click();
+        } else {
+          const parentLi = li.closest('ul')?.closest('li');
+          const parentLabel = parentLi?.querySelector(':scope > div > .node-label');
+          if (parentLabel) focusLabel(parentLabel);
+        }
+        break;
+      }
+      case 'Enter':
+      case ' ': {
+        e.preventDefault();
+        const uid = active.dataset.uid; if (uid) selectNode(uid);
+        break;
+      }
+      default: break;
+    }
+  });
+
+  // Allow focusing the tree with one click on the panel
+  treeEl.addEventListener('click', (e) => {
+    const label = e.target.closest('.node-label');
+    if (label) label.focus();
+  });
+
+  // Expand/Collapse
+  $('#expandAll').addEventListener('click', () => {
+    $$('.twisty').forEach(t => { t.setAttribute('aria-expanded','true'); });
+    $$('.tree ul').forEach(ul => ul.style.display = 'block');
+  });
+  $('#collapseAll').addEventListener('click', () => {
+    $$('.twisty').forEach(t => { if (t.style.visibility !== 'hidden') t.setAttribute('aria-expanded','false'); });
+    $$('.tree > ul > li > ul').forEach(ul => ul.style.display = 'none');
+  });
+
+  // File loading
+  function handleFile(file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const json = JSON.parse(reader.result);
+        resetState();
+        state.json = json;
+        buildIndexes(json);
+        renderTree();
+        // Auto-select first visible top node
+        if (state.top[0]) {
+          selectNode(state.top[0]);
+          // Set initial focus on first label for keyboard nav
+          const firstLabel = $('#tree .node-label'); if (firstLabel) firstLabel.focus();
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Failed to parse .trln (JSON) file.');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  $('#fileInput').addEventListener('change', (e) => {
+    const f = e.target.files?.[0]; if (f) handleFile(f);
+  });
+
+  // Drag & drop
+  const dz = $('#dropzone');
+  ['dragenter','dragover'].forEach(ev => document.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('show'); }));
+  ;['dragleave','drop'].forEach(ev => document.addEventListener(ev, e => { e.preventDefault(); if (ev==='drop') { const f = e.dataTransfer?.files?.[0]; if (f) handleFile(f); } dz.classList.remove('show'); }));
+
+  // Demo hint: allow URL hash to fetch a sample via fetch() if CORS allows (optional)
+  // Example: add ?url=https://raw.githubusercontent.com/... to auto-load.
+  (function maybeAutoLoad(){
+    const params = new URLSearchParams(location.search);
+    const url = params.get('url');
+    if (!url) return;
+    fetch(url).then(r => r.text()).then(txt => {
+      const json = JSON.parse(txt);
+      resetState(); state.json = json; buildIndexes(json); renderTree(); if (state.top[0]) { selectNode(state.top[0]); const firstLabel = $('#tree .node-label'); if (firstLabel) firstLabel.focus(); }
+    }).catch(err => console.warn('Auto-load failed:', err));
+  })();
+  </script>
+</body>
+</html>
