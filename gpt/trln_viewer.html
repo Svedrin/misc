@@ -204,7 +204,7 @@
 
     // Restore internal link placeholders as anchors
     tokens.forEach((t, i) => {
-      const anchor = `<a href="#" class="internal-link" data-link-label="${escapeHtml(t.label)}">${escapeHtml(t.label)}</a>`;
+      const anchor = `<a href="#" class="internal-link" data-link-label="${escapeHtml(t.idx)}">${escapeHtml(t.label)}</a>`;
       src = src.replaceAll(`@@ILINK${i}@@`, anchor);
     });
 
@@ -335,7 +335,7 @@
     if (value == null) return '';
     // Convert internal link tokens to anchors
     let html = String(value).replace(/<a\s+[^>]*href="#([^"]+)"[^>]*>([^<]*)/gi, (m, idx, label) => {
-      return `<a href="#" class=\"internal-link\" data-link-label=\"${escapeHtml(label.trim())}\">${escapeHtml(label.trim())}</a>`;
+      return `<a href="#" class=\"internal-link\" data-link-uid=\"${escapeHtml(idx.trim())}\">${escapeHtml(label.trim())}</a>`;
     });
     if (key.toLowerCase() === 'description') {
       return renderMarkdown(String(value));
@@ -416,14 +416,7 @@
     const a = e.target.closest('a.internal-link');
     if (!a) return;
     e.preventDefault();
-    const label = a.getAttribute('data-link-label');
-    const uids = state.nameToUids.get(label) || [];
-    if (!uids.length) return alert(`No node found for: ${label}`);
-    if (uids.length === 1) return selectNode(uids[0]);
-    // If ambiguous, prompt selection
-    const names = uids.map((u,i)=>`${i+1}. ${state.byUid.get(u)?.data?.Name || u}`).join('\n');
-    const pick = prompt(`Multiple nodes named "${label}". Choose:\n${names}`);
-    const idx = (parseInt(pick,10)|0) - 1; if (uids[idx]) selectNode(uids[idx]);
+    selectNode(a.getAttribute('data-link-uid'));
   });
 
   // Search
