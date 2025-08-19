@@ -161,6 +161,9 @@
   function renderMarkdown(src) {
     if (!src) return '';
 
+    // Undo treeline escape
+    src = src.replace(/<br\s?\/?>/g, '\n');
+
     // Protect internal link placeholders first (we'll insert anchors after markdown)
     const tokens = [];
     src = src.replace(/<a\s+[^>]*href="#([^"]+)"[^>]*>([^<]*)/gi, (m, idx, label) => {
@@ -186,12 +189,12 @@
     // Links [text](url)
     src = src.replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
     // Bold/Italic (order matters)
-    src = src.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-    src = src.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    src = src.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+    src = src.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
 
     // Lists (basic)
-    src = src.replace(/^(?:-\s+.+\n?)+/gm, block => {
-      const items = block.trim().split(/\n/).map(l => `<li>${l.replace(/^-[\s]+/, '')}</li>`).join('');
+    src = src.replace(/^(?:\*\s+.+\n?)+/gm, block => {
+      const items = block.trim().split(/\n/).map(l => `<li>${l.replace(/^\*[\s]+/, '')}</li>`).join('');
       return `<ul>${items}</ul>`;
     });
 
@@ -324,8 +327,7 @@
     // Replace placeholders {*Field*}
     const html = raw.replace(/\{\*([^*]+)\*\}/g, (_, fld) => {
       const val = node.data?.[fld] ?? '';
-      if (fld.toLowerCase() === 'description') return renderMarkdown(String(val));
-      return renderFieldValueHtml(fld, val);
+      return renderMarkdown(String(val));
     });
     return html;
   }
