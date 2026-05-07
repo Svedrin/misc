@@ -8,10 +8,10 @@ set -e
 set -u
 
 prtyprnt () {
-    printf "%-7s %-10s %-8s %-50s %-15s %-15s %s\n" "$@"
+    printf "%-7s %-10s %-8s %-45s %-12s %-12s %-7s %s\n" "$@"
 }
 
-prtyprnt "State" "Iface" "Family" "Address" "Valid_Lft" "Preferred_Lft" "Flags"
+prtyprnt "State" "Iface" "Family" "Address" "Valid_Lft" "PreferLft" "Scope" "Flags"
 
 ip -oneline monitor address | sed -u 's#\\##' | while read -ra words; do
     declare i=0
@@ -30,6 +30,7 @@ ip -oneline monitor address | sed -u 's#\\##' | while read -ra words; do
     i=$((i + 4))
     declare VALIDLFT=""
     declare PREFDLFT=""
+    declare    SCOPE=""
 
     while [ -n "${words[$i]:-}" ]; do
         if [ "${words[$i]:-}" = "\\" ]; then
@@ -40,11 +41,14 @@ ip -oneline monitor address | sed -u 's#\\##' | while read -ra words; do
         elif [ "${words[$i]:-}" = "preferred_lft" ]; then
             PREFDLFT="${words[$i+1]:-}"
             i=$((i + 1))
+        elif [ "${words[$i]:-}" = "scope" ]; then
+            SCOPE="${words[$i+1]:-}"
+            i=$((i + 1))
         else
             FLAGS="$FLAGS "${words[$i]:-}""
         fi
         i=$((i + 1))
     done
-    prtyprnt "$DELETED" "$IFACE" "$FAMILY" "$ADDR" "$VALIDLFT" "$PREFDLFT" "${FLAGS:1}"
+    prtyprnt "$DELETED" "$IFACE" "$FAMILY" "$ADDR" "$VALIDLFT" "$PREFDLFT" "$SCOPE" "${FLAGS:1}"
 
 done
