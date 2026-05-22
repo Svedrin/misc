@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tiamat — Routing Dashboard</title>
+  <link rel="icon" href="https://www.gravatar.com/avatar/6a11052bfa1ae52aa63fc0001417158d?size=32" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  <style>
+    /* ── Base ──────────────────────────────────────────────────── */
+    body {
+      background-color: #0d1117;
+      color: #e6edf3;
+    }
+
+    /* ── Monospace helper ──────────────────────────────────────── */
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 0.875em;
+    }
+
+    /* ── Navbar ────────────────────────────────────────────────── */
+    .site-nav {
+      background-color: #161b22;
+      border-bottom: 1px solid #30363d;
+    }
+
+    /* ── Cards ─────────────────────────────────────────────────── */
+    .card {
+      background-color: #161b22;
+      border-color: #30363d;
+    }
+    .card-header {
+      background-color: rgba(255, 255, 255, 0.02);
+      border-bottom-color: #30363d;
+    }
+    .card-footer {
+      background-color: rgba(255, 255, 255, 0.02);
+      border-top-color: #30363d;
+    }
+
+    /* ── Stat cards ─────────────────────────────────────────────── */
+    .stat-card {
+      background-color: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 0.5rem;
+      padding: 1.25rem 1rem;
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 0.7rem;
+      color: #8b949e;
+      margin-top: 0.4rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* ── Tables ─────────────────────────────────────────────────── */
+    .table {
+      --bs-table-bg: transparent;
+      --bs-table-hover-bg: rgba(255, 255, 255, 0.04);
+      --bs-table-border-color: #30363d;
+      color: #e6edf3;
+    }
+    .table > :not(caption) > * > * {
+      border-bottom-color: #21262d;
+    }
+    thead th {
+      background-color: #0d1117 !important;
+      border-bottom: 1px solid #30363d !important;
+      color: #8b949e;
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+
+    /* Keep sticky thead working inside scrollable container */
+    .table-scroll {
+      max-height: 65vh;
+      overflow-y: auto;
+    }
+    .table-scroll thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    /* ── Nexthop list ────────────────────────────────────────────── */
+    .nh-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .nh-list li + li {
+      margin-top: 0.15rem;
+      padding-left: 0.9rem;
+      color: #8b949e;
+    }
+    .nh-list li + li::before {
+      content: "↳ ";
+      color: #484f58;
+    }
+
+    /* ── Route flags (>, *) ──────────────────────────────────────── */
+    .route-flags {
+      display: inline-block;
+      width: 1.4em;
+      color: #8b949e;
+      font-size: 0.75em;
+      vertical-align: middle;
+      letter-spacing: -0.05em;
+    }
+    .flag-sel  { color: #3fb950; }
+    .flag-fib  { color: #58a6ff; }
+
+    /* ── Countdown badge ─────────────────────────────────────────── */
+    .refresh-badge {
+      background-color: rgba(31, 111, 235, 0.12);
+      color: #79c0ff;
+      border: 1px solid rgba(31, 111, 235, 0.3);
+      border-radius: 1rem;
+      padding: 0.2rem 0.65rem;
+      font-size: 0.8rem;
+      white-space: nowrap;
+      cursor: default;
+    }
+    @keyframes pulse-badge {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.35; }
+    }
+    .countdown-urgent { animation: pulse-badge 0.75s ease-in-out infinite; }
+
+    /* ── Filter box ──────────────────────────────────────────────── */
+    #route-filter {
+      background-color: #0d1117;
+      border-color: #30363d;
+      color: #e6edf3;
+      max-width: 230px;
+    }
+    #route-filter:focus {
+      background-color: #0d1117;
+      border-color: #58a6ff;
+      color: #e6edf3;
+      box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+    }
+    #route-filter::placeholder { color: #484f58; }
+  </style>
+</head>
+
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════
+     Navbar
+     ══════════════════════════════════════════════════════════════ -->
+<nav class="site-nav navbar sticky-top">
+  <div class="container-fluid px-4">
+
+    <!-- Brand -->
+    <span class="navbar-brand mb-0 d-flex align-items-center gap-2">
+      <i class="bi bi-router-fill text-primary fs-5"></i>
+      <span class="fw-bold fs-5">Tiamat</span>
+      <span class="mono text-secondary" style="font-size:0.75rem;">routing dashboard</span>
+    </span>
+
+    <!-- Right side -->
+    <div class="d-flex align-items-center gap-3">
+      <span class="mono text-secondary" style="font-size:0.8rem;">
+        <i class="bi bi-clock me-1 opacity-50"></i>{{ now }}
+      </span>
+      <span class="refresh-badge" id="countdown-badge">
+        <i class="bi bi-arrow-repeat me-1 opacity-75"></i><span id="secs">30</span>s
+      </span>
+    </div>
+
+  </div>
+</nav>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     Main content
+     ══════════════════════════════════════════════════════════════ -->
+<div class="container-fluid px-4 py-4" style="max-width:1440px;">
+
+
+  <!-- ── Stat cards ──────────────────────────────────────────── -->
+  <div class="row g-3 mb-4">
+
+    <div class="col-6 col-sm-3">
+      <div class="stat-card">
+        <div class="stat-value text-primary">{{ neighbors | length }}</div>
+        <div class="stat-label">OSPF Neighbors</div>
+      </div>
+    </div>
+
+    <div class="col-6 col-sm-3">
+      <div class="stat-card">
+        <div class="stat-value text-success">{{ nbr_full }}</div>
+        <div class="stat-label">Full Adjacencies</div>
+      </div>
+    </div>
+
+    <div class="col-6 col-sm-3">
+      <div class="stat-card">
+        {% if nbr_nonfull > 0 %}
+          <div class="stat-value text-danger">{{ nbr_nonfull }}</div>
+        {% else %}
+          <div class="stat-value text-secondary">0</div>
+        {% endif %}
+        <div class="stat-label">Non-Full Neighbors</div>
+      </div>
+    </div>
+
+    <div class="col-6 col-sm-3">
+      <div class="stat-card">
+        <div class="stat-value text-info">{{ total_routes }}</div>
+        <div class="stat-label">Total Routes</div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- ── OSPF Neighbors card ─────────────────────────────────── -->
+  <div class="card mb-4 shadow-sm">
+
+    <div class="card-header d-flex align-items-center gap-2 flex-wrap py-3 px-4">
+      <i class="bi bi-diagram-3-fill text-primary"></i>
+      <span class="fw-semibold">OSPF Neighbors</span>
+      <span class="badge rounded-pill text-bg-primary ms-1 fw-normal">{{ neighbors | length }}</span>
+      {% if nbr_err %}
+        <span class="badge text-bg-danger ms-2">
+          <i class="bi bi-exclamation-triangle-fill me-1"></i>Error
+        </span>
+      {% endif %}
+    </div>
+
+    <div class="card-body p-0">
+      {% if nbr_err %}
+        <div class="alert alert-danger mono m-3 mb-0" style="font-size:0.85rem;">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ nbr_err }}
+        </div>
+
+      {% elif neighbors %}
+        <div class="table-responsive">
+          <table class="table table-hover table-sm mb-0 align-middle">
+            <thead>
+              <tr>
+                <th class="ps-4">Router&nbsp;ID</th>
+                <th>State</th>
+                <th>Role</th>
+                <th>Neighbor&nbsp;Addr</th>
+                <th>Interface</th>
+                <th class="text-center">Prio</th>
+                <th>Duration</th>
+                {% if has_vrf %}<th>VRF</th>{% endif %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for n in neighbors %}
+              <tr>
+                <td class="ps-4 mono">{{ n.router_id }}</td>
+                <td>
+                  <span class="badge bg-{{ n.colour }}">{{ n.state }}</span>
+                </td>
+                <td>
+                  {% if n.role %}
+                    <span class="badge text-bg-secondary fw-normal mono">{{ n.role }}</span>
+                  {% else %}
+                    <span class="text-secondary">—</span>
+                  {% endif %}
+                </td>
+                <td class="mono">{{ n.address }}</td>
+                <td class="mono">{{ n.interface }}</td>
+                <td class="text-center text-secondary mono">{{ n.priority }}</td>
+                <td class="mono text-secondary" style="font-size:0.8em;">{{ n.duration }}</td>
+                {% if has_vrf %}
+                  <td class="text-secondary" style="font-size:0.85em;">{{ n.vrf }}</td>
+                {% endif %}
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+      {% else %}
+        <div class="text-center text-secondary py-5">
+          <i class="bi bi-wifi-off fs-1 d-block mb-2 opacity-50"></i>
+          No OSPF neighbors
+        </div>
+      {% endif %}
+    </div><!-- /card-body -->
+
+  </div><!-- /neighbors card -->
+
+
+  <!-- ── IP Routes card ──────────────────────────────────────── -->
+  <div class="card shadow-sm">
+
+    <div class="card-header d-flex align-items-center gap-2 flex-wrap py-3 px-4">
+      <i class="bi bi-signpost-split-fill text-info"></i>
+      <span class="fw-semibold">IP Routes</span>
+      <span class="badge rounded-pill text-bg-info ms-1 fw-normal">{{ total_routes }}</span>
+
+      <!-- Protocol summary badges -->
+      <div class="d-flex gap-1 flex-wrap ms-1">
+        {% for p in proto_summary %}
+          <span class="badge bg-{{ p.colour }} fw-normal">{{ p.abbr }}&thinsp;{{ p.count }}</span>
+        {% endfor %}
+      </div>
+
+      <!-- Filter input -->
+      <div class="ms-auto">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text border-secondary bg-transparent text-secondary" style="background:none!important;">
+            <i class="bi bi-search" style="font-size:0.75rem;"></i>
+          </span>
+          <input type="search" id="route-filter"
+                 class="form-control form-control-sm"
+                 placeholder="Filter… (press /)"
+                 autocomplete="off" />
+        </div>
+      </div>
+    </div><!-- /card-header -->
+
+    {% if rt_err %}
+      <div class="card-body">
+        <div class="alert alert-danger mono mb-0" style="font-size:0.85rem;">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ rt_err }}
+        </div>
+      </div>
+
+    {% elif routes %}
+      <div class="table-scroll">
+        <table class="table table-hover table-sm mb-0 align-middle" id="route-table">
+          <thead>
+            <tr>
+              <th class="ps-4" style="width:18%;">Prefix</th>
+              <th style="width:5%;">Proto</th>
+              <th>Next Hop</th>
+              <th class="text-center" style="width:9%;">AD&thinsp;/&thinsp;Metric</th>
+              <th style="width:10%;">Uptime</th>
+            </tr>
+          </thead>
+          <tbody id="route-tbody">
+            {% for r in routes %}
+            <tr>
+              <td class="ps-4 mono">
+                <span class="route-flags">
+                  <span class="{% if r.selected %}flag-sel{% endif %}">{% if r.selected %}&rsaquo;{% else %}&nbsp;{% endif %}</span><span class="{% if r.fib %}flag-fib{% endif %}">{% if r.fib %}*{% else %}&nbsp;{% endif %}</span>
+                </span>
+                {{ r.prefix }}
+              </td>
+              <td>
+                <span class="badge bg-{{ r.colour }}">{{ r.abbr }}</span>
+              </td>
+              <td class="mono" style="font-size:0.85em;">
+                {% if r.nexthops | length == 1 %}
+                  {{ r.nexthops[0] }}
+                {% else %}
+                  <ul class="nh-list">
+                    {% for nh in r.nexthops %}
+                      <li>{{ nh }}</li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+              </td>
+              <td class="text-center text-secondary mono" style="font-size:0.85em;">
+                {% if r.distance != '' %}
+                  {{ r.distance }}&thinsp;/&thinsp;{{ r.metric }}
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+              <td class="text-secondary mono" style="font-size:0.82em;">{{ r.uptime }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card-footer d-flex align-items-center gap-4 px-4 py-2">
+        <span class="text-secondary" style="font-size:0.78rem;" id="route-count">
+          {{ total_routes }} routes
+        </span>
+        <span class="text-secondary opacity-50" style="font-size:0.75rem;">
+          <span class="flag-sel">›</span> selected &nbsp;
+          <span class="flag-fib">*</span> installed in FIB
+        </span>
+      </div>
+
+    {% else %}
+      <div class="card-body text-center text-secondary py-5">
+        <i class="bi bi-table fs-1 d-block mb-2 opacity-50"></i>
+        No routes found
+      </div>
+    {% endif %}
+
+  </div><!-- /routes card -->
+
+</div><!-- /container-fluid -->
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     Scripts
+     ══════════════════════════════════════════════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* ── Countdown / auto-refresh ─────────────────────────────── */
+  var badge   = document.getElementById('countdown-badge');
+  var secsEl  = document.getElementById('secs');
+  var remaining = 30;
+
+  setInterval(function () {
+    remaining -= 1;
+    secsEl.textContent = remaining;
+    if (remaining <= 5) badge.classList.add('countdown-urgent');
+    if (remaining <= 0) location.reload();
+  }, 1000);
+
+
+  /* ── Route filter ─────────────────────────────────────────── */
+  var filterInput = document.getElementById('route-filter');
+  var tbody       = document.getElementById('route-tbody');
+  var countEl     = document.getElementById('route-count');
+
+  if (filterInput && tbody) {
+    var rows  = Array.from(tbody.querySelectorAll('tr'));
+    var total = rows.length;
+
+    filterInput.addEventListener('input', function () {
+      var term    = this.value.toLowerCase().trim();
+      var visible = 0;
+      rows.forEach(function (row) {
+        var match = !term || row.textContent.toLowerCase().indexOf(term) !== -1;
+        row.style.display = match ? '' : 'none';
+        if (match) visible++;
+      });
+      if (countEl) {
+        countEl.textContent = term
+          ? visible + ' / ' + total + ' routes'
+          : total + ' routes';
+      }
+    });
+
+    /* Press "/" anywhere to jump to filter box */
+    document.addEventListener('keydown', function (e) {
+      if (e.key === '/' && document.activeElement !== filterInput) {
+        e.preventDefault();
+        filterInput.focus();
+        filterInput.select();
+      }
+      /* Escape clears + blurs */
+      if (e.key === 'Escape' && document.activeElement === filterInput) {
+        filterInput.value = '';
+        filterInput.dispatchEvent(new Event('input'));
+        filterInput.blur();
+      }
+    });
+  }
+
+})();
+</script>
+</body>
+</html>
