@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Docker TUI — containers, volumes and images."""
 
+import os
 import re
 import shutil
 import subprocess
@@ -973,8 +974,9 @@ class MainScreen(Screen):
         if not shutil.which("ncdu"):
             self.notify("ncdu is not installed — please install it first.", severity="error")
             return
+        cmd = ["ncdu", mp] if os.geteuid() == 0 else ["sudo", "ncdu", mp]
         with self.app.suspend():
-            subprocess.run(["ncdu", mp])
+            subprocess.run(cmd)
 
     def _exec_delete_volume(self, ok: bool, row: dict) -> None:
         if ok:
