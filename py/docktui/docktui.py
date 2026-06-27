@@ -696,6 +696,9 @@ class MainScreen(Screen):
         self._containers:   list[dict] = []
         self._volumes:      list[dict] = []
         self._images:       list[dict] = []
+        self._visible_containers: list[dict] = []
+        self._visible_volumes:    list[dict] = []
+        self._visible_images:     list[dict] = []
         self._first_load    = True
 
     # ── layout ───────────────────────────────────────────────────────────────
@@ -738,6 +741,14 @@ class MainScreen(Screen):
     @on(TabbedContent.TabActivated)
     def _tab_switched(self, _: TabbedContent.TabActivated) -> None:
         self.refresh_bindings()
+        tab = self._active_tab()
+        table_id = {
+            "tab-containers": "#ctable",
+            "tab-volumes":    "#vtable",
+            "tab-images":     "#itable",
+        }.get(tab)
+        if table_id:
+            self.call_after_refresh(lambda: self.query_one(table_id, DataTable).focus())
 
     def check_action(self, action: str, parameters: tuple) -> bool | None:
         tab = self._active_tab()
@@ -909,8 +920,12 @@ class MainScreen(Screen):
 
     def _render_containers(self) -> None:
         table = self.query_one("#ctable", DataTable)
-        table.clear()
+        cur = table.cursor_row
+        anchor = (self._visible_containers[cur]["name"]
+                  if cur is not None and cur < len(self._visible_containers) else None)
+
         visible = [c for c in self._containers if self._show_stopped or c["status"] == "running"]
+        table.clear()
         for row in visible:
             style = _status_style(row["status"])
             table.add_row(
@@ -919,6 +934,13 @@ class MainScreen(Screen):
                 row["image"],
                 f"{row['networks']}  {row['ips']}",
             )
+        self._visible_containers = visible
+
+        if anchor is not None:
+            names = [c["name"] for c in visible]
+            if anchor in names:
+                table.move_cursor(row=names.index(anchor), animate=False)
+
         if self._first_load:
             self.notify(f"Loaded {len(visible)} containers", timeout=2)
             self._first_load = False
@@ -997,9 +1019,9 @@ class MainScreen(Screen):
     def _selected_volume(self) -> dict | None:
         table = self.query_one("#vtable", DataTable)
         idx = table.cursor_row
-        if idx is None or not self._volumes or idx >= len(self._volumes):
+        if idx is None or not self._visible_volumes or idx >= len(self._visible_volumes):
             return None
-        return self._volumes[idx]
+        return self._visible_volumes[idx]
 
     @work(thread=True)
     def _load_volumes(self) -> None:
@@ -1021,9 +1043,19 @@ class MainScreen(Screen):
 
     def _render_volumes(self) -> None:
         table = self.query_one("#vtable", DataTable)
+        cur = table.cursor_row
+        anchor = (self._visible_volumes[cur]["name"]
+                  if cur is not None and cur < len(self._visible_volumes) else None)
+
         table.clear()
         for row in self._volumes:
             table.add_row(row["name"], row["driver"], row["mountpoint"])
+        self._visible_volumes = list(self._volumes)
+
+        if anchor is not None:
+            names = [v["name"] for v in self._volumes]
+            if anchor in names:
+                table.move_cursor(row=names.index(anchor), animate=False)
 
     # ── images ────────────────────────────────────────────────────────────────
 
@@ -1065,9 +1097,9 @@ class MainScreen(Screen):
     def _selected_image(self) -> dict | None:
         table = self.query_one("#itable", DataTable)
         idx = table.cursor_row
-        if idx is None or not self._images or idx >= len(self._images):
+        if idx is None or not self._visible_images or idx >= len(self._visible_images):
             return None
-        return self._images[idx]
+        return self._visible_images[idx]
 
     @work(thread=True)
     def _load_images(self) -> None:
@@ -1096,9 +1128,19 @@ class MainScreen(Screen):
 
     def _render_images(self) -> None:
         table = self.query_one("#itable", DataTable)
+        cur = table.cursor_row
+        anchor = (self._visible_images[cur]["tag"]
+                  if cur is not None and cur < len(self._visible_images) else None)
+
         table.clear()
         for row in self._images:
             table.add_row(row["tag"], row["id"], row["size"], row["created"])
+        self._visible_images = list(self._images)
+
+        if anchor is not None:
+            tags = [img["tag"] for img in self._images]
+            if anchor in tags:
+                table.move_cursor(row=tags.index(anchor), animate=False)
 
 
 # ─── app / css ────────────────────────────────────────────────────────────────
