@@ -11,6 +11,15 @@ Here are the key bindings I use for QGIS. They're in German because my UI is Ger
 | Y       | Attribute der Objekte ändern                             |                                                                                               |
 | F       | Form digitalisieren                                      | schaltet Modus von E um                                                                       |
 | S       | Mit Segment digitalisieren                               | schaltet Modus von E um                                                                       |
+| ---     | ab hier Defaults zur Dokumentation                       |                                                                                               |
+| C       | Konstruktionsmodus (Erweiterte Digitalisierung)          | Default                                                                                       |
+| R       | Laufende Digitalisierung                                 |                                                                                               |
+| T       | Spurverfolgung einschalten                               |                                                                                               |
+| Q       | frei                                                     |                                                                                               |
+| W       | frei                                                     |                                                                                               |
+| D       | frei                                                     |                                                                                               |
+| X       | frei                                                     |                                                                                               |
+| B       | frei                                                     |                                                                                               |
 
 This is adapted to my keyboard, which has a gap between the left and right hand side. The keys are laid out such that the left hand can reach all of them.
 
