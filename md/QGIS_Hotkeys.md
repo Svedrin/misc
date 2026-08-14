@@ -13,6 +13,7 @@ Here are the key bindings I use for QGIS. They're in German because my UI is Ger
 | S       | Mit Segment digitalisieren                               | schaltet Modus von E um                                                                       |
 | X       | Auswahl aller Layer aufheben                             |                                                                                               |
 | R       | Objekte drehen                                           |                                                                                               |
+| H       | Geländehöhenprofil                                       |                                                                                               |
 | ---     | ab hier Defaults zur Dokumentation                       |                                                                                               |
 | C       | Konstruktionsmodus (Erweiterte Digitalisierung)          | Default                                                                                       |
 | T       | Spurverfolgung einschalten                               |                                                                                               |
